@@ -61,6 +61,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: "VRP8dQHgN5TtLK__ogKu2905Gg6Jz01H0xANRkuzkVw",
+  },
 };
 
 type Props = {
