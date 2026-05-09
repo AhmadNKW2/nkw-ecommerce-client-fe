@@ -43,6 +43,7 @@ interface ProductPageClientProps {
   slug: string;
   initialProductData?: ApiProductDetail | null;
   initialRelatedData?: PaginatedResponse<ApiProduct> | null;
+  initialLinkedProductData?: ApiProductDetail[];
 }
 
 function ProductHeader({ product, selectedOptionsSummary, t }: { product: any; selectedOptionsSummary: string; t: any }) {
@@ -311,6 +312,7 @@ type LinkedProductChoice = {
   name: string;
   label: string;
   isCurrent: boolean;
+  color?: string;
 };
 
 function sortChoices<T extends { label: string; name: string; id: number }>(choices: T[], locale: Locale) {
@@ -339,6 +341,37 @@ function getLocalizedApiProductName(
   }
 
   return product.name_en || product.name_ar || "";
+}
+
+function getLocalizedAttributeName(
+  attributeGroup: NonNullable<ApiProductDetail["attributes"]>[string],
+  locale: Locale,
+) {
+  if (locale === "ar") {
+    return attributeGroup.name_ar || attributeGroup.name_en || "";
+  }
+
+  return attributeGroup.name_en || attributeGroup.name_ar || "";
+}
+
+function getLinkedProductChoiceColor(productData: ApiProductDetail | undefined, groupName: string | undefined, locale: Locale) {
+  if (!productData?.attributes || !groupName) return undefined;
+
+  const normalizedGroupName = groupName.trim().toLocaleLowerCase(locale === "ar" ? "ar" : "en");
+
+  for (const attributeGroup of Object.values(productData.attributes)) {
+    const localizedName = getLocalizedAttributeName(attributeGroup, locale).trim().toLocaleLowerCase(locale === "ar" ? "ar" : "en");
+    if (!localizedName || localizedName !== normalizedGroupName) {
+      continue;
+    }
+
+    const colorCode = Object.values(attributeGroup.values || {}).find((value) => value.color_code)?.color_code;
+    if (colorCode) {
+      return colorCode;
+    }
+  }
+
+  return undefined;
 }
 
 function getLongestCommonPrefix(values: string[]) {
@@ -389,22 +422,35 @@ function dedupeLinkedProductChoices(choices: LinkedProductChoice[], locale: Loca
   return Array.from(dedupedChoices.values());
 }
 
-function buildLinkedProductChoices(productData: ApiProductDetail, locale: Locale): LinkedProductChoice[] {
+function buildLinkedProductChoices(
+  productData: ApiProductDetail,
+  linkedProductData: ApiProductDetail[],
+  locale: Locale,
+  groupName?: string,
+): LinkedProductChoice[] {
+  const linkedProductDataBySlug = new Map(linkedProductData.map((product) => [product.slug, product]));
+
   const currentChoice = {
     id: productData.id,
     slug: productData.slug,
     sku: productData.sku,
     name: getLocalizedApiProductName(productData, locale),
     isCurrent: true,
+    color: getLinkedProductChoiceColor(productData, groupName, locale),
   };
 
-  const linkedChoices = (productData.linked_products || []).map((linkedProduct) => ({
-    id: linkedProduct.id,
-    slug: linkedProduct.slug,
-    sku: linkedProduct.sku,
-    name: getLocalizedApiProductName(linkedProduct, locale),
-    isCurrent: false,
-  }));
+  const linkedChoices = (productData.linked_products || []).map((linkedProduct) => {
+    const linkedProductDetails = linkedProductDataBySlug.get(linkedProduct.slug);
+
+    return {
+      id: linkedProduct.id,
+      slug: linkedProduct.slug,
+      sku: linkedProduct.sku,
+      name: getLocalizedApiProductName(linkedProduct, locale),
+      isCurrent: false,
+      color: getLinkedProductChoiceColor(linkedProductDetails, groupName, locale),
+    };
+  });
 
   const allChoices = [currentChoice, ...linkedChoices];
   const commonPrefix = getLongestCommonPrefix(allChoices.map((choice) => choice.name));
@@ -436,6 +482,7 @@ function LinkedProductChoices({ title, groupName, choices }: { title: string; gr
               key={choice.id}
               label={choice.label}
               selected={choice.isCurrent}
+              color={choice.color}
               href={choice.isCurrent ? undefined : `/products/${choice.slug}`}
               title={choice.name}
             />
@@ -559,7 +606,7 @@ function ProductMetaCard({
   );
 }
 
-export function ProductPageClient({ slug, initialProductData, initialRelatedData }: ProductPageClientProps) {
+export function ProductPageClient({ slug, initialProductData, initialRelatedData, initialLinkedProductData }: ProductPageClientProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations();
   const searchParams = useSearchParams();
@@ -596,11 +643,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
     return relatedProductsRaw.filter((candidate) => candidate.id !== product.id).slice(0, 4);
   }, [relatedProductsRaw, product]);
 
-  const linkedProductChoices = useMemo(() => {
-    if (!productData) return [];
-    return buildLinkedProductChoices(productData, locale);
-  }, [productData, locale]);
-
   const variantAttributes = useMemo(
     () => (product?.attributes || []).filter((attribute) => attribute.attributeType !== "spec_attribute"),
     [product?.attributes],
@@ -611,10 +653,23 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
     [variantAttributes],
   );
 
+  const linkedProductChoices = useMemo(() => {
+    if (!productData) return [];
+    return buildLinkedProductChoices(productData, initialLinkedProductData || [], locale, linkedOptionsGroupName);
+  }, [initialLinkedProductData, linkedOptionsGroupName, productData, locale]);
+
   const selectableAttributes = useMemo(
     () => variantAttributes.filter((attribute) => attribute.values.length > 0),
     [variantAttributes],
   );
+
+  const chooserAttributes = useMemo(() => {
+    if (linkedProductChoices.length <= 1 || !linkedOptionsGroupName) {
+      return selectableAttributes;
+    }
+
+    return selectableAttributes.filter((attribute) => attribute.name !== linkedOptionsGroupName);
+  }, [linkedOptionsGroupName, linkedProductChoices.length, selectableAttributes]);
 
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -883,9 +938,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
 
           <LinkedProductChoices title={t("product.chooseOptions")} groupName={linkedOptionsGroupName} choices={linkedProductChoices} />
 
-          {selectableAttributes.length > 0 ? (
+          {chooserAttributes.length > 0 ? (
             <ProductOptions
-              attributes={selectableAttributes}
+              attributes={chooserAttributes}
               selectedOptions={selectedOptions}
               onChange={handleOptionChange}
               isOptionDisabled={isOptionDisabled}
@@ -951,9 +1006,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             dangerouslySetInnerHTML={{ __html: product.description }}
           />
 
-          {selectableAttributes.length > 0 ? (
+          {chooserAttributes.length > 0 ? (
             <ProductOptions
-              attributes={selectableAttributes}
+              attributes={chooserAttributes}
               selectedOptions={selectedOptions}
               onChange={handleOptionChange}
               isOptionDisabled={isOptionDisabled}
@@ -1025,7 +1080,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
           <h2 className="text-2xl font-bold text-primary mb-1">{t("product.description")}</h2>
           <Card className="p-8">
             <div
-              className="prose max-w-none [&_h1]:text-primary [&_h2]:text-primary [&_h3]:text-primary [&_p]:text-third [&_a]:text-primary [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:marker:text-third"
+              className="prose max-w-none leading-8 [&_h1]:text-primary [&_h2]:text-primary [&_h3]:text-primary [&_p]:text-third [&_p]:leading-8 [&_a]:text-primary [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:leading-8 [&_li]:marker:text-third"
               dangerouslySetInnerHTML={{ __html: product.longDescription }}
             />
             {product.descriptionImages && product.descriptionImages.length > 0 ? (

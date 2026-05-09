@@ -19,6 +19,12 @@ export default async function ProductPage({ params }: PageProps) {
     notFound();
   }
 
+  const linkedProductData = productData.linked_products?.length
+    ? (await Promise.all(
+        productData.linked_products.map((linkedProduct) => productService.getBySlug(linkedProduct.slug).catch(() => null)),
+      )).filter((linkedProduct): linkedProduct is NonNullable<typeof linkedProduct> => Boolean(linkedProduct))
+    : [];
+
   const categoryId = productData.categories?.[0]?.id;
   const relatedData = categoryId
     ? await productService.getByCategory(categoryId, { limit: 4, status: "active" }).catch(() => null)
@@ -30,6 +36,7 @@ export default async function ProductPage({ params }: PageProps) {
         slug={slug}
         initialProductData={productData}
         initialRelatedData={relatedData}
+        initialLinkedProductData={linkedProductData}
       />
     </RouteIntlProvider>
   );

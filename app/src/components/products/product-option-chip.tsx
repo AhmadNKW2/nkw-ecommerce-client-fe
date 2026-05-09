@@ -44,19 +44,25 @@ export function ProductOptionChip({
       className,
     );
 
-    return onClick ? (
-      <button
-        type="button"
-        title={title}
-        aria-label={title}
-        disabled={disabled}
-        onClick={onClick}
-        className={swatchClassName}
-        style={{ backgroundColor: color }}
-      />
-    ) : (
-      <span title={title} aria-label={title} className={swatchClassName} style={{ backgroundColor: color }} />
-    );
+    if (onClick) {
+      return (
+        <button
+          type="button"
+          title={title}
+          aria-label={title}
+          disabled={disabled}
+          onClick={onClick}
+          className={swatchClassName}
+          style={{ backgroundColor: color }}
+        />
+      );
+    }
+
+    if (selected || disabled || !href) {
+      return <span title={title} aria-label={title} className={swatchClassName} style={{ backgroundColor: color }} />;
+    }
+
+    return <Link href={href} title={title} aria-label={title} className={swatchClassName} style={{ backgroundColor: color }} />;
   }
 
   if (selected || disabled || !href) {
