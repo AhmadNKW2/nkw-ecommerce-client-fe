@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { buildAuthHref, getReturnToFromPath } from "@/lib/auth-redirect";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -16,12 +18,15 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnTo = getReturnToFromPath(pathname, searchParams);
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/login");
+      router.replace(buildAuthHref("/login", returnTo));
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, returnTo, router, user]);
 
   // Show nothing while loading or redirecting
   if (isLoading || !user) return null;

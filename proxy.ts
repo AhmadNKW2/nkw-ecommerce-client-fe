@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './app/src/i18n/routing';
 import { NextRequest, NextResponse } from 'next/server';
+import { getReturnToFromPath } from './app/src/lib/auth-redirect';
 
 const handleI18nRouting = createMiddleware(routing);
 const API_REQUEST_LOG_INGEST_HEADER_NAME = 'x-ordonsooq-api-log';
@@ -79,6 +80,15 @@ export default async function middleware(request: NextRequest) {
     if (!accessToken && !refreshToken && !isLoggedIn) {
       const loginPath = locale === routing.defaultLocale ? '/login' : `/${locale}/login`;
       const url = new URL(loginPath, request.url);
+      const returnTo = getReturnToFromPath(
+        pathnameWithoutLocale,
+        request.nextUrl.searchParams,
+      );
+
+      if (returnTo) {
+        url.searchParams.set('returnTo', returnTo);
+      }
+
       return NextResponse.redirect(url);
     }
   }

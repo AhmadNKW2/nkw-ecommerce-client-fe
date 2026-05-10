@@ -23,9 +23,10 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 interface LoginFormProps {
   onSuccess?: () => void;
   onRegisterClick?: () => void;
+  returnTo?: string;
 }
 
-export function LoginForm({ onSuccess, onRegisterClick }: LoginFormProps) {
+export function LoginForm({ onSuccess, onRegisterClick, returnTo }: LoginFormProps) {
   const t = useTranslations("auth");
   const { login, isLoggingIn } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +124,7 @@ export function LoginForm({ onSuccess, onRegisterClick }: LoginFormProps) {
         </Button>
       </form>
 
-      <AuthSocialButtons />
+      <AuthSocialButtons returnTo={returnTo} />
     </div>
   );
 }

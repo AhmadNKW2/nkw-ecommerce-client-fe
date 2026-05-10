@@ -32,9 +32,10 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 interface RegisterFormProps {
   onSuccess?: () => void;
   onLoginClick?: () => void;
+  returnTo?: string;
 }
 
-export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
+export function RegisterForm({ onSuccess, onLoginClick, returnTo }: RegisterFormProps) {
   const t = useTranslations("auth");
   const locale = useLocale();
   const isArabic = locale === "ar";
@@ -196,7 +197,7 @@ export function RegisterForm({ onSuccess, onLoginClick }: RegisterFormProps) {
         </Button>
       </form>
 
-      <AuthSocialButtons />
+      <AuthSocialButtons returnTo={returnTo} />
     </div>
   );
 }

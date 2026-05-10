@@ -8,6 +8,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { CartProvider } from "@/hooks/use-cart";
 import { WishlistProvider } from "@/hooks/use-wishlist";
 import { AuthModalProvider } from "@/contexts/auth-modal-context";
+import { PostAuthRedirectListener } from "@/components/auth/post-auth-redirect-listener";
 import { ApiRequestLogResetListener } from "@/components/ui/api-request-log-reset-listener";
 import { GlobalLoaderProvider } from "@/components/ui/global-loader";
 
@@ -30,6 +31,7 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <NuqsAdapter>
         <GlobalLoaderProvider>
+          <PostAuthRedirectListener />
           <ApiRequestLogResetListener />
           <CartProvider>
             <AuthModalProvider>

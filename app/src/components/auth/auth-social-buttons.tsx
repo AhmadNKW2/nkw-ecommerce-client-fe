@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { setPostAuthRedirect } from "@/lib/post-auth-redirect";
 
 function GoogleIcon() {
     return (
@@ -286,10 +287,14 @@ const socialProviders = [
     { key: "apple", label: "Apple", path: "/auth/apple", icon: <AppleIcon /> },
 ] as const;
 
-export function AuthSocialButtons() {
+interface AuthSocialButtonsProps {
+    returnTo?: string;
+}
+
+export function AuthSocialButtons({ returnTo }: AuthSocialButtonsProps) {
     const t = useTranslations("auth");
 
-    const handleOAuth = (path: string) => {
+    const handleOAuth = (path: string, nextReturnTo?: string) => {
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
         if (!apiBaseUrl) {
@@ -297,7 +302,15 @@ export function AuthSocialButtons() {
             return;
         }
 
-        window.location.href = `${apiBaseUrl}${path}`;
+        setPostAuthRedirect(nextReturnTo);
+
+        const oauthUrl = new URL(`${apiBaseUrl}${path}`);
+
+        if (nextReturnTo) {
+            oauthUrl.searchParams.set("returnTo", nextReturnTo);
+        }
+
+        window.location.href = oauthUrl.toString();
     };
 
     return (
@@ -317,7 +330,7 @@ export function AuthSocialButtons() {
                         key={provider.key}
                         variant="outline"
                         type="button"
-                        onClick={() => handleOAuth(provider.path)}
+                        onClick={() => handleOAuth(provider.path, returnTo)}
                         className="w-full justify-center"
                     >
                         {provider.label}

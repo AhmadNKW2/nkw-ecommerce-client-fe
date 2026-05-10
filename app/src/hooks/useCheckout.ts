@@ -17,7 +17,7 @@ export function useCheckout() {
     }
     
     if (!user) {
-      openAuthModal("login");
+      openAuthModal("login", { returnTo: "/checkout" });
       return;
     }
 
