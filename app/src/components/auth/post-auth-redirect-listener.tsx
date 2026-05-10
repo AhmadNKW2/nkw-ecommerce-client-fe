@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { getReturnToFromPath } from "@/lib/auth-redirect";
+import { getReturnToFromWindow } from "@/lib/auth-redirect";
 import {
   clearPostAuthRedirect,
   getPostAuthRedirect,
@@ -14,8 +13,6 @@ export function PostAuthRedirectListener() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentPath = getReturnToFromPath(pathname, searchParams);
 
   useEffect(() => {
     if (isLoading || !user) {
@@ -30,10 +27,12 @@ export function PostAuthRedirectListener() {
 
     clearPostAuthRedirect();
 
+    const currentPath = getReturnToFromWindow(pathname);
+
     if (redirectTarget !== currentPath) {
       router.replace(redirectTarget);
     }
-  }, [currentPath, isLoading, router, user]);
+  }, [isLoading, pathname, router, user]);
 
   return null;
 }

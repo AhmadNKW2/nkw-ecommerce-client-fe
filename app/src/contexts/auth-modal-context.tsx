@@ -1,10 +1,9 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { usePathname } from "@/i18n/navigation";
-import { getReturnToFromPath } from "@/lib/auth-redirect";
+import { getReturnToFromWindow } from "@/lib/auth-redirect";
 
 interface OpenAuthModalOptions {
   returnTo?: string;
@@ -26,14 +25,13 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<"login" | "register">("login");
   const [returnTo, setReturnTo] = useState<string | undefined>(undefined);
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const openAuthModal = (
     initialView: "login" | "register" = "login",
     options?: OpenAuthModalOptions,
   ) => {
     setView(initialView);
-    setReturnTo(options?.returnTo ?? getReturnToFromPath(pathname, searchParams));
+    setReturnTo(options?.returnTo ?? getReturnToFromWindow(pathname));
     setIsOpen(true);
   };
 

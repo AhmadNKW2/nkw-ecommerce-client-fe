@@ -61,3 +61,19 @@ export function buildAuthHref(
 
   return `${authPath}?returnTo=${encodeURIComponent(safeReturnTo)}`;
 }
+
+export function getSearchParamsFromWindow(): URLSearchParams | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return new URLSearchParams(window.location.search);
+}
+
+export function getReturnToFromWindow(pathname: string): string | undefined {
+  return getReturnToFromPath(pathname, getSearchParamsFromWindow());
+}
+
+export function getReturnToQueryParamFromWindow(): string | undefined {
+  return normalizeReturnTo(getSearchParamsFromWindow()?.get("returnTo"));
+}

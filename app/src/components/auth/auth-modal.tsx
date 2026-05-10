@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { getReturnToFromPath } from "@/lib/auth-redirect";
+import { getReturnToFromWindow } from "@/lib/auth-redirect";
 import { consumePostAuthRedirect } from "@/lib/post-auth-redirect";
 
 interface AuthModalProps {
@@ -25,8 +24,6 @@ export function AuthModal({
   const [view, setView] = useState<"login" | "register">(initialView);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentPath = getReturnToFromPath(pathname, searchParams);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,6 +33,7 @@ export function AuthModal({
 
   const handleSuccess = () => {
     const redirectTarget = consumePostAuthRedirect(returnTo);
+    const currentPath = getReturnToFromWindow(pathname);
 
     onClose();
 
