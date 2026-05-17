@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
-import { ChevronDown, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BELOW_50_JOD_MAX_PRICE } from "@/lib/constants";
 import { useTranslations, useLocale } from "next-intl";
@@ -347,14 +347,14 @@ export function NavigationBar() {
           onMouseEnter={handleDropdownMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="relative overflow-hidden rounded-b-4xl bg-white backdrop-blur-xl border border-t-0 border-gray-200/50 shadow-2xl shadow-gray-900/5">
+          <div className="relative overflow-hidden bg-white border border-t-0 border-gray-200 shadow-xl shadow-gray-900/4">
             {menuKeys.map((menuKey) => {
               const sectionCount = megaMenuContent[menuKey].length;
 
               return (
                 <div
                   key={menuKey}
-                  className="transition-all duration-400 ease-out p-5"
+                  className="transition-all duration-400 ease-out px-6 py-7 xl:px-8"
                   style={{
                     opacity: activeDropdown === menuKey ? 1 : 0,
                     transform: activeDropdown === menuKey ? "translateY(0) scale(1)" : "translateY(8px) scale(0.98)",
@@ -368,11 +368,11 @@ export function NavigationBar() {
                 >
                   <div
                     className={cn(
-                      "grid gap-8",
+                      "grid gap-x-10 gap-y-8",
                       sectionCount === 1
-                        ? "grid-cols-1 max-w-xl mx-auto"
+                        ? "grid-cols-1"
                         : sectionCount === 2
-                          ? "grid-cols-2 max-w-2xl mx-auto"
+                          ? "grid-cols-2"
                           : sectionCount <= 4
                             ? "grid-cols-4"
                             : "grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
@@ -381,7 +381,7 @@ export function NavigationBar() {
                     {megaMenuContent[menuKey].map((section, idx) => (
                       <div
                         key={idx}
-                        className="transition-all duration-300 ease-out"
+                        className="min-w-0 transition-all duration-300 ease-out"
                         style={{
                           transitionDelay: activeDropdown === menuKey ? `${idx * 40}ms` : "0ms",
                           opacity: activeDropdown === menuKey ? 1 : 0,
@@ -390,42 +390,30 @@ export function NavigationBar() {
                       >
                         {section.href ? (
                           <Link href={section.href} onClick={handleLinkClick}>
-                            <h3 className="mb-2 text-xs font-bold text-third uppercase tracking-wider hover:text-primary transition-colors cursor-pointer">
+                            <h3 className="mb-3 text-base font-bold leading-6 text-gray-950 hover:text-primary transition-colors cursor-pointer">
                               {section.title}
                             </h3>
                           </Link>
                         ) : (
-                          <h3 className="mb-2 text-xs font-bold text-third uppercase tracking-wider">
+                          <h3 className="mb-3 text-base font-bold leading-6 text-gray-950">
                             {section.title}
                           </h3>
                         )}
 
-                        <ul className="flex flex-col gap-1">
+                        <ul className="flex flex-col gap-1.5">
                           {section.links.map((link, linkIdx) => (
                             <li key={linkIdx}>
                               <Link
                                 href={link.href}
-                                className="group flex items-start gap-3 p-3 -mx-3 rounded-xl hover:bg-gray-50/80 transition-all duration-300"
+                                className="group block py-0.5 text-[15px] leading-7 text-gray-600 transition-colors duration-200 hover:text-primary"
                                 onClick={handleLinkClick}
                               >
-                                <div className="flex-1">
-                                  <span className="block text-primary font-semibold group-hover:text-primary transition-colors duration-300">
-                                    {link.label}
+                                <span className="block truncate">{link.label}</span>
+                                {link.description ? (
+                                  <span className="mt-0.5 block text-sm leading-5 text-gray-500">
+                                    {link.description}
                                   </span>
-                                  {link.description ? (
-                                    <span className="block text-sm text-third mt-0.5">
-                                      {link.description}
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <ArrowRight
-                                  className={cn(
-                                    "w-4 h-4 text-third opacity-0 transition-all duration-300 mt-1 group-hover:opacity-100",
-                                    isAr
-                                      ? "translate-x-2 group-hover:translate-x-0 rotate-180"
-                                      : "-translate-x-2 group-hover:translate-x-0"
-                                  )}
-                                />
+                                ) : null}
                               </Link>
                             </li>
                           ))}
