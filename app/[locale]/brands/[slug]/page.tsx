@@ -20,7 +20,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
   const initialData = await brandService.getBySlug(slug).catch(() => undefined);
   const initialSearchFilters: SearchFilters | undefined = initialData
     ? {
-        q: filters.q?.trim() ? filters.q : "*",
+        ...(filters.q?.trim() ? { q: filters.q } : {}),
         category_ids: filters.category_ids,
         brand_ids: String(initialData.id),
         vendor_ids: filters.vendor_ids,

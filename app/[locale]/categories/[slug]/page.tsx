@@ -20,7 +20,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const initialData = await categoryService.getBySlug(slug).catch(() => undefined);
   const initialSearchFilters: SearchFilters | undefined = initialData
     ? {
-        q: filters.q?.trim() ? filters.q : "*",
+        ...(filters.q?.trim() ? { q: filters.q } : {}),
         category_ids: String(initialData.id),
         brand_ids: filters.brand_ids,
         vendor_ids: filters.vendor_ids,

@@ -35,6 +35,7 @@ export type ProductFilters = {
   categoryId?: number;
   vendorId?: number;
   brandId?: number;
+  has_sale?: boolean;
   minPrice?: number;
   maxPrice?: number;
   minRating?: number;

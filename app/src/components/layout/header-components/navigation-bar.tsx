@@ -489,7 +489,7 @@ export function NavigationBar() {
                       >
                         {section.href ? (
                           <Link href={section.href} onClick={handleLinkClick}>
-                            <h3 className="mb-2 text-[14px] font-bold leading-5 text-gray-950 hover:text-primary transition-colors cursor-pointer">
+                            <h3 className="mb-2 text-[14px] font-bold leading-5 text-gray-950 hover:text-secondary transition-colors cursor-pointer">
                               {section.title}
                             </h3>
                           </Link>
@@ -504,7 +504,7 @@ export function NavigationBar() {
                             <li key={linkIdx}>
                               <Link
                                 href={link.href}
-                                className="group block py-0 text-[14px] leading-5 text-gray-600 transition-colors duration-200 hover:text-primary"
+                                className="group block py-0 text-[14px] leading-5 text-gray-600 transition-colors duration-200 hover:text-secondary"
                                 onClick={handleLinkClick}
                               >
                                 <span className="block truncate">{link.label}</span>

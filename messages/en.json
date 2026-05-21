@@ -626,7 +626,9 @@
     "subscribeTitle": "Subscribe to our Newsletter",
     "subscribeDesc": "Get updates on new products and exclusive offers",
     "emailPlaceholder": "Enter your email...",
-    "subscribeButton": "Subscribe"
+    "subscribeButton": "Subscribe",
+    "newsletterInvalidEmail": "Enter a valid email address to join the newsletter preview.",
+    "newsletterFrontendSuccess": "Thanks. This frontend-only preview saved your interest locally for now."
   },
   "language": {
     "en": "English",
@@ -694,5 +696,802 @@
     "title": "Page Not Found",
     "description": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
     "backHome": "Back to Home"
+  },
+  "footerPages": {
+    "common": {
+      "tableOfContents": "On this page"
+    },
+    "sale": {
+      "badge": "Live deals",
+      "title": "Sale",
+      "subtitle": "Browse current discounts in one focused place without losing the storefront shopping flow.",
+      "intro": "This page surfaces products that already have real discounted pricing so shoppers can move faster when they are looking for value.",
+      "highlights": {
+        "realDeals": {
+          "title": "Real discounted products",
+          "description": "Only products with an actual lower sale price appear here, so the page stays useful instead of becoming a generic campaign banner."
+        },
+        "freshDrops": {
+          "title": "Fresh markdowns",
+          "description": "Newly discounted items can rise quickly, which makes this page a strong first stop for price-sensitive browsing."
+        },
+        "trustedPricing": {
+          "title": "Clear price context",
+          "description": "The storefront keeps the current price, previous price, and savings visible so the offer stays easy to understand."
+        }
+      },
+      "sections": {
+        "howItWorks": {
+          "title": "How the sale page works",
+          "body": "The page stays front-end only while still using the existing product data already available in the storefront.",
+          "items": {
+            "livePricing": "Products are filtered from the existing catalog by real sale pricing.",
+            "visibleSavings": "Cards keep the savings treatment shoppers expect from a sale destination.",
+            "fastRotation": "The grid can refresh naturally as catalog pricing changes over time."
+          }
+        },
+        "smartShopping": {
+          "title": "Smart ways to shop the page",
+          "body": "Use the sale page as a shortcut, then jump back to the broader catalog whenever you want to continue browsing.",
+          "items": {
+            "compare": "Check the original and discounted prices before you add to cart.",
+            "saveFavorites": "Use wishlist and cart actions exactly as you do on the rest of the storefront.",
+            "checkout": "Move from the sale page into the normal checkout journey without a separate flow."
+          }
+        }
+      },
+      "cta": {
+        "title": "Want to keep browsing beyond discounted items?",
+        "description": "Jump back to the main catalog for the full assortment or contact the team if you need help finding a specific offer.",
+        "primary": "Browse all products",
+        "secondary": "Contact support"
+      },
+      "emptyTitle": "Sale products are being refreshed",
+      "emptyDescription": "No discounted products are available in the current front-end view right now. Please check back soon or browse the full catalog."
+    },
+    "giftCards": {
+      "badge": "Gift-ready",
+      "title": "Gift Cards",
+      "subtitle": "A polished gift-card landing page that explains the value clearly, even before a full purchase backend is connected.",
+      "intro": "Use gift cards when you want the experience to feel thoughtful and flexible at the same time.",
+      "highlights": {
+        "flexible": {
+          "title": "Flexible gifting",
+          "description": "Let recipients choose what they actually want instead of forcing a one-size-fits-all purchase."
+        },
+        "personal": {
+          "title": "Personal and practical",
+          "description": "Gift cards work for birthdays, thank-yous, celebrations, and quick last-minute gifting."
+        },
+        "easyToUse": {
+          "title": "Easy to redeem",
+          "description": "The page is framed so the future checkout connection can be added later without redesigning the customer experience."
+        }
+      },
+      "sections": {
+        "howItWorks": {
+          "title": "How it works",
+          "body": "The page presents the gift-card flow clearly today while staying honest that fulfillment can be wired in later.",
+          "items": {
+            "chooseAmount": "Choose the amount that matches the occasion.",
+            "sendDetails": "Share recipient details and gifting notes with the support team.",
+            "redeemLater": "Recipients can use the value later when they are ready to shop."
+          }
+        },
+        "whyPeopleLoveIt": {
+          "title": "Why shoppers choose gift cards",
+          "body": "Gift cards reduce friction and still feel thoughtful when the product choice should stay with the recipient.",
+          "items": {
+            "birthdays": "Useful for birthdays and family celebrations.",
+            "corporate": "Great for employee rewards and partner thank-yous.",
+            "lastMinute": "Ideal for last-minute gifting without compromising presentation."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need help arranging a gift-card order?",
+        "description": "Reach out to the team and we can guide you through the current frontend-only setup.",
+        "primary": "Contact us",
+        "secondary": "Browse products"
+      }
+    },
+    "contact": {
+      "badge": "We are here to help",
+      "title": "Contact Us",
+      "subtitle": "Reach the team quickly with a clear, trustworthy contact page that fits the existing storefront style.",
+      "intro": "Use this page for order questions, product help, delivery follow-up, account guidance, and general support.",
+      "highlights": {
+        "phone": {
+          "title": "Phone"
+        },
+        "email": {
+          "title": "Email"
+        },
+        "address": {
+          "title": "Address"
+        },
+        "hours": {
+          "title": "Working hours",
+          "description": "Responses are usually fastest during standard business hours in Jordan, with follow-up for the rest queued clearly."
+        }
+      },
+      "sections": {
+        "whatToInclude": {
+          "title": "What to include in your message",
+          "body": "A little context helps the team solve issues faster and reduces the number of back-and-forth messages.",
+          "items": {
+            "orderNumber": "Share the order number when your question is tied to an existing purchase.",
+            "productName": "Mention the product or vendor if you need catalog help.",
+            "bestChannel": "Tell us the best way and time to reach you back."
+          }
+        },
+        "helpTopics": {
+          "title": "Popular help topics",
+          "body": "The page is structured around the most common support reasons shoppers usually need.",
+          "items": {
+            "orders": "Order status, delivery timing, and checkout questions.",
+            "productQuestions": "Sizing, availability, price clarification, and product guidance.",
+            "returns": "Account access, payment guidance, and policy clarifications."
+          }
+        }
+      },
+      "cta": {
+        "title": "Prefer self-service first?",
+        "description": "You can review the FAQ or check shipping details before sending a message.",
+        "primary": "Read FAQs",
+        "secondary": "Shipping info"
+      },
+      "contactCard": {
+        "title": "Support details",
+        "body": "Use the contact methods below whenever you need help from a real person.",
+        "phoneLabel": "Phone",
+        "emailLabel": "Email",
+        "addressLabel": "Address",
+        "callAction": "Call support",
+        "emailAction": "Email support",
+        "directionsAction": "Get directions"
+      },
+      "form": {
+        "title": "Send a message",
+        "description": "This form is a frontend-only placeholder for now, so submissions stay in-page instead of calling a backend endpoint.",
+        "nameLabel": "Full name",
+        "emailLabel": "Email address",
+        "phoneLabel": "Phone number",
+        "messageLabel": "How can we help?",
+        "submitLabel": "Send message",
+        "successTitle": "Message draft saved locally",
+        "successDescription": "This frontend-only preview confirms the form flow without sending data to a server yet.",
+        "note": "Frontend-only preview: this form does not submit to a live support backend yet.",
+        "resetLabel": "Send another message",
+        "emailSupportAction": "Email support instead"
+      }
+    },
+    "faqs": {
+      "badge": "Quick answers",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Grouped answers for the questions shoppers usually ask before, during, and after checkout.",
+      "intro": "The FAQ is organized to reduce friction and point people to the right next step when they still need help.",
+      "highlights": {
+        "fastAnswers": {
+          "title": "Fast answers",
+          "description": "Clear sections make it easier to scan common questions without leaving the storefront context."
+        },
+        "delivery": {
+          "title": "Delivery guidance",
+          "description": "Shipping and order-progress questions are grouped so customers can self-serve first."
+        },
+        "returns": {
+          "title": "Policy clarity",
+          "description": "Important service and delivery expectations are explained in practical language rather than dense policy text."
+        }
+      },
+      "cta": {
+        "title": "Still need a hand?",
+        "description": "If your answer is not here, reach out directly or review the shipping page next.",
+        "primary": "Contact us",
+        "secondary": "Shipping info"
+      },
+      "groups": {
+        "shopping": {
+          "title": "Shopping",
+          "q1": "How do I find the right product faster?",
+          "a1": "Use search, category browsing, brand pages, and the listing filters together to narrow the catalog quickly.",
+          "q2": "Can I save products for later?",
+          "a2": "Yes. Wishlist and cart flows are available directly from product cards and product detail pages.",
+          "q3": "Do product prices update on the page?",
+          "a3": "The storefront reflects current catalog pricing, including valid sale pricing where applicable."
+        },
+        "payment": {
+          "title": "Payment",
+          "q1": "Which payment options are shown during checkout?",
+          "a1": "The storefront presents the payment methods currently configured for the checkout flow.",
+          "q2": "Can I use my wallet balance when ordering?",
+          "a2": "If wallet functionality is available for your account, the checkout flow will surface it during payment selection.",
+          "q3": "Why can a payment total change before I place the order?",
+          "a3": "Delivery fees, promotions, and cart changes can affect the final total before confirmation."
+        },
+        "shipping": {
+          "title": "Shipping",
+          "q1": "How long does shipping usually take?",
+          "a1": "Delivery timing depends on order confirmation, destination, and current processing volume.",
+          "q2": "When do I get free shipping?",
+          "a2": "Orders above the current free-shipping threshold can qualify automatically during checkout.",
+          "q3": "How do I check my order status?",
+          "a3": "Sign in to review your order history in the account area, or contact support if you need delivery help."
+        },
+        "account": {
+          "title": "Account and orders",
+          "q1": "Do I need an account to keep track of orders?",
+          "a1": "An account makes order history, addresses, and saved items easier to manage in one place.",
+          "q2": "Where can I update my saved addresses?",
+          "a2": "Address management is available from the profile area once you are signed in.",
+          "q3": "Where can I ask for help with an order issue?",
+          "a3": "Use the contact page and include your order details so the support team can review the case quickly."
+        }
+      }
+    },
+    "shipping": {
+      "badge": "Delivery help",
+      "title": "Shipping Info",
+      "subtitle": "Straightforward shipping guidance built around the storefront’s existing fee and threshold rules.",
+      "intro": "Standard delivery currently starts from {fee} JD, and eligible orders above {threshold} JD can unlock free shipping.",
+      "highlights": {
+        "standard": {
+          "title": "Clear delivery expectations",
+          "description": "The page explains timing, fees, and the order journey in language shoppers can scan quickly."
+        },
+        "reliable": {
+          "title": "Practical guidance",
+          "description": "Shipping content stays grounded in the current storefront behavior rather than generic promises."
+        },
+        "visibility": {
+          "title": "Easy follow-up",
+          "description": "The next action is always obvious, whether that is tracking an order or contacting support."
+        }
+      },
+      "sections": {
+        "deliveryWindows": {
+          "title": "Delivery windows",
+          "body": "Shipping timing depends on confirmation, operational cutoffs, destination, and seasonal demand.",
+          "items": {
+            "processing": "Orders move through confirmation and processing before they enter delivery.",
+            "cityCoverage": "Timing can vary by city and address coverage.",
+            "busyPeriods": "Campaign periods and peak dates can extend the expected timeline."
+          }
+        },
+        "fees": {
+          "title": "Fees and thresholds",
+          "body": "The storefront currently uses a standard shipping fee of {fee} JD, while orders above {threshold} JD can qualify for free shipping.",
+          "items": {
+            "standardFee": "Standard shipping fee: {fee} JD.",
+            "freeThreshold": "Free-shipping threshold: orders above {threshold} JD.",
+            "finalReview": "Final shipping charges are always reviewed during checkout before confirmation."
+          }
+        }
+      },
+      "cta": {
+        "title": "Ready to continue shopping?",
+        "description": "Browse the catalog or contact the team directly if you need delivery help for an existing order.",
+        "primary": "Browse products",
+        "secondary": "Contact us"
+      }
+    },
+    "returns": {
+      "badge": "Returns guidance",
+      "title": "Returns & Exchanges",
+      "subtitle": "A readable returns page that explains eligibility, review, exchange steps, and refund expectations without legal overload.",
+      "intro": "This page is designed to set expectations clearly before a shopper reaches out about an exchange or refund.",
+      "highlights": {
+        "clearPolicy": {
+          "title": "Clear eligibility",
+          "description": "Shoppers can quickly understand when a return or exchange request is likely to move forward."
+        },
+        "fairReview": {
+          "title": "Fair review process",
+          "description": "Requests are framed around condition, proof, and practicality rather than ambiguous wording."
+        },
+        "supportedSteps": {
+          "title": "Guided next steps",
+          "description": "The page makes the support path obvious when a shopper is ready to open a conversation."
+        }
+      },
+      "sections": {
+        "eligibility": {
+          "title": "Eligibility and condition",
+          "body": "Returns and exchanges work best when the item condition and request timing are both clear from the start.",
+          "items": {
+            "condition": "Items should remain in acceptable condition for review.",
+            "packaging": "Original packaging and included pieces help the request move faster.",
+            "proof": "Order information and a short explanation of the issue are helpful."
+          }
+        },
+        "refunds": {
+          "title": "Refunds and exchanges",
+          "body": "After a request is reviewed, the next step depends on availability, item condition, and the chosen resolution.",
+          "items": {
+            "review": "A quick review helps confirm eligibility and the appropriate outcome.",
+            "exchange": "If a replacement is suitable and available, exchange guidance can follow.",
+            "timeline": "Refund timing can vary depending on the payment path and final approval."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need help with a return request?",
+        "description": "Contact the support team with your order details so the conversation starts with the right context.",
+        "primary": "Contact us",
+        "secondary": "Read FAQs"
+      }
+    },
+    "trackOrder": {
+      "badge": "Order progress",
+      "title": "Track Order",
+      "subtitle": "A frontend-only order lookup experience that still guides customers toward the right self-service and support paths.",
+      "intro": "Use this page to understand what stage an order is likely in, then move into your account or support if you need more help.",
+      "highlights": {
+        "lookup": {
+          "title": "Simple lookup",
+          "description": "The track-order form is presented in a familiar way so the live backend can be connected later without redesigning the page."
+        },
+        "status": {
+          "title": "Status guidance",
+          "description": "The page explains what common order stages usually mean for a shopper."
+        },
+        "support": {
+          "title": "Clear escalation path",
+          "description": "When a customer still needs help, the next support action is visible immediately."
+        }
+      },
+      "sections": {
+        "statusGuide": {
+          "title": "Status guide",
+          "body": "Understanding each stage helps shoppers know whether they need to wait, sign in, or ask for support.",
+          "items": {
+            "confirmed": "Confirmed means the order details were accepted and queued for fulfillment.",
+            "processing": "Processing means preparation is still underway before delivery handoff.",
+            "delivered": "Delivered means the order should already be at the final destination."
+          }
+        },
+        "needHelp": {
+          "title": "Before you ask for help",
+          "body": "A few details make order follow-up faster and more accurate.",
+          "items": {
+            "keepNumber": "Keep the order number ready before you contact support.",
+            "signIn": "Signed-in users can often check their order history first.",
+            "contact": "If the order needs manual review, contact support with the key details."
+          }
+        }
+      },
+      "cta": {
+        "title": "Prefer the account view?",
+        "description": "Go directly to the order-history area or contact support for a manual follow-up.",
+        "primary": "Go to my orders",
+        "secondary": "Contact support"
+      },
+      "lookup": {
+        "title": "Track by order details",
+        "description": "This frontend-only lookup confirms the interaction flow today while guiding customers toward their account or support next.",
+        "orderNumberLabel": "Order number",
+        "emailLabel": "Email address",
+        "submitLabel": "Track order",
+        "successTitle": "Lookup captured in the frontend preview",
+        "successDescription": "The live tracking response is not connected here yet, so the page now points you to the best next step.",
+        "accountCta": "Open my orders",
+        "supportCta": "Contact support"
+      }
+    },
+    "about": {
+      "badge": "Our story",
+      "title": "About Us",
+      "subtitle": "A credible brand page for an ecommerce business serving shoppers in Jordan with a practical, trust-building voice.",
+      "intro": "ordonsooq is framed as a modern shopping destination that values clarity, quality, and a smooth customer experience from browsing to delivery.",
+      "highlights": {
+        "rooted": {
+          "title": "Rooted in Jordan",
+          "description": "The page reflects local context, contact details, and a service mindset that feels grounded instead of generic."
+        },
+        "trust": {
+          "title": "Built on trust",
+          "description": "Clear product presentation, fair pricing, and approachable support are part of the brand promise."
+        },
+        "customerFirst": {
+          "title": "Customer-first shopping",
+          "description": "The storefront is designed to help people discover confidently and complete orders with less friction."
+        }
+      },
+      "sections": {
+        "story": {
+          "title": "Our story",
+          "body": "The brand story focuses on making ecommerce easier to trust, easier to browse, and easier to return to.",
+          "items": {
+            "curatedCatalog": "A curated catalog built to feel easier to explore than a cluttered marketplace.",
+            "localRelevance": "A local operating context that makes delivery and support feel more relevant.",
+            "clearJourney": "A clearer journey from product discovery to checkout and follow-up."
+          }
+        },
+        "promise": {
+          "title": "Our promise",
+          "body": "The page should reassure shoppers that ordonsooq is serious about consistency, transparency, and service quality.",
+          "items": {
+            "quality": "Present products with enough detail to make confident choices.",
+            "support": "Keep support reachable when shoppers need help after the click.",
+            "transparency": "Show prices and expectations clearly, including offers and delivery context."
+          }
+        }
+      },
+      "cta": {
+        "title": "Ready to explore the catalog?",
+        "description": "Browse products now or reach out if you want help before placing an order.",
+        "primary": "Browse products",
+        "secondary": "Contact us"
+      }
+    },
+    "careers": {
+      "badge": "Join the team",
+      "title": "Careers",
+      "subtitle": "A polished careers landing page that explains culture, growth, and role areas without pretending a jobs backend already exists.",
+      "intro": "The page positions ordonsooq as a growing team for people who want visible impact across ecommerce, operations, and customer experience.",
+      "highlights": {
+        "growth": {
+          "title": "Room to grow",
+          "description": "The careers story emphasizes learning, ownership, and meaningful contribution instead of generic corporate language."
+        },
+        "collaboration": {
+          "title": "Cross-team collaboration",
+          "description": "Roles are presented as connected to catalog quality, delivery execution, and better customer experiences."
+        },
+        "impact": {
+          "title": "Visible impact",
+          "description": "Candidates can see how their work would shape the customer journey directly."
+        }
+      },
+      "sections": {
+        "culture": {
+          "title": "Culture and ways of working",
+          "body": "The page highlights practical teamwork, accountability, and steady improvement over exaggerated startup claims.",
+          "items": {
+            "ownership": "People are expected to take ownership of outcomes, not only tasks.",
+            "customerFocus": "Customer impact stays close to daily decision-making.",
+            "learning": "Learning and iteration are treated as part of the job, not side activities."
+          }
+        },
+        "roles": {
+          "title": "Open role areas",
+          "body": "Without a jobs backend, the page still shows the kinds of teams and functions candidates can express interest in.",
+          "items": {
+            "catalog": "Catalog, merchandising, and content operations.",
+            "operations": "Logistics, order operations, and partner coordination.",
+            "support": "Customer support, account experience, and service quality."
+          }
+        }
+      },
+      "cta": {
+        "title": "Interested in future opportunities?",
+        "description": "Use the contact route to share your background and the role area that fits you best.",
+        "primary": "Contact us",
+        "secondary": "About ordonsooq"
+      }
+    },
+    "blog": {
+      "badge": "Editorial",
+      "title": "Blog",
+      "subtitle": "A branded editorial destination that feels useful today, even before a CMS or publishing backend exists.",
+      "intro": "The blog page is framed as a place for shopping guidance, brand stories, seasonal ideas, and curated inspiration.",
+      "highlights": {
+        "guides": {
+          "title": "Practical guides",
+          "description": "Content is positioned around helping shoppers make better purchase decisions with less friction."
+        },
+        "trends": {
+          "title": "Seasonal trends",
+          "description": "The page can spotlight fresh collections, gifting moments, and category-led inspiration."
+        },
+        "community": {
+          "title": "Community voice",
+          "description": "The editorial tone stays close to the customer instead of sounding like a disconnected media brand."
+        }
+      },
+      "sections": {
+        "featured": {
+          "title": "Featured stories",
+          "body": "Static seeded stories make the page feel alive now while leaving room for a future content source.",
+          "items": {
+            "story1": "How to build a smarter wishlist before the next big shopping moment.",
+            "story2": "Simple ways to compare offers without losing track of value.",
+            "story3": "Gift ideas that stay useful when you are short on time."
+          }
+        },
+        "expect": {
+          "title": "What to expect from the blog",
+          "body": "The page promises useful content formats instead of overcomplicating the editorial direction.",
+          "items": {
+            "shoppingTips": "Shopping tips that shorten decision time.",
+            "brandStories": "Brand and category stories that add context.",
+            "roundups": "Roundups and seasonal recommendations worth saving for later."
+          }
+        }
+      },
+      "cta": {
+        "title": "Ready to shop after reading?",
+        "description": "Move straight into the catalog or reach out if you want help finding a product mentioned on the page.",
+        "primary": "Browse products",
+        "secondary": "Contact us"
+      }
+    },
+    "press": {
+      "badge": "Media",
+      "title": "Press",
+      "subtitle": "A clean press page for media and partners who need a fast overview of the brand, context, and contact path.",
+      "intro": "The press page gives journalists and collaborators a simple way to understand ordonsooq without needing a separate backend or media portal.",
+      "highlights": {
+        "brandStory": {
+          "title": "Brand overview",
+          "description": "A concise introduction helps external readers understand the business quickly."
+        },
+        "facts": {
+          "title": "Useful facts",
+          "description": "The page can summarize audience, shopping focus, and operational context in one place."
+        },
+        "mediaContact": {
+          "title": "Clear media contact",
+          "description": "A visible next step matters more than overproduced press jargon."
+        }
+      },
+      "sections": {
+        "overview": {
+          "title": "Company overview",
+          "body": "The page presents ordonsooq as an ecommerce business focused on a smoother and more trustworthy shopping experience.",
+          "items": {
+            "ecommerce": "A modern ecommerce storefront built around easier discovery and checkout.",
+            "customerExperience": "A customer experience that prioritizes clarity and responsiveness.",
+            "brandPartnerships": "A catalog model that can grow with brands, vendors, and category depth."
+          }
+        },
+        "mediaKit": {
+          "title": "Media kit direction",
+          "body": "Until a downloadable kit exists, the page still explains what media resources can be requested.",
+          "items": {
+            "logo": "Brand marks and basic visual references.",
+            "brandSummary": "Short business background and positioning notes.",
+            "contact": "A direct support path for media follow-up."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need a media follow-up?",
+        "description": "Use the contact route and note that your request is media-related so the team can respond appropriately.",
+        "primary": "Contact us",
+        "secondary": "About us"
+      }
+    },
+    "affiliate": {
+      "badge": "Partner with us",
+      "title": "Affiliate Program",
+      "subtitle": "A conversion-focused affiliate page that introduces the opportunity clearly before a dedicated partner backend exists.",
+      "intro": "The page is designed for creators, publishers, and communities who want a straightforward way to collaborate with the brand.",
+      "highlights": {
+        "rewards": {
+          "title": "Reward-driven model",
+          "description": "The page explains the value of partnership without inventing unsupported commission tooling."
+        },
+        "partners": {
+          "title": "Built for different partners",
+          "description": "Affiliates can imagine how the program would fit creators, editorial partners, and niche communities."
+        },
+        "simpleFlow": {
+          "title": "Simple signup path",
+          "description": "The experience remains clear today even before a formal affiliate dashboard exists."
+        }
+      },
+      "sections": {
+        "howItWorks": {
+          "title": "How it works",
+          "body": "The page keeps the program explanation easy to scan so serious partners can decide whether to reach out.",
+          "items": {
+            "apply": "Share your audience, channel, and partnership fit.",
+            "share": "Promote products and storefront journeys that match your audience.",
+            "earn": "Coordinate next steps and reward details directly with the team."
+          }
+        },
+        "partners": {
+          "title": "Who the program suits best",
+          "body": "The positioning stays broad enough for future growth while still feeling concrete.",
+          "items": {
+            "creators": "Creators who recommend products with strong personal context.",
+            "publishers": "Publishers and editorial spaces that build shopping guides or roundups.",
+            "communities": "Communities with trusted product recommendations and engaged audiences."
+          }
+        }
+      },
+      "cta": {
+        "title": "Interested in partnering?",
+        "description": "Reach out with your audience details and the team can discuss the current front-end-only setup.",
+        "primary": "Contact us",
+        "secondary": "About ordonsooq"
+      }
+    },
+    "privacy": {
+      "badge": "Privacy",
+      "title": "Privacy Policy",
+      "subtitle": "A readable privacy page that explains how customer information is handled across browsing, accounts, and orders.",
+      "intro": "This page keeps privacy information structured and readable instead of dropping shoppers into a wall of legal text.",
+      "sections": {
+        "collection": {
+          "title": "What data we collect",
+          "body": "Information is generally collected when customers browse, create accounts, place orders, or contact support.",
+          "items": {
+            "account": "Account details such as name, email, phone number, and saved preferences.",
+            "orders": "Order-related details such as delivery addresses, purchased items, and transaction context.",
+            "support": "Messages, follow-up details, and support context provided by the customer."
+          }
+        },
+        "usage": {
+          "title": "How data is used",
+          "body": "Collected information helps operate the storefront, support customers, and improve the experience over time.",
+          "items": {
+            "fulfillment": "To process orders, delivery steps, returns, and service follow-up.",
+            "improvement": "To understand storefront usage and improve performance and experience.",
+            "marketing": "To share relevant marketing updates where customers have opted into that communication."
+          }
+        },
+        "sharing": {
+          "title": "Sharing, retention, and controls",
+          "body": "Data may be shared only where operationally necessary, contractually appropriate, or legally required.",
+          "items": {
+            "providers": "Operational service providers may support payments, delivery, analytics, or communications.",
+            "compliance": "Information may be disclosed where required for legal or compliance reasons.",
+            "retention": "Records may be retained for operational, security, and legal purposes for an appropriate period."
+          }
+        },
+        "cookies": {
+          "title": "Cookies and security",
+          "body": "Cookies and related tools help keep the storefront usable, relevant, and more secure.",
+          "items": {
+            "preferences": "Preference cookies can remember language, cart context, and browsing continuity.",
+            "analytics": "Analytics tools can help measure performance and identify friction points.",
+            "security": "Security practices help protect accounts, sessions, and checkout-related activity."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need a privacy-related follow-up?",
+        "description": "Use the contact page if you need clarification about how your information is handled.",
+        "primary": "Contact us"
+      }
+    },
+    "terms": {
+      "badge": "Terms",
+      "title": "Terms of Service",
+      "subtitle": "A structured terms page covering use of the storefront, accounts, pricing, orders, and limitations in plain language.",
+      "intro": "The terms page is organized to make the main rules and expectations easier to scan before or after purchase.",
+      "sections": {
+        "siteUse": {
+          "title": "Site use and content",
+          "body": "Using the storefront means accepting reasonable rules around access, information accuracy, and content use.",
+          "items": {
+            "accuracy": "Content is presented carefully, but availability and details can still change over time.",
+            "access": "Access may be updated, limited, or interrupted when maintenance or operational issues require it.",
+            "content": "Brand, product, and storefront content should not be reused in misleading ways."
+          }
+        },
+        "accounts": {
+          "title": "Accounts and orders",
+          "body": "Customers are responsible for keeping their account details accurate and their login credentials secure.",
+          "items": {
+            "credentials": "Account credentials should be protected and kept current.",
+            "orderDetails": "Order details should be reviewed before confirmation.",
+            "availability": "Order acceptance can still depend on stock, review, and operational feasibility."
+          }
+        },
+        "pricing": {
+          "title": "Pricing and payments",
+          "body": "Pricing, promotions, and payment details are presented as clearly as possible during the purchase journey.",
+          "items": {
+            "prices": "Displayed prices and discounts can change when catalog updates occur.",
+            "payments": "Final payment handling depends on the methods currently offered during checkout.",
+            "promotions": "Offers and promotional conditions may be limited by timing, stock, or other stated rules."
+          }
+        },
+        "returns": {
+          "title": "Order changes, cancellations, and liability",
+          "body": "Order changes and cancellations depend on processing stage, operational feasibility, and the agreed payment path.",
+          "items": {
+            "review": "Confirmed orders may move into fulfillment quickly after approval.",
+            "refunds": "Some changes or cancellations may not be possible once processing has started.",
+            "liability": "Operational limits and reasonable service boundaries still apply to storefront use."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need clarification on the terms?",
+        "description": "Reach out through the contact page if you need help understanding a policy-related point.",
+        "primary": "Contact us"
+      }
+    },
+    "cookies": {
+      "badge": "Cookies",
+      "title": "Cookie Policy",
+      "subtitle": "A clear overview of how cookies support storefront functionality, analytics, personalization, and security.",
+      "intro": "This page explains cookies in a practical way so shoppers know what they do and how changing cookie behavior can affect the experience.",
+      "sections": {
+        "essential": {
+          "title": "Essential cookies",
+          "body": "Some cookies are closely tied to core storefront functionality and security.",
+          "items": {
+            "session": "Session continuity helps keep browsing and sign-in states stable.",
+            "cart": "Cart-related cookies help preserve items while customers continue shopping.",
+            "security": "Security cookies can help identify suspicious activity and protect sessions."
+          }
+        },
+        "analytics": {
+          "title": "Analytics and personalization",
+          "body": "Other cookies may help understand performance and improve the relevance of the storefront experience.",
+          "items": {
+            "performance": "Analytics can show where pages perform well or where customers struggle.",
+            "preferences": "Preference cookies can remember choices such as language or browsing context.",
+            "relevance": "Personalization tools can support a more relevant shopping journey over time."
+          }
+        },
+        "manage": {
+          "title": "Managing cookies",
+          "body": "Customers can often manage cookies through browser settings, though some changes may affect the shopping experience.",
+          "items": {
+            "browser": "Browser controls can be used to delete or block certain cookies.",
+            "tradeoff": "Blocking cookies may reduce convenience or break parts of the storefront flow.",
+            "support": "If you are unsure what to change, contact support for guidance."
+          }
+        }
+      },
+      "cta": {
+        "title": "Want the broader privacy picture?",
+        "description": "Read the privacy page for a fuller explanation of data handling and customer controls.",
+        "primary": "View privacy policy"
+      }
+    },
+    "accessibility": {
+      "badge": "Accessibility",
+      "title": "Accessibility",
+      "subtitle": "An accessibility statement that explains the storefront’s intent, current practices, and room for ongoing improvement.",
+      "intro": "The page is written to stay credible: it explains the accessibility direction honestly without overstating compliance claims.",
+      "highlights": {
+        "commitment": {
+          "title": "Accessibility commitment",
+          "description": "The storefront aims to keep navigation, structure, and content understandable across devices and languages."
+        },
+        "structure": {
+          "title": "Semantic structure",
+          "description": "Readable page structure, clear sections, and practical interaction patterns help support broader access."
+        },
+        "feedback": {
+          "title": "Feedback welcomed",
+          "description": "Customers should have a visible way to report accessibility barriers and ask for help."
+        }
+      },
+      "sections": {
+        "approach": {
+          "title": "Our current approach",
+          "body": "Accessibility work is treated as an ongoing product-quality concern rather than a one-time badge.",
+          "items": {
+            "navigation": "Navigation and page flow should remain understandable across major storefront routes.",
+            "content": "Headings, content grouping, and visible labels should stay consistent and readable.",
+            "forms": "Interactive elements and forms should be reviewed with accessibility in mind."
+          }
+        },
+        "limitations": {
+          "title": "Known limitations and iteration",
+          "body": "Some limitations may still exist, especially where third-party content or evolving storefront features are involved.",
+          "items": {
+            "thirdParty": "Third-party integrations can introduce accessibility gaps outside the core page shell.",
+            "media": "Some media or complex UI states may need further refinement over time.",
+            "iteration": "The team can continue improving the experience as issues are identified."
+          }
+        }
+      },
+      "cta": {
+        "title": "Need to report an accessibility issue?",
+        "description": "Use the contact route and explain the barrier you found so the team can review it properly.",
+        "primary": "Contact us",
+        "secondary": "Read FAQs"
+      }
+    }
   }
 }

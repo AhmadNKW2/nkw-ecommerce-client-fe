@@ -19,6 +19,9 @@ interface EntityListingPageProps {
   data?: any;
   initialSearchFilters?: Partial<SearchFilters>;
   initialSearchData?: SearchResponse | null;
+  pageTitle?: string;
+  pageDescription?: string;
+  breadcrumbLabel?: string;
   isLoading?: boolean;
   error?: any;
   fetchNextPage?: () => void;
@@ -26,7 +29,7 @@ interface EntityListingPageProps {
   isFetchingNextPage?: boolean;
 }
 
-export function EntityListingPage({ type, slug = "", data, initialSearchFilters, initialSearchData, isLoading = false, error, fetchNextPage, hasNextPage, isFetchingNextPage }: EntityListingPageProps) {
+export function EntityListingPage({ type, slug = "", data, initialSearchFilters, initialSearchData, pageTitle, pageDescription, breadcrumbLabel, isLoading = false, error, fetchNextPage, hasNextPage, isFetchingNextPage }: EntityListingPageProps) {
   const locale = useLocale() as Locale;
   const isAr = locale === 'ar';
   const t = useTranslations();
@@ -82,13 +85,13 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
           description = desc || "";
           image = data.logo || "";
         } else if (isProductsPage) {
-          title = t('product.allProductsTitle');
-          description = t('product.allProductsSubtitle');
+          title = pageTitle || t('product.allProductsTitle');
+          description = pageDescription || t('product.allProductsSubtitle');
           image = ""; // Or some default shop banner
       }
       
       return { title, description, image };
-      }, [data, isCategory, transformedCategory, isBrand, isVendor, isProductsPage, isAr, t]);
+      }, [data, isCategory, transformedCategory, isBrand, isVendor, isProductsPage, isAr, pageDescription, pageTitle, t]);
 
   // --- Loading State ---
   if (isLoading) {
@@ -192,6 +195,9 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
 
   if (isProductsPage) {
     breadcrumbs.push({ label: rootLabel, href: rootPath });
+    if (breadcrumbLabel && breadcrumbLabel !== rootLabel) {
+      breadcrumbs.push({ label: breadcrumbLabel, href: rootPath });
+    }
   } else {
     breadcrumbs.push({ label: rootLabel, href: rootPath });
     breadcrumbs.push({ label: viewData.title, href: `${rootPath}/${slug}` });

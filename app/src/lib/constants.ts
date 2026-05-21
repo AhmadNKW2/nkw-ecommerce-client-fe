@@ -36,7 +36,6 @@ export const NAV_LINKS = [
   { label: "nav.categories", href: "/categories" },
   { label: "nav.brands", href: "/brands" },
   { label: "nav.stores", href: "/vendors" },
-  { label: "nav.deals", href: "#" },
   { label: "nav.newArrivals", href: "/products?filter=new" },
 ];
 
@@ -46,28 +45,20 @@ export const FOOTER_LINKS = {
     { label: "footer.links.allProducts", href: "/products" },
     { label: "footer.links.newArrivals", href: "/products?filter=new" },
     { label: "footer.links.bestSellers", href: "/products?filter=bestsellers" },
-    { label: "footer.links.sale", href: "#" },
-    { label: "footer.links.giftCards", href: "#" },
   ],
   support: [
-    { label: "footer.links.contactUs", href: "#" },
-    { label: "footer.links.faqs", href: "#" },
-    { label: "footer.links.shippingInfo", href: "#" },
-    { label: "footer.links.returnsExchanges", href: "#" },
-    { label: "footer.links.trackOrder", href: "#" },
+    { label: "footer.links.contactUs", href: "/contact" },
+    { label: "footer.links.faqs", href: "/faqs" },
+    { label: "footer.links.shippingInfo", href: "/shipping" },
   ],
   company: [
-    { label: "footer.links.aboutUs", href: "#" },
-    { label: "footer.links.careers", href: "#" },
-    { label: "footer.links.blog", href: "#" },
-    { label: "footer.links.press", href: "#" },
-    { label: "footer.links.affiliateProgram", href: "#" },
+    { label: "footer.links.aboutUs", href: "/about" },
   ],
   legal: [
-    { label: "footer.links.privacyPolicy", href: "#" },
-    { label: "footer.links.termsOfService", href: "#" },
-    { label: "footer.links.cookiePolicy", href: "#" },
-    { label: "footer.links.accessibility", href: "#" },
+    { label: "footer.links.privacyPolicy", href: "/privacy" },
+    { label: "footer.links.termsOfService", href: "/terms" },
+    { label: "footer.links.cookiePolicy", href: "/cookies" },
+    { label: "footer.links.accessibility", href: "/accessibility" },
   ],
 };
 

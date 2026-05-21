@@ -267,9 +267,9 @@ function buildSearchParams(filters: SearchFilters, locale?: string, options?: { 
   return params.toString();
 }
 
-function normalizeQuery(query?: string): string {
+function normalizeQuery(query?: string, emptyFallback = '*'): string {
   const value = query?.trim();
-  return value && value.length > 0 ? value : '*';
+  return value && value.length > 0 ? value : emptyFallback;
 }
 
 function normalizeSearchLocale(locale?: string): SearchLocale {
@@ -1458,9 +1458,10 @@ function buildOrdonDbSearchRequest(filters: SearchFilters): OrdonDbSearchRequest
   }
 
   const sort = buildOrdonDbSort(filters.sort_by);
+  const hasEntityFilter = categoryIds.length > 0 || brandIds.length > 0 || vendorIds.length > 0;
 
   return {
-    query: normalizeQuery(filters.q),
+    query: normalizeQuery(filters.q, hasEntityFilter ? '' : '*'),
     ...(Object.keys(requestFilters).length > 0 ? { filters: requestFilters } : {}),
     ...(sort ? { sort } : {}),
     pagination: {

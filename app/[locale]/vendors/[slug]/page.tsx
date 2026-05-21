@@ -20,7 +20,7 @@ export default async function VendorPage({ params, searchParams }: PageProps) {
   const initialData = await vendorService.getBySlug(slug).catch(() => undefined);
   const initialSearchFilters: SearchFilters | undefined = initialData
     ? {
-        q: filters.q?.trim() ? filters.q : "*",
+        ...(filters.q?.trim() ? { q: filters.q } : {}),
         category_ids: filters.category_ids,
         brand_ids: filters.brand_ids,
         vendor_ids: String(initialData.id),
