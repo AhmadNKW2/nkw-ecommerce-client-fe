@@ -209,7 +209,7 @@ export function HomeSection(props: HomeSectionProps) {
               }
             }}
             disabled={isLoading}
-            className="min-w-50 bg-white hover:bg-white/90 shadow-gray-200/50 border border-gray-200 text-primary"
+            className="min-w-50 bg-linear-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:brightness-105 disabled:from-gray-300 disabled:to-gray-400 disabled:text-white"
           >
             {isLoading ? t("loading") : t("loadMoreProducts")}
           </Button>

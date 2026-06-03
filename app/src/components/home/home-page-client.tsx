@@ -2,20 +2,22 @@
 
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { EntityCarousel, type EntityCarouselItem } from "@/components/home/entity-carousel";
+// import { EntityCarousel, type EntityCarouselItem } from "@/components/home/entity-carousel";
 import { ProductsSection } from "@/components/home/featured-products";
-import { FeaturesSection } from "@/components/home/features-section";
-import { Newsletter } from "@/components/home/newsletter";
-import { useHome } from "@/hooks/useHome";
+// import { FeaturesSection } from "@/components/home/features-section";
+// import { Newsletter } from "@/components/home/newsletter";
+// import { useHome } from "@/hooks/useHome";
 import { useInfiniteProducts } from "@/hooks/useProducts";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
-import { transformHomeData, type Locale } from "@/lib/transformers";
-import { CategoryCardSkeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
+// import { transformHomeData, type Locale } from "@/lib/transformers";
+import type { Locale } from "@/lib/transformers";
+// import { CategoryCardSkeleton, ProductGridSkeleton } from "@/components/ui/skeleton";
+import { ProductGridSkeleton } from "@/components/ui/skeleton";
 export function HomePageClient() {
   const locale = useLocale() as Locale;
   const t = useTranslations("home");
 
-  const { data: homeData, isLoading: homeLoading } = useHome();
+  // const { data: homeData, isLoading: homeLoading } = useHome();
 
   const productsPerPage = 40;
 
@@ -59,33 +61,33 @@ export function HomePageClient() {
     [newInfiniteData],
   );
 
-  const { categories, vendors, brands } = homeData
-    ? transformHomeData(homeData, locale)
-    : { categories: [], vendors: [], brands: [] };
+  // const { categories, vendors, brands } = homeData
+  //   ? transformHomeData(homeData, locale)
+  //   : { categories: [], vendors: [], brands: [] };
 
-  const categoryItems: EntityCarouselItem[] = categories.map((category) => ({
-    id: category.id,
-    href: `/categories/${category.slug}`,
-    name: category.name,
-    image: category.image,
-    isCategory: true,
-  }));
+  // const categoryItems: EntityCarouselItem[] = categories.map((category) => ({
+  //   id: category.id,
+  //   href: `/categories/${category.slug}`,
+  //   name: category.name,
+  //   image: category.image,
+  //   isCategory: true,
+  // }));
 
-  const brandItems: EntityCarouselItem[] = brands.map((brand) => ({
-    id: brand.id,
-    href: `/brands/${brand.slug}`,
-    name: brand.name,
-    image: brand.logo,
-    isCategory: false,
-  }));
+  // const brandItems: EntityCarouselItem[] = brands.map((brand) => ({
+  //   id: brand.id,
+  //   href: `/brands/${brand.slug}`,
+  //   name: brand.name,
+  //   image: brand.logo,
+  //   isCategory: false,
+  // }));
 
-  const vendorItems: EntityCarouselItem[] = vendors.map((vendor) => ({
-    id: vendor.id,
-    href: `/vendors/${vendor.slug}`,
-    name: vendor.name,
-    image: vendor.logo,
-    isCategory: false,
-  }));
+  // const vendorItems: EntityCarouselItem[] = vendors.map((vendor) => ({
+  //   id: vendor.id,
+  //   href: `/vendors/${vendor.slug}`,
+  //   name: vendor.name,
+  //   image: vendor.logo,
+  //   isCategory: false,
+  // }));
 
   const { products: featuredProducts } = useListingVariantProducts(featuredData, locale);
   const { products: newProducts } = useListingVariantProducts(newData, locale);
@@ -127,7 +129,7 @@ export function HomePageClient() {
         )}
       </section>
 
-      <section>
+      {/* <section>
         {homeLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -184,7 +186,7 @@ export function HomePageClient() {
 
       <section>
         <Newsletter />
-      </section>
+      </section> */}
     </>
   );
 }

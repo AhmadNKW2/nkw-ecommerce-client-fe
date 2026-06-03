@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { BELOW_50_JOD_MAX_PRICE } from "@/lib/constants";
 import { useTranslations, useLocale } from "next-intl";
 import { useHome } from "@/hooks/useHome";
@@ -35,8 +36,6 @@ export function NavigationBar() {
   const { data: homeData } = useHome();
   const categories = homeData?.categories || [];
   const maxMegaMenuColumns = 9;
-  const maxMegaMenuRows = 2;
-  const maxMegaMenuSections = maxMegaMenuColumns * maxMegaMenuRows;
   const maxMegaMenuChildren = 8;
 
   const navigationLinks = useMemo<NavigationLink[]>(() => {
@@ -90,7 +89,6 @@ export function NavigationBar() {
       });
 
     const categoriesMenu = rootCategories
-      .slice(0, maxMegaMenuSections)
       .map((category: HomeCategory | Category) => {
         const categoryHref = `/categories/${category.slug}`;
         const label = getCategoryLabel(category);
@@ -124,7 +122,7 @@ export function NavigationBar() {
       },
       ...categoryLinks,
     ];
-  }, [categories, isAr, maxMegaMenuChildren, maxMegaMenuSections, navT]);
+  }, [categories, isAr, maxMegaMenuChildren, navT]);
 
   const megaMenuContent = useMemo(
     () => Object.fromEntries(
@@ -138,6 +136,7 @@ export function NavigationBar() {
   const menuKeys = Object.keys(megaMenuContent);
 
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [megaMenuPage, setMegaMenuPage] = useState(0);
   const [hoveredLinkKey, setHoveredLinkKey] = useState<string | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -197,16 +196,21 @@ export function NavigationBar() {
     updateIndicator(link.key);
 
     if (megaMenuContent[link.href]?.length) {
+      if (activeDropdown !== link.href) {
+        setMegaMenuPage(0);
+      }
       setActiveDropdown(link.href);
     } else {
+      setMegaMenuPage(0);
       setActiveDropdown(null);
     }
-  }, [megaMenuContent, updateIndicator]);
+  }, [activeDropdown, megaMenuContent, updateIndicator]);
 
   const handleMouseLeave = useCallback(() => {
     clearTimeouts();
     closeTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null);
+      setMegaMenuPage(0);
       setHoveredLinkKey(null);
       updateIndicator(null);
     }, 150);
@@ -219,6 +223,7 @@ export function NavigationBar() {
   const handleLinkClick = useCallback(() => {
     clearTimeouts();
     setActiveDropdown(null);
+    setMegaMenuPage(0);
     setHoveredLinkKey(null);
     updateIndicator(null);
   }, [updateIndicator]);
@@ -371,7 +376,7 @@ export function NavigationBar() {
 
           <nav 
             ref={navRef}
-            className="flex items-center justify-start gap-2 py-3 px-1 relative overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex items-center justify-start gap-0 py-3 px-1 relative overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             onMouseEnter={handleWrapperMouseEnter}
           >
             <div
@@ -397,10 +402,10 @@ export function NavigationBar() {
                   href={link.href}
                   onClick={handleLinkClick}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors duration-300",
+                    "flex items-center gap-1.5 p-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors duration-300",
                     (activeDropdown === link.href || hoveredLinkKey === link.key)
                       ? "text-primary"
-                      : "text-third hover:text-primary"
+                      : "text-primary/90 hover:text-primary"
                   )}
                 >
                   {link.label}
@@ -421,14 +426,14 @@ export function NavigationBar() {
         <div
           className={cn(
             "absolute top-full z-50",
-            activeDropdownLayout?.width == null && "left-0 right-0",
-            isDropdownOpen ? "visible" : "invisible"
+            activeDropdownLayout?.width == null && "left-0 right-0"
           )}
           style={{
             left: activeDropdownLayout?.left ?? 0,
             width: activeDropdownLayout?.width,
             opacity: isDropdownOpen ? 1 : 0,
             transform: isDropdownOpen ? "translateY(0)" : "translateY(-8px)",
+            visibility: isDropdownOpen ? "visible" : "hidden",
             transformOrigin:
               activeDropdownLayout?.columnCount === 1
                 ? isAr
@@ -437,7 +442,7 @@ export function NavigationBar() {
                 : "top center",
             transition: isDropdownOpen 
               ? "opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s"
-              : "opacity 0.14s cubic-bezier(0.4, 0, 0.2, 1), transform 0.14s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0.14s",
+              : "opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s 0.18s",
             pointerEvents: isDropdownOpen ? "auto" : "none",
           }}
           onMouseEnter={handleDropdownMouseEnter}
@@ -445,17 +450,25 @@ export function NavigationBar() {
         >
           <div className="relative overflow-hidden bg-white border border-t-0 border-gray-200 shadow-xl shadow-gray-900/4">
             {menuKeys.map((menuKey) => {
-              const sectionCount = megaMenuContent[menuKey].length;
-              const isCategoriesMenu = menuKey === "/categories";
+              const sections = megaMenuContent[menuKey];
+              const sectionCount = sections.length;
+              const pageCount = Math.max(Math.ceil(sectionCount / maxMegaMenuColumns), 1);
+              const currentPage = activeDropdown === menuKey
+                ? Math.min(megaMenuPage, pageCount - 1)
+                : 0;
+              const pageStart = currentPage * maxMegaMenuColumns;
+              const visibleSections = sections.slice(pageStart, pageStart + maxMegaMenuColumns);
+              const hasPagedSections = pageCount > 1;
 
               return (
                 <div
                   key={menuKey}
                   className={cn(
-                    "transition-all duration-200 ease-out",
+                    "relative transition-all duration-200 ease-out",
                     activeDropdownLayout?.columnCount === 1
                       ? "px-4 py-5"
-                      : "px-5 py-10 xl:px-6"
+                      : "px-5 py-10 xl:px-6",
+                    hasPagedSections && "px-12 xl:px-14"
                   )}
                   style={{
                     opacity: activeDropdown === menuKey ? 1 : 0,
@@ -468,18 +481,52 @@ export function NavigationBar() {
                     transition: "opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s",
                   }}
                 >
-                  <div
+                  {hasPagedSections && activeDropdown === menuKey && currentPage < pageCount - 1 ? (
+                    <button
+                      type="button"
+                      className="absolute left-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/30 bg-white/50 text-primary/70 opacity-40 hover:opacity-100 hover:bg-white hover:text-primary hover:border-gray-300 transition-all shadow-sm"
+                      aria-label="Show next menu page"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setMegaMenuPage((page) => Math.min(page + 1, pageCount - 1));
+                      }}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  ) : null}
+
+                  {hasPagedSections && activeDropdown === menuKey && currentPage > 0 ? (
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/30 bg-white/50 text-primary/70 opacity-40 hover:opacity-100 hover:bg-white hover:text-primary hover:border-gray-300 transition-all shadow-sm"
+                      aria-label="Show previous menu page"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setMegaMenuPage((page) => Math.max(page - 1, 0));
+                      }}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  ) : null}
+
+                  <motion.div
+                    key={`${menuKey}-${currentPage}`}
+                    initial={{ opacity: 0, x: isAr ? -10 : 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.22, ease: "easeOut" }}
                     className={cn(
-                      "grid gap-y-6",
+                      "grid grid-rows-1 gap-y-6",
                       activeDropdownLayout?.columnCount === 1 ? "gap-x-0" : "gap-x-6"
                     )}
                     style={{
-                      gridTemplateColumns: `repeat(${Math.min(sectionCount, maxMegaMenuColumns)}, minmax(0, 1fr))`,
+                      gridTemplateColumns: `repeat(${Math.min(visibleSections.length, maxMegaMenuColumns)}, minmax(0, 1fr))`,
                     }}
                   >
-                    {megaMenuContent[menuKey].map((section, idx) => (
+                    {visibleSections.map((section, idx) => (
                       <div
-                        key={idx}
+                        key={`${section.href ?? section.title}-${pageStart + idx}`}
                         className="min-w-0 transition-all duration-150 ease-out"
                         style={{
                           transitionDelay: activeDropdown === menuKey ? `${idx * 12}ms` : "0ms",
@@ -519,7 +566,7 @@ export function NavigationBar() {
                         </ul>
                       </div>
                     ))}
-                  </div>
+                  </motion.div>
                 </div>
               );
             })}
