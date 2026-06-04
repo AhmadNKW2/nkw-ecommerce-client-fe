@@ -109,17 +109,17 @@ export function NavigationBar() {
         menu: categoriesMenu.length > 0 ? categoriesMenu : undefined,
       },
       { key: "brands", label: navT("brands"), href: "/brands" },
-      { key: "stores", label: navT("stores"), href: "/vendors" },
+      // { key: "stores", label: navT("stores"), href: "/vendors" },
       {
         key: "below-50-jod",
         label: navT("below50JOD"),
         href: `/products?max_price=${BELOW_50_JOD_MAX_PRICE}`,
       },
-      {
-        key: "new-arrivals",
-        label: navT("newArrivals"),
-        href: "/products?sort_by=created_at:desc",
-      },
+      // {
+      //   key: "new-arrivals",
+      //   label: navT("newArrivals"),
+      //   href: "/products?sort_by=created_at:desc",
+      // },
       ...categoryLinks,
     ];
   }, [categories, isAr, maxMegaMenuChildren, navT]);
@@ -468,7 +468,7 @@ export function NavigationBar() {
                     activeDropdownLayout?.columnCount === 1
                       ? "px-4 py-5"
                       : "px-5 py-10 xl:px-6",
-                    hasPagedSections && "px-12 xl:px-14"
+                    hasPagedSections && "px-10"
                   )}
                   style={{
                     opacity: activeDropdown === menuKey ? 1 : 0,
@@ -481,30 +481,30 @@ export function NavigationBar() {
                     transition: "opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s",
                   }}
                 >
-                  {hasPagedSections && activeDropdown === menuKey && currentPage < pageCount - 1 ? (
+                  {hasPagedSections && activeDropdown === menuKey && (isAr ? currentPage < pageCount - 1 : currentPage > 0) ? (
                     <button
                       type="button"
                       className="absolute left-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/30 bg-white/50 text-primary/70 opacity-40 hover:opacity-100 hover:bg-white hover:text-primary hover:border-gray-300 transition-all shadow-sm"
-                      aria-label="Show next menu page"
+                      aria-label="Show next/previous menu page"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        setMegaMenuPage((page) => Math.min(page + 1, pageCount - 1));
+                        setMegaMenuPage((page) => isAr ? Math.min(page + 1, pageCount - 1) : Math.max(page - 1, 0));
                       }}
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                   ) : null}
 
-                  {hasPagedSections && activeDropdown === menuKey && currentPage > 0 ? (
+                  {hasPagedSections && activeDropdown === menuKey && (isAr ? currentPage > 0 : currentPage < pageCount - 1) ? (
                     <button
                       type="button"
                       className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/30 bg-white/50 text-primary/70 opacity-40 hover:opacity-100 hover:bg-white hover:text-primary hover:border-gray-300 transition-all shadow-sm"
-                      aria-label="Show previous menu page"
+                      aria-label="Show next/previous menu page"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        setMegaMenuPage((page) => Math.max(page - 1, 0));
+                        setMegaMenuPage((page) => isAr ? Math.max(page - 1, 0) : Math.min(page + 1, pageCount - 1));
                       }}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -518,7 +518,7 @@ export function NavigationBar() {
                     transition={{ duration: 0.22, ease: "easeOut" }}
                     className={cn(
                       "grid grid-rows-1 gap-y-6",
-                      activeDropdownLayout?.columnCount === 1 ? "gap-x-0" : "gap-x-6"
+                      activeDropdownLayout?.columnCount === 1 ? "gap-x-0" : "gap-x-5"
                     )}
                     style={{
                       gridTemplateColumns: `repeat(${Math.min(visibleSections.length, maxMegaMenuColumns)}, minmax(0, 1fr))`,

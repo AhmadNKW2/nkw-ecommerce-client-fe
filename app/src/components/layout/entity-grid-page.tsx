@@ -21,9 +21,9 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
 
   // Grid Configuration based on type
   const gridConfig = {
-    brand: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
+    brand: "grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10",
     category: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
-    vendor: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
+    vendor: "grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10",
   };
 
   const currentGridClass = gridConfig[type];
@@ -46,7 +46,7 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
         ]}
       >
         <div className={cn("grid gap-4 md:gap-5", currentGridClass)}>
-           {Array.from({ length: 8 }).map((_, i) => (
+           {Array.from({ length: (type === 'brand' || type === 'vendor') ? 20 : 12 }).map((_, i) => (
              <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
            ))}
         </div>
@@ -118,12 +118,15 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
               <div className="aspect-square bg-white border border-gray-100 rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-lg grid grid-rows-[minmax(0,1fr)_auto]">
                 <div className="relative min-h-0 bg-white flex items-center justify-center border-b border-gray-100">
                             {image ? (
-                            <div className="relative w-full h-full rounded-lg">
+                            <div className={cn(
+                              "relative rounded-lg",
+                              (type === 'brand' || type === 'vendor') ? "w-1/2 h-1/2 m-auto aspect-square" : "w-full h-full"
+                            )}>
                                 <Image
                                     src={image}
                                     alt={name}
                                     fill
-                                    className="object-cover"
+                                    className={(type === 'brand' || type === 'vendor') ? "object-contain" : "object-cover"}
                                 />
                             </div>
                             ) : (

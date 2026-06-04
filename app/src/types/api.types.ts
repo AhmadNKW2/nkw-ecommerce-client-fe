@@ -459,6 +459,7 @@ export type SeoSettings = {
   robots_index: boolean;
   robots_follow: boolean;
   show_sale_pricing: boolean;
+  free_delivery_amount: number;
   created_at?: string;
   updated_at?: string;
 };

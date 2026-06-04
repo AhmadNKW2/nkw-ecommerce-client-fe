@@ -41,6 +41,16 @@ export function WalletPageClient() {
     };
   }, [transactions, wallet?.totalCashback]);
 
+  const translateDescription = (desc: string) => {
+    if (locale === "ar") {
+      if (desc.startsWith("Cashback for order #")) {
+        const orderId = desc.replace("Cashback for order #", "");
+        return `كاش باك للطلب رقم #${orderId}`;
+      }
+    }
+    return desc;
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t("myWallet")}</h1>
@@ -100,7 +110,7 @@ export function WalletPageClient() {
                     {transaction.type === "credit" ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{transaction.description}</p>
+                    <p className="font-medium text-gray-900">{translateDescription(transaction.description)}</p>
                     <p className="text-xs text-gray-500">{new Date(transaction.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>

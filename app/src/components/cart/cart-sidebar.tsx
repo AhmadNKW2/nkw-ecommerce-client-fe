@@ -11,6 +11,8 @@ import { QuantitySelector } from "@/components/ui/quantity-selector";
 import { FREE_SHIPPING_MIN_ORDER_AMOUNT, STANDARD_SHIPPING_FEE } from "@/lib/constants";
 import { cn, formatPrice } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settings.service";
 
 export function CartSidebar() {
   const tCart = useTranslations("cart");
@@ -34,6 +36,12 @@ export function CartSidebar() {
     isArabic
       ? item.product.name_ar || item.product.name_en || ""
       : item.product.name_en || item.product.name_ar || "";
+
+  const { data: seoSettings } = useQuery({
+    queryKey: ["seo-settings"],
+    queryFn: settingsService.getSeoSettings,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const getVariantSummary = (item: typeof items[number]) =>
     item.variant?.attributes
@@ -67,6 +75,10 @@ export function CartSidebar() {
   };
 
   const getCompareAtUnitPrice = (item: any): number | undefined => {
+    if (seoSettings && seoSettings.show_sale_pricing === false) {
+      return undefined;
+    }
+
     const variant = item?.variant;
     const product = item?.product;
 
@@ -83,9 +95,10 @@ export function CartSidebar() {
     return variant ? pickCompare(variant) : pickCompare(product);
   };
 
-  const freeShippingUnlocked = totalAmount >= FREE_SHIPPING_MIN_ORDER_AMOUNT;
-  const remainingAmountForFreeShipping = Math.max(FREE_SHIPPING_MIN_ORDER_AMOUNT - totalAmount, 0);
-  const freeShippingProgress = Math.min((totalAmount / FREE_SHIPPING_MIN_ORDER_AMOUNT) * 100, 100);
+  const freeShippingThreshold = seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
+  const freeShippingUnlocked = totalAmount >= freeShippingThreshold;
+  const remainingAmountForFreeShipping = Math.max(freeShippingThreshold - totalAmount, 0);
+  const freeShippingProgress = Math.min((totalAmount / freeShippingThreshold) * 100, 100);
   const shippingAmount = freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
 
   // Prevent body scroll when open

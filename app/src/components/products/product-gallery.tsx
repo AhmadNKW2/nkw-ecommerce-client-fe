@@ -219,7 +219,7 @@ export function ProductGallery({
       <div className={cn(
         "relative",
         // Mobile: Flex to control order easily. Desktop: Grid to strongly constrain heights
-        showThumbnails && showMainImage ? "flex flex-col md:grid md:grid-cols-[4.5rem_1fr] lg:grid-cols-[5rem_1fr] gap-4 md:gap-6" : "block"
+        showThumbnails && showMainImage && images.length > 1 ? "flex flex-col md:grid md:grid-cols-[4.5rem_1fr] lg:grid-cols-[5rem_1fr] gap-4 md:gap-6" : "block"
       )}
       >
         {/* Thumbnails (Left side on Desktop, Bottom on Mobile) */}

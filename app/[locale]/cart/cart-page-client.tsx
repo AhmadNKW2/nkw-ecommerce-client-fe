@@ -19,6 +19,8 @@ import { useWishlist } from "@/hooks/use-wishlist";
 import { FREE_SHIPPING_MIN_ORDER_AMOUNT, STANDARD_SHIPPING_FEE } from "@/lib/constants";
 import { formatPrice, calculateDiscount, cn } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
+import { useQuery } from "@tanstack/react-query";
+import { settingsService } from "@/services/settings.service";
 
 export function CartPageClient() {
   const t = useTranslations("cart");
@@ -28,6 +30,12 @@ export function CartPageClient() {
   const { toggleItem, isInWishlist } = useWishlist();
   const { handleCheckout } = useCheckout();
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+
+  const { data: seoSettings } = useQuery({
+    queryKey: ["seo-settings"],
+    queryFn: settingsService.getSeoSettings,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const toNumber = (value: unknown): number => {
     if (typeof value === "number") return value;
@@ -47,6 +55,11 @@ export function CartPageClient() {
     const price = toNumber(candidate?.price);
     const compareAtPrice = toNumber(candidate?.compareAtPrice);
     const salePrice = toNumber(candidate?.sale_price);
+
+    if (seoSettings && seoSettings.show_sale_pricing === false) {
+      const actual = Number.isFinite(salePrice) && salePrice > 0 && salePrice < price ? salePrice : (Number.isFinite(price) ? price : 0);
+      return { price: actual, compareAtPrice: undefined };
+    }
 
     if (Number.isFinite(salePrice) && Number.isFinite(price) && salePrice > 0 && salePrice < price) {
       return { price: salePrice, compareAtPrice: price };

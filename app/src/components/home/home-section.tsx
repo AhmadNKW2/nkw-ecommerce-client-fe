@@ -19,6 +19,7 @@ type BaseSectionProps = {
   subtitle?: React.ReactNode;
   viewAllHref?: string;
   showViewAll?: boolean;
+  showHeader?: boolean;
 };
 
 type ProductsVariantProps = BaseSectionProps & {
@@ -55,6 +56,7 @@ export function HomeSection(props: HomeSectionProps) {
     isLoading = false,
     initialVisibleCount = 5,
     loadMoreRows = 2, // Easily edit the number of extra rows to load here
+    showHeader = true,
   } = props;
 
   const {
@@ -153,7 +155,9 @@ export function HomeSection(props: HomeSectionProps) {
 
   return (
     <section>
-      <SectionHeader title={title} subtitle={subtitle} right={headerRight} />
+      {showHeader ? (
+        <SectionHeader title={title} subtitle={subtitle} right={headerRight} />
+      ) : null}
 
       {showNavArrows ? (
         <div
@@ -161,8 +165,8 @@ export function HomeSection(props: HomeSectionProps) {
           className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {visibleProducts.map((product) => (
-            <div key={`${product.id}-${product.defaultVariantId ?? "base"}`} className="w-70 shrink-0">
+          {visibleProducts.map((product, idx) => (
+            <div key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`} className="w-70 shrink-0">
               <ProductCard product={product}
                 cartButtonVariant="floating"
                 cartButtonColor="white"
@@ -173,9 +177,9 @@ export function HomeSection(props: HomeSectionProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
-          {visibleProducts.map((product) => (
+          {visibleProducts.map((product, idx) => (
             <motion.div
-              key={`${product.id}-${product.defaultVariantId ?? "base"}`}
+              key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
@@ -197,6 +201,7 @@ export function HomeSection(props: HomeSectionProps) {
             variant="pill"
             size="lg"
             onClick={() => {
+              if (isLoading) return;
               if (hasMore !== undefined) {
                 // API pagination mode: delegate entirely to external handler
                 onLoadMore?.();
@@ -208,10 +213,16 @@ export function HomeSection(props: HomeSectionProps) {
                 onLoadMore?.();
               }
             }}
-            disabled={isLoading}
-            className="min-w-50 bg-linear-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:brightness-105 disabled:from-gray-300 disabled:to-gray-400 disabled:text-white"
+            className="min-w-50 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30"
           >
-            {isLoading ? t("loading") : t("loadMoreProducts")}
+            {isLoading ? (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              t("loadMoreProducts")
+            )}
           </Button>
         </div>
       ) : null}

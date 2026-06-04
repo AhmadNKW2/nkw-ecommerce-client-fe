@@ -109,6 +109,7 @@ export function HomePageClient() {
             hasMore={featuredHasNextPage ?? false}
             onLoadMore={() => featuredFetchNextPage()}
             isLoading={featuredFetchingNext}
+            showHeader={false}
           />
         )}
       </section>
