@@ -458,7 +458,9 @@ export function NavigationBar() {
                 : 0;
               const pageStart = currentPage * maxMegaMenuColumns;
               const visibleSections = sections.slice(pageStart, pageStart + maxMegaMenuColumns);
+              const visibleColumnCount = Math.min(visibleSections.length, maxMegaMenuColumns);
               const hasPagedSections = pageCount > 1;
+              const gridGapPx = activeDropdownLayout?.columnCount === 1 ? 0 : 40;
 
               return (
                 <div
@@ -516,14 +518,33 @@ export function NavigationBar() {
                     initial={{ opacity: 0, x: isAr ? -10 : 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.22, ease: "easeOut" }}
-                    className={cn(
-                      "grid grid-rows-1 gap-y-6",
-                      activeDropdownLayout?.columnCount === 1 ? "gap-x-0" : "gap-x-5"
-                    )}
+                    className="relative grid grid-rows-1 gap-y-6"
                     style={{
-                      gridTemplateColumns: `repeat(${Math.min(visibleSections.length, maxMegaMenuColumns)}, minmax(0, 1fr))`,
+                      gridTemplateColumns: `repeat(${visibleColumnCount}, minmax(0, 1fr))`,
+                      columnGap: `${gridGapPx}px`,
                     }}
                   >
+                    {visibleColumnCount > 1 ? (
+                      <div className="pointer-events-none absolute inset-y-1 left-0 right-0">
+                        {Array.from({ length: visibleColumnCount - 1 }).map((_, dividerIdx) => {
+                          const dividerNumber = dividerIdx + 1;
+                          const dividerOffsetPx =
+                            ((dividerNumber / visibleColumnCount) - 0.5) * gridGapPx;
+
+                          return (
+                            <span
+                              key={`divider-${menuKey}-${currentPage}-${dividerNumber}`}
+                              aria-hidden="true"
+                              className="absolute top-0 bottom-0 w-px -translate-x-1/2 bg-gray-200/80"
+                              style={{
+                                left: `calc(${(dividerNumber / visibleColumnCount) * 100}% + ${dividerOffsetPx}px)`,
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : null}
+
                     {visibleSections.map((section, idx) => (
                       <div
                         key={`${section.href ?? section.title}-${pageStart + idx}`}
