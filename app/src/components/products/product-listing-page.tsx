@@ -364,12 +364,12 @@ export function ProductListingPage({
 
       <MobileContactActions />
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 justify-start">
         {/* Sidebar Filters */}
         <aside
           className="hidden w-full shrink-0 lg:block lg:w-64"
         >
-          <div className="sticky top-24">
+          <div className="sticky top-[190px] max-h-[calc(100vh-200px)] overflow-y-hidden rounded-xl">
             {filtersComponent}
           </div>
         </aside>
@@ -380,7 +380,7 @@ export function ProductListingPage({
 
           {(title || subtitle) && !headerContent && (
             <div className="mb-8">
-              {title && <h1 className="text-3xl font-bold text-primary mb-2">{title}</h1>}
+              {/* {title && <h1 className="text-3xl font-bold text-primary mb-2">{title}</h1>} */}
               {subtitle && <p className="text-third">{subtitle}</p>}
             </div>
           )}

@@ -274,7 +274,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters — always visible on desktop, same as product listing pages */}
         <aside className="w-full lg:w-64 shrink-0 hidden lg:block">
-          <div className="sticky top-24">
+          <div className="sticky top-[180px] max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
             {filtersComponent}
           </div>
         </aside>

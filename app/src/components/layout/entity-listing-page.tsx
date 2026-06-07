@@ -205,7 +205,6 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
 
   return (
     <ListingLayout
-      heroContent={headerContent}
       title={isProductsPage ? viewData.title : undefined}
       subtitle={isProductsPage ? viewData.description : undefined}
       breadcrumbs={breadcrumbs}
@@ -225,6 +224,7 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
         title={isProductsPage ? undefined : t("common.products")}
         availableCategories={isCategory ? subcategories : undefined}
         initialSearchData={initialSearchData}
+        headerContent={headerContent}
       />
       {isVendor && (
         <ProductReviews
