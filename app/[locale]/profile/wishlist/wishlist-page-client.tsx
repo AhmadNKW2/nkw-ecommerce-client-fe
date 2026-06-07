@@ -7,6 +7,7 @@ import { Heart, ShoppingBag, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { transformProduct } from "@/lib/transformers";
 import { ProductCardSkeleton } from "@/components/ui/skeleton";
+import { ResponsiveGrid } from "@/components/ui";
 
 export function WishlistPageClient() {
   const { items, isLoading, removeItem } = useWishlist();
@@ -18,11 +19,11 @@ export function WishlistPageClient() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ResponsiveGrid>
           {Array.from({ length: 6 }).map((_, index) => (
             <ProductCardSkeleton key={index} />
           ))}
-        </div>
+        </ResponsiveGrid>
       </div>
     );
   }
@@ -32,7 +33,7 @@ export function WishlistPageClient() {
       <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
 
       {items.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ResponsiveGrid>
           {items.map((item) => {
             const mappedProduct = transformProduct(item.product as any, locale as any);
 
@@ -54,7 +55,7 @@ export function WishlistPageClient() {
               </div>
             );
           })}
-        </div>
+        </ResponsiveGrid>
       ) : (
         <div className="text-center p-12 bg-white rounded-xl border border-gray-100 border-dashed">
           <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">

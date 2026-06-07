@@ -7,7 +7,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useCheckout } from "@/hooks/useCheckout";
 import { Product, ProductVariant } from "@/types";
 import { SITE_CONFIG } from "@/lib/constants";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface ProductActionsProps {
   product: Product;
@@ -18,6 +18,7 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
   const { addItem, openCart } = useCart();
   const router = useRouter();
   const t = useTranslations();
+  const locale = useLocale();
   const { handleCheckout: proceedToCheckout } = useCheckout();
 
   const handleCheckout = () => {
@@ -33,7 +34,12 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
   
   // Format phone number for WhatsApp: remove non-digits, ensuring it starts with dial code
   const waNumber = SITE_CONFIG.contact.phone.replace(/\D/g, "");
-  const waMessage = encodeURIComponent(`Hello, I have an inquiry about the product: ${product.name}`);
+  const inquirySku = selectedVariant?.sku || product.sku;
+  const waMessage = encodeURIComponent(
+    locale === "ar"
+      ? `مرحبا، لدي استفسار عن المنتج: ${product.name}.\nSKU: ${inquirySku}`
+      : `Hello, I have an inquiry about the product: ${product.name}.\nSKU: ${inquirySku}`
+  );
 
   return (
     <div className="flex-1 flex flex-col gap-3">

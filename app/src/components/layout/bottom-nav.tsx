@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Home, LayoutGrid, Store, User, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { AuthModal } from "@/components/auth/auth-modal";
 
 export function BottomNav() {
   const pathname = usePathname();
   const { totalItems } = useCart();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const t = useTranslations("common");
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -82,6 +86,21 @@ export function BottomNav() {
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
                 isActive ? "text-secondary" : "text-gray-500 hover:text-secondary"
               }`}
+              onClick={(event) => {
+                if (item.href !== "/profile") {
+                  return;
+                }
+
+                if (isAuthLoading) {
+                  event.preventDefault();
+                  return;
+                }
+
+                if (!isAuthenticated) {
+                  event.preventDefault();
+                  setIsAuthModalOpen(true);
+                }
+              }}
             >
               <div className="relative">
                 <motion.div
@@ -106,6 +125,12 @@ export function BottomNav() {
           );
         })}
       </div>
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        returnTo="/profile"
+      />
     </div>
   );
 }

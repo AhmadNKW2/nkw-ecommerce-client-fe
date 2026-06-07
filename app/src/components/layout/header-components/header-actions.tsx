@@ -114,7 +114,15 @@ export function HeaderActions() {
 
       {/* User Account */}
       <div className="relative hidden sm:block">
-        {isAuthenticated ? (
+        {isAuthLoading ? (
+          <div className="flex items-center gap-1 opacity-70">
+            <IconButton
+              variant="header"
+              aria-label="Account"
+              icon="user"
+            />
+          </div>
+        ) : isAuthenticated ? (
           <Select
             options={profileOptions}
             value=""

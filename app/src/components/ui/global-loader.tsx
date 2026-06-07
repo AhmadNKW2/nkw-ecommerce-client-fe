@@ -44,10 +44,18 @@ function RouteObserver() {
     if (hasParamsChanged) previousParamsRef.current = paramsString || '';
 
     if (hasPathChanged || hasParamsChanged) {
+      if (typeof window !== "undefined" && hasPathChanged) {
+        window.scrollTo(0, 0);
+      }
+
       // When route changes, we don't immediately stop loading.
       // We signal that the route transition is done.
       if (isLoading) {
-        setIsSignalingComplete(true);
+        const signalTimer = window.setTimeout(() => {
+          setIsSignalingComplete(true);
+        }, 0);
+
+        return () => window.clearTimeout(signalTimer);
       }
     }
   }, [pathname, searchParams, isLoading]);

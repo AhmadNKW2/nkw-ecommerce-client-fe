@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { SITE_CONFIG } from "@/lib/constants";
 
 interface TrackOrderLookupCardProps {
   title: string;
@@ -30,6 +32,11 @@ export function TrackOrderLookupCard({
   supportCtaLabel,
 }: TrackOrderLookupCardProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const locale = useLocale();
+
+  const whatsappNumber = SITE_CONFIG.contact.phone.replace(/\D/g, "");
 
   return (
     <Card className="border-gray-100 p-5 md:p-6">
@@ -65,11 +72,21 @@ export function TrackOrderLookupCard({
             className="space-y-4"
             onSubmit={(event) => {
               event.preventDefault();
+              const message =
+                locale === "ar"
+                  ? `مرحبا، أريد تتبع طلبي.\nرقم الطلب: ${orderNumber}\nالبريد الإلكتروني: ${email}`
+                  : `Hello, I want to track my order.\nOrder number: ${orderNumber}\nEmail: ${email}`;
+
+              window.open(
+                `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
+                "_blank",
+                "noopener,noreferrer",
+              );
               setSubmitted(true);
             }}
           >
-            <Input label={orderNumberLabel} required />
-            <Input label={emailLabel} type="email" required />
+            <Input label={orderNumberLabel} value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} required />
+            <Input label={emailLabel} type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
             <Button type="submit" backgroundColor="var(--color-secondary)">
               {submitLabel}
             </Button>

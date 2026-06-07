@@ -89,9 +89,18 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
   const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
 
   const { user } = useAuth();
   const translations = t || ((key: string) => key);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    setShouldAutoFocus(window.innerWidth >= 768);
+  }, []);
 
   const handleSubmit = async () => {
     if (!notes.trim()) {
@@ -238,7 +247,7 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 disabled={isSubmitting}
-                autoFocus
+                autoFocus={shouldAutoFocus}
               ></textarea>
 
               <div className="flex ltr:justify-end rtl:justify-start mt-2 gap-3">

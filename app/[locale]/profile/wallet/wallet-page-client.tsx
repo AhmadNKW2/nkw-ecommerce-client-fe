@@ -55,21 +55,21 @@ export function WalletPageClient() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t("myWallet")}</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-linear-to-br from-primary to-primary2 rounded-2xl p-8 text-white shadow-s1 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Wallet size={120} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+        <div className="bg-linear-to-br from-primary to-primary2 rounded-2xl p-5 md:p-8 text-white shadow-s1 relative overflow-hidden">
+          <div className="absolute -top-4 -right-4 p-6 opacity-10 md:top-0 md:right-0 md:p-8">
+            <Wallet size={96} className="md:h-[120px] md:w-[120px]" />
           </div>
 
           <div className="relative z-10">
             <p className="text-blue-100 font-medium mb-2">{t("availableBalance")}</p>
-            <div className="text-4xl font-bold mb-8">
+            <div className="text-3xl font-bold md:text-4xl">
               {walletLoading ? "..." : formatPrice(wallet?.balance || 0, undefined, locale)}
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-center gap-6">
+        <div className="grid grid-cols-1 gap-4">
           <div className="flex items-center gap-4 p-4 rounded-xl bg-green-50 text-green-700">
             <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm">
               <ArrowDownLeft size={20} />
@@ -102,19 +102,19 @@ export function WalletPageClient() {
         ) : transactions && transactions.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {transactions.map((transaction) => (
-              <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
-                <div className="flex items-center gap-4">
+              <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-4">
                   <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
                     transaction.type === "credit" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
                   }`}>
                     {transaction.type === "credit" ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{translateDescription(transaction.description)}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 break-words">{translateDescription(transaction.description)}</p>
                     <p className="text-xs text-gray-500">{new Date(transaction.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className={`font-bold ${transaction.type === "credit" ? "text-green-600" : "text-gray-900"}`}>
+                <div className={`shrink-0 text-sm font-bold md:text-base ${transaction.type === "credit" ? "text-green-600" : "text-gray-900"}`}>
                   {transaction.type === "credit" ? "+" : "-"}
                   {formatPrice(transaction.amount, undefined, locale)}
                 </div>

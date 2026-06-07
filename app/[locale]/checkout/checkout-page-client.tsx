@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
-import { FREE_SHIPPING_MIN_ORDER_AMOUNT, SHIPPING_OPTIONS, JORDAN_CITIES } from "@/lib/constants";
+import { FREE_SHIPPING_MIN_ORDER_AMOUNT, SHIPPING_OPTIONS, JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { addressService } from "@/services/address.service";
 import { orderService } from "@/services/order.service";
@@ -102,6 +102,7 @@ function getOptionalValue(value: string): string | undefined {
 
 export function CheckoutPageClient() {
   const t = useTranslations("checkout");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const isArabic = locale === "ar";
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -122,6 +123,7 @@ export function CheckoutPageClient() {
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [isMobileKeyboardOpen, setIsMobileKeyboardOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
 
@@ -160,6 +162,28 @@ export function CheckoutPageClient() {
 
     setUseWalletBalance(false);
   }, [canUseWallet, useWalletBalance]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const updateKeyboardState = () => {
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const keyboardHeight = window.innerHeight - viewportHeight;
+      setIsMobileKeyboardOpen(window.innerWidth < 1024 && keyboardHeight > 150);
+    };
+
+    updateKeyboardState();
+
+    window.visualViewport?.addEventListener("resize", updateKeyboardState);
+    window.addEventListener("resize", updateKeyboardState);
+
+    return () => {
+      window.visualViewport?.removeEventListener("resize", updateKeyboardState);
+      window.removeEventListener("resize", updateKeyboardState);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -228,6 +252,14 @@ export function CheckoutPageClient() {
     });
   }, [savedAddresses]);
 
+  useEffect(() => {
+    if (!orderComplete || typeof window === "undefined") {
+      return;
+    }
+
+    window.scrollTo(0, 0);
+  }, [orderComplete]);
+
   const transitionToStep = (step: CheckoutStep) => {
     setCurrentStep(step);
 
@@ -236,8 +268,26 @@ export function CheckoutPageClient() {
         setIsMobileSummaryOpen(false);
       }
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo(0, 0);
     }
+  };
+
+  const openTrackOrderWhatsApp = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const whatsappNumber = SITE_CONFIG.contact.phone.replace(/\D/g, "");
+    const orderNumber = `#ORD-${createdOrderId || "PENDING"}`;
+    const message = isArabic
+      ? `مرحبا، أريد تتبع طلبي ${orderNumber}.`
+      : `Hello, I want to track my order ${orderNumber}.`;
+
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   const handleAdvanceStep = () => {
@@ -420,7 +470,7 @@ export function CheckoutPageClient() {
                 {t("continueShopping")}
               </Button>
             </Link>
-            <Button>{t("trackOrder")}</Button>
+            <Button onClick={openTrackOrderWhatsApp}>{t("trackOrder")}</Button>
           </div>
         </div>
       </div>
@@ -440,11 +490,11 @@ export function CheckoutPageClient() {
                 textColor="#ffffff"
                 className="h-auto shadow-none hover:shadow-none hover:scale-100"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="hidden sm:inline">Cart</span>
+                <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
+                <span>{tCommon("back")}</span>
               </Button>
             </Link>
-            <ChevronRight className="w-5 h-5 text-third mx-2" />
+            <ChevronRight className={`w-5 h-5 text-third mx-2 ${isArabic ? "rotate-180" : ""}`} />
           </div>
           {steps.map((step, index) => {
             const isCurrent = currentStep === step.id;
@@ -465,14 +515,14 @@ export function CheckoutPageClient() {
                   <step.icon className="w-5 h-5" />
                   <span className="hidden sm:inline">{step.label}</span>
                 </Button>
-                {index < steps.length - 1 ? <ChevronRight className="w-5 h-5 text-third mx-2" /> : null}
+                {index < steps.length - 1 ? <ChevronRight className={`w-5 h-5 text-third mx-2 ${isArabic ? "rotate-180" : ""}`} /> : null}
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className={`grid grid-cols-1 gap-5 lg:grid-cols-3 ${isMobileKeyboardOpen ? "pb-6" : "pb-28 lg:pb-0"}`}>
         <div className="lg:col-span-2">
           <Card>
             {currentStep === "shipping" ? (
@@ -795,8 +845,10 @@ export function CheckoutPageClient() {
                   variant="outline"
                   size="lg"
                   onClick={handleBackStep}
+                  className="gap-2"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
+                  <span>{tCommon("back")}</span>
                 </Button>
               ) : null}
               <Button
@@ -808,7 +860,7 @@ export function CheckoutPageClient() {
                 {currentStep === "shipping" ? t("continueToPayment") : null}
                 {currentStep === "payment" ? t("reviewOrderAction") : null}
                 {currentStep === "review" ? t("placeOrder") : null}
-                {currentStep !== "review" ? <ChevronRight className="w-5 h-5" /> : null}
+                {currentStep !== "review" ? <ChevronRight className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} /> : null}
                 {currentStep === "review" ? <Lock className="w-5 h-5" /> : null}
               </Button>
             </div>
@@ -821,6 +873,7 @@ export function CheckoutPageClient() {
         </div>
       </div>
 
+      {!isMobileKeyboardOpen ? (
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden">
         <AnimatePresence>
           {isMobileSummaryOpen ? (
@@ -858,10 +911,11 @@ export function CheckoutPageClient() {
             <Button
               variant="outline"
               size="lg"
-              className="px-3"
+              className="gap-2 px-3"
               onClick={handleBackStep}
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
+              <span>{tCommon("back")}</span>
             </Button>
           ) : null}
 
@@ -891,6 +945,7 @@ export function CheckoutPageClient() {
           </Button>
         </div>
       </div>
+      ) : null}
     </>
   );
 }

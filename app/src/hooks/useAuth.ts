@@ -59,7 +59,7 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: authService.login,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       // Backend sets HttpOnly cookies; just refetch profile.
       // If backend also returns the user in body, this still works.
       const anyResponse = response as any;
@@ -72,16 +72,16 @@ export function useAuth() {
 
       if (nextUser) {
         queryClient.setQueryData(AUTH_KEYS.user, nextUser);
-      } else {
-        // Only invalidate if we didn't get the user from the login response
-        queryClient.invalidateQueries({ queryKey: AUTH_KEYS.user });
       }
+
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.user, refetchType: "active" });
+      await queryClient.refetchQueries({ queryKey: AUTH_KEYS.user, type: "active" });
     },
   });
 
   const registerMutation = useMutation({
     mutationFn: authService.register,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       const anyResponse = response as any;
       const nextUser = anyResponse?.data?.user || anyResponse?.user;
 
@@ -92,9 +92,10 @@ export function useAuth() {
 
       if (nextUser) {
         queryClient.setQueryData(AUTH_KEYS.user, nextUser);
-      } else {
-        queryClient.invalidateQueries({ queryKey: AUTH_KEYS.user });
       }
+
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.user, refetchType: "active" });
+      await queryClient.refetchQueries({ queryKey: AUTH_KEYS.user, type: "active" });
     },
   });
 

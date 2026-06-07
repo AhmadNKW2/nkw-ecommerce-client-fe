@@ -10,6 +10,7 @@ import {
   MapPin,
   ChevronRight,
   Heart,
+  Wallet,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ export function ProfilePageClient() {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const isArabic = locale === "ar";
 
   const { data: orders, isLoading: ordersLoading } = useOrders({ enabled: !!user?.id });
   const { data: wallet, isLoading: walletLoading } = useWallet({ enabled: !!user?.id });
@@ -46,6 +48,40 @@ export function ProfilePageClient() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t("dashboard")}</h1>
 
+      <div className="grid grid-cols-2 gap-3 lg:hidden">
+        <Link
+          href="/profile/wallet"
+          className="rounded-2xl border border-primary/10 bg-linear-to-br from-primary to-primary2 p-4 text-white shadow-sm"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-white/75">{t("myWallet")}</p>
+              <p className="mt-1 text-lg font-bold">
+                {walletLoading ? tCommon("loading") : formatPrice(wallet?.balance || 0, undefined, locale)}
+              </p>
+            </div>
+            <div className="rounded-full bg-white/15 p-2">
+              <Wallet className="h-5 w-5" />
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/profile/wishlist"
+          className="rounded-2xl border border-danger/10 bg-white p-4 shadow-sm"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-500">{t("wishlist")}</p>
+              <p className="mt-1 text-lg font-bold text-gray-900">{wishlistItems.length}</p>
+            </div>
+            <div className="rounded-full bg-danger/10 p-2 text-danger">
+              <Heart className="h-5 w-5" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-linear-to-br from-primary to-primary2 rounded-xl p-6 text-white shadow-s1 relative overflow-hidden group">
           <div className="absolute bottom-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -57,7 +93,7 @@ export function ProfilePageClient() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 relative group hover:border-secondary/30 transition-colors">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 group hover:border-secondary/30 transition-colors">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 mb-1 font-medium">{t("totalOrders")}</p>
@@ -70,12 +106,12 @@ export function ProfilePageClient() {
               <Package size={20} />
             </div>
           </div>
-          <Link href="/profile/orders" className="absolute bottom-6 text-sm text-secondary font-medium hover:underline inline-flex items-center">
-            {tCommon("viewAll")} <ChevronRight className="h-3 w-3 ml-1" />
+          <Link href="/profile/orders" className="mt-5 inline-flex items-center text-sm text-secondary font-medium hover:underline">
+            {tCommon("viewAll")} <ChevronRight className={`h-3 w-3 ${isArabic ? "mr-1 rotate-180" : "ml-1"}`} />
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 relative group hover:border-danger/30 transition-colors">
+        <div className="hidden lg:block bg-white rounded-xl p-6 shadow-sm border border-gray-100 group hover:border-danger/30 transition-colors">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-gray-500 mb-1 font-medium">{t("wishlist")}</p>
@@ -86,8 +122,8 @@ export function ProfilePageClient() {
               <Heart size={20} />
             </div>
           </div>
-          <Link href="/profile/wishlist" className="absolute bottom-6 text-sm text-danger font-medium hover:underline inline-flex items-center">
-            {tCommon("viewAll")} <ChevronRight className="h-3 w-3 ml-1" />
+          <Link href="/profile/wishlist" className="mt-5 inline-flex items-center text-sm text-danger font-medium hover:underline">
+            {tCommon("viewAll")} <ChevronRight className={`h-3 w-3 ${isArabic ? "mr-1 rotate-180" : "ml-1"}`} />
           </Link>
         </div>
 
