@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { FilterState, ProductFilters, FloatingFilterSort, MobileContactActions } from "@/components/products";
 import { ProductGrid } from "@/components/products/product-grid";
-import { Button, Card, Sheet, Select } from "@/components/ui";
+import { Button, Card, ResponsiveGrid, Sheet, Select } from "@/components/ui";
 import { useLoading } from "@/components/ui/global-loader";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
 import { joinFilterValues, splitFilterValues } from "@/lib/search/filter-utils";
@@ -413,11 +413,11 @@ export function ProductListingPage({
 
           <div className="min-h-100">
             {isLoading || variantsLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <ResponsiveGrid>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="aspect-2/3 animate-pulse rounded-lg bg-gray-100" />
                 ))}
-              </div>
+              </ResponsiveGrid>
             ) : productList.length > 0 ? (
               <>
                 <ProductGrid products={products} />

@@ -1,6 +1,8 @@
+import { ResponsiveGrid } from "@/components/ui";
+
 export function SearchSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <ResponsiveGrid>
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="border border-gray-200 rounded-xl overflow-hidden animate-pulse bg-white">
           <div className="aspect-square bg-gray-200" />
@@ -12,6 +14,6 @@ export function SearchSkeleton() {
           </div>
         </div>
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 }

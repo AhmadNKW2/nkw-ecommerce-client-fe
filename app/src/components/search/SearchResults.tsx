@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { SearchProductCard } from './SearchProductCard';
 import { SearchSkeleton } from './SearchSkeleton';
 import type { SearchHit } from '@/lib/search/types';
+import { ResponsiveGrid } from '@/components/ui';
 
 interface Props {
   hits: SearchHit[];
@@ -28,10 +29,10 @@ export function SearchResults({ hits, isLoading }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <ResponsiveGrid>
       {hits.map((hit) => (
         <SearchProductCard key={hit.id} hit={hit} />
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 }

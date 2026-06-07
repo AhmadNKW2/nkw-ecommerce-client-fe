@@ -2,6 +2,7 @@
 
 import { Truck, RotateCcw, Shield, Headphones, Clock, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { ResponsiveGrid } from "@/components/ui";
 
 export function FeaturesSection() {
   const t = useTranslations('features');
@@ -42,7 +43,7 @@ export function FeaturesSection() {
   return (
     <section className="bg-gray-50 rounded-r1">
       <div className="p-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <ResponsiveGrid>
           {features.map((feature, index) => (
             <div
               key={index}
@@ -55,7 +56,7 @@ export function FeaturesSection() {
               <p className="text-sm text-third">{feature.description}</p>
             </div>
           ))}
-        </div>
+        </ResponsiveGrid>
       </div>
     </section>
   );

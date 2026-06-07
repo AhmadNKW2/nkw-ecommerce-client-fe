@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { ResponsiveGrid } from "./responsive-grid";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -29,11 +30,11 @@ function ProductCardSkeleton() {
 
 function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+    <ResponsiveGrid>
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} />
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 }
 

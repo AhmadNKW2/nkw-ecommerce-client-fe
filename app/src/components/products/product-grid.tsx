@@ -3,25 +3,18 @@
 import { Product } from "@/types";
 import { ProductCard } from "./product-card";
 import { useTranslations } from "next-intl";
+import { ResponsiveGrid } from "@/components/ui";
 
 interface ProductGridProps {
   products: Product[];
-  columns?: 2 | 3 | 4 | 5;
   showActions?: boolean;
 }
 
 export function ProductGrid({
   products,
-  columns = 4,
   showActions = true
 }: ProductGridProps) {
   const t = useTranslations("productGrid");
-  const gridCols = {
-    2: "grid-cols-1 sm:grid-cols-2",
-    3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
-    4: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-    5: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
-  };
 
   if (products.length === 0) {
     return (
@@ -33,7 +26,7 @@ export function ProductGrid({
   }
 
   return (
-    <div className={`grid ${gridCols[columns]} gap-5`}>
+    <ResponsiveGrid>
       {products.filter((product, index, self) => index === self.findIndex(p => p.id === product.id && p.defaultVariantId === product.defaultVariantId)).map((product) => (
         <ProductCard
           key={`${product.id}-${product.defaultVariantId ?? "base"}`}
@@ -44,6 +37,6 @@ export function ProductGrid({
           cartButtonIcon="add-to-cart"
         />
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 }

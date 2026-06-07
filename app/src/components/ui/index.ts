@@ -33,6 +33,7 @@ export type { TextareaProps } from "./textarea";
 
 export { Select } from "./select";
 export type { SelectOption, SelectProps } from "./select";
+export { ResponsiveGrid } from "./responsive-grid";
 
 export { 
   Skeleton, 

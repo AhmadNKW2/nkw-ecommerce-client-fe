@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { ViewAllLink } from "@/components/home/view-all-link";
-import { Button } from "@/components/ui";
+import { Button, ResponsiveGrid } from "@/components/ui";
 import { ProductCard } from "@/components/products/product-card";
 import type { Product } from "@/types";
 import { useHorizontalScroll } from "@/hooks/useHorizontalScroll";
@@ -176,7 +176,7 @@ export function HomeSection(props: HomeSectionProps) {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 lg:gap-5">
+        <ResponsiveGrid>
           {visibleProducts.map((product, idx) => (
             <motion.div
               key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}
@@ -192,7 +192,7 @@ export function HomeSection(props: HomeSectionProps) {
               />
             </motion.div>
           ))}
-        </div>
+        </ResponsiveGrid>
       )}
 
       {canShowLoadMore ? (
