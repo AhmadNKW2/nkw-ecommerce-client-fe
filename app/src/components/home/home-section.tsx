@@ -176,7 +176,7 @@ export function HomeSection(props: HomeSectionProps) {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 lg:gap-5">
           {visibleProducts.map((product, idx) => (
             <motion.div
               key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}
