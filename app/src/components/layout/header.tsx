@@ -63,7 +63,7 @@ export function Header() {
               </div>
               <Logo
                 className="shrink-0"
-                imageClassName="h-6 w-auto md:h-11 md:max-w-none"
+                imageClassName="h-9 w-auto md:h-11 md:max-w-none"
               />
             </div>
 
