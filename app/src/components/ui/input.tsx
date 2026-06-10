@@ -46,6 +46,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             {...props}
           />
+          {Icon && iconPosition === "left" && !variant && (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-third">
+              <Icon className="w-5 h-5" />
+            </div>
+          )}
           {variant === "search" && (
             <button
                 type="submit"

@@ -4,12 +4,11 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 import { IconButton } from "@/components/ui/icon-button";
 import { Select, type SelectOption } from "@/components/ui";
 import { LanguageSwitcher } from "./language-switcher";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { AuthModal } from "@/components/auth/auth-modal";
 import { User, Package, LogOut, Wallet, Heart, MapPin, UserCog } from "lucide-react";
 
 import { useWallet } from "@/hooks/useWallet";
@@ -24,10 +23,9 @@ export function HeaderActions() {
   const router = useRouter();
   const { totalItems, toggleCart } = useCart();
   const { items: wishlistItems } = useWishlist();
-  const { user, isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
+  const { openAuthModal } = useAuthModal();
+  const { user, isAuthenticated, isLoading: isAuthLoading, logout, isLoggingOut } = useAuth();
   const { data: wallet } = useWallet({ enabled: isAuthenticated });
-
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -57,7 +55,7 @@ export function HeaderActions() {
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2 lg:gap-3">
 
       {/* Language Switcher - Desktop Only */}
       <div className="hidden lg:block ">
@@ -67,6 +65,7 @@ export function HeaderActions() {
 
       <SellWithUsCta />
 
+      <SellWithUsCta variant="headerMobile" className="lg:hidden" />
 
       {isAuthenticated && wallet && (
         <>
@@ -80,6 +79,18 @@ export function HeaderActions() {
               </span>
             </div>
           </Link>
+          <Link
+            href="/profile/wallet"
+            className="lg:hidden inline-flex h-10 items-center gap-1.5 rounded-full border border-white/10 bg-secondary/10 px-2.5 py-1 text-white transition-all hover:bg-secondary/20"
+          >
+            <Wallet className="w-3.5 h-3.5 text-secondary" />
+            <div className="flex flex-col leading-none">
+              <span className="text-[9px] text-white/70 uppercase font-medium">{t('myWallet')}</span>
+              <span className="text-xs font-bold text-white tabular-nums whitespace-nowrap">
+                {formatPrice(Number(wallet.balance) || 0, wallet.currency || CURRENCY_CONFIG.code, locale as any)}
+              </span>
+            </div>
+          </Link>
         </>
       )}
 
@@ -89,7 +100,7 @@ export function HeaderActions() {
       <Link
         prefetch={isAuthenticated}
         href="/profile/wishlist"
-        className="flex"
+        className="hidden md:flex"
         data-prevent-loader={!isAuthenticated ? "true" : undefined}
         onClick={(e) => {
           if (isAuthLoading) {
@@ -98,7 +109,7 @@ export function HeaderActions() {
           }
           if (!isAuthenticated) {
             e.preventDefault();
-            setIsAuthModalOpen(true);
+            openAuthModal("login", { returnTo: "/profile/wishlist" });
           }
         }}
       >
@@ -127,12 +138,12 @@ export function HeaderActions() {
             options={profileOptions}
             value=""
             onChange={handleProfileChange}
-            placeholder={`${t("hi")} ${user?.firstName}`}
+            placeholder={isLoggingOut ? t("logout") : `${t("hi")}${user?.firstName ? ` ${user.firstName}` : ""}`}
             className="w-auto min-w-[140px]"
             variant="header"
           />
         ) : (
-          <div className="flex items-center gap-1 cursor-pointer" onClick={() => setIsAuthModalOpen(true)}
+          <div className="flex items-center gap-1 cursor-pointer" onClick={() => openAuthModal()}
           >
             <span
               className="text-white text-sm font-medium hidden lg:block px-1"
@@ -162,10 +173,6 @@ export function HeaderActions() {
         />
       </div>
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </div>
   );
 }

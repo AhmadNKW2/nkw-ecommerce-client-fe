@@ -6,13 +6,10 @@ import { ChevronRight, ArrowLeft, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { LanguageSwitcher } from "./language-switcher";
-import { useAuth } from "@/hooks/useAuth";
-import { AuthModal } from "@/components/auth/auth-modal";
 import { useHome } from "@/hooks/useHome";
 import { transformHomeCategory, type Locale } from "@/lib/transformers";
 import { Category } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { SellWithUsCta } from "./sell-with-us-cta";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -39,8 +36,6 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [history, setHistory] = useState<Category[]>([]);
   const [direction, setDirection] = useState(0);
 
@@ -73,17 +68,6 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
   const goBack = () => {
     setDirection(-1);
     setHistory(history.slice(0, -1));
-  };
-
-
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    if (!isAuthenticated) {
-      e.preventDefault();
-      onClose();
-      setIsAuthModalOpen(true);
-    } else {
-      onClose();
-    }
   };
 
   return (
@@ -171,19 +155,9 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
 
       <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <SellWithUsCta
-            variant="compact"
-            onOpen={onClose}
-            className="justify-center"
-          />
           <LanguageSwitcher />
         </div>
       </div>
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Lock, Mail, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +39,27 @@ export function LoginForm({ onSuccess, onRegisterClick, returnTo }: LoginFormPro
     resolver: zodResolver(loginSchema),
   });
 
+  const getFriendlyLoginError = (value: unknown) => {
+    const message = value instanceof Error ? value.message : "";
+
+    if (/invalid credentials/i.test(message)) {
+      return t("invalidCredentials");
+    }
+
+    if (/account is deactivated/i.test(message)) {
+      return t("accountDeactivated");
+    }
+
+    return message || t("loginUnexpectedError");
+  };
+
   const onSubmit = async (data: LoginFormValues) => {
     setError(null);
     try {
       await login(data);
       if (onSuccess) onSuccess();
-    } catch (error: any) {
-      setError(error.message || t("error"));
+    } catch (error: unknown) {
+      setError(getFriendlyLoginError(error));
     }
   };
 
@@ -60,48 +74,24 @@ export function LoginForm({ onSuccess, onRegisterClick, returnTo }: LoginFormPro
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         {error && <AuthErrorAlert message={error} />}
-        
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-            {t("email")}
-          </label>
-          <div className="relative mt-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Mail className="h-5 w-5 text-gray-400" />
-            </div>
-            <Input
-              id="email"
-              type="email"
-              placeholder={t("email")}
-              className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
-              {...register("email")}
-            />
-          </div>
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{t("email") + " is invalid"}</p>
-          )}
-        </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            {t("password")}
-          </label>
-          <div className="relative mt-1">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Lock className="h-5 w-5 text-gray-400" />
-            </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder={t("password")}
-              className={`pl-10 ${errors.password ? "border-red-500" : ""}`}
-              {...register("password")}
-            />
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+        <Input
+          id="email"
+          type="email"
+          label={t("email")}
+          placeholder={t("email")}
+          error={errors.email ? t("invalidEmail") : undefined}
+          {...register("email")}
+        />
+
+        <Input
+          id="password"
+          type="password"
+          label={t("password")}
+          placeholder={t("password")}
+          error={errors.password?.message}
+          {...register("password")}
+        />
 
         <div className="flex items-center justify-between text-sm">
           <button

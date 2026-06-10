@@ -70,8 +70,8 @@ function RouteObserver() {
     // and fire their useQuery calls.
     // We start a small timer to allow for that "render gap".
     
-    // We use a small delay both for aesthetic smoothness and to catch new queries
-    const GRACE_PERIOD_MS = 500; 
+    // Wait for route-mounted queries/UI work to settle before hiding.
+    const GRACE_PERIOD_MS = 500;
 
     const timer = setTimeout(() => {
       // After grace period, check if we are still fetching data
@@ -83,7 +83,9 @@ function RouteObserver() {
       // If isFetching > 0, this effect will re-run when isFetching changes to 0
     }, GRACE_PERIOD_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [isLoading, isSignalingComplete, isFetching, setIsLoading]);
 
   return null;
@@ -99,15 +101,15 @@ function LoaderVisuals({ isLoading }: { isLoading: boolean }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/35 backdrop-blur-[0.5px]"
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="fixed inset-0 z-9999 flex items-center justify-center bg-white/28 backdrop-blur-[0.5px]"
           >
             <div className="absolute top-0 left-0 right-0 h-1 bg-primary">
                <motion.div
                 className="h-full bg-white"
                 initial={{ width: "0%" }}
                 animate={{ width: "90%" }} 
-                transition={{ duration: 3, ease: "circOut" }}
+                transition={{ duration: 1.1, ease: "easeOut" }}
                />
             </div>
           </motion.div>
@@ -124,10 +126,10 @@ export function GlobalLoaderProvider({ children }: GlobalLoaderProps) {
     let timeoutId: NodeJS.Timeout;
 
     if (isLoading) {
-      // Safety timeout increased to 15s to allow for slow APIs
+      // Final fallback in case navigation never resolves.
       timeoutId = setTimeout(() => {
         setIsLoading(false);
-      }, 15000); 
+      }, 6000); 
     }
 
     return () => {

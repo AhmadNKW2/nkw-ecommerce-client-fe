@@ -43,6 +43,38 @@ function getCartItemKey(productId: number | string, variantId?: number | string 
   return `${productId}:${variantId ?? "base"}`;
 }
 
+function mergeCartItems(serverItems: CartItem[], guestItems: CartItem[]): CartItem[] {
+  const mergedItems = new Map<string, CartItem>();
+
+  serverItems.forEach((item) => {
+    mergedItems.set(getCartItemKey(item.product_id, item.variant_id), item);
+  });
+
+  guestItems.forEach((item) => {
+    const itemKey = getCartItemKey(item.product_id, item.variant_id);
+    const existingItem = mergedItems.get(itemKey);
+
+    if (!existingItem) {
+      mergedItems.set(itemKey, item);
+      return;
+    }
+
+    mergedItems.set(itemKey, {
+      ...existingItem,
+      quantity: existingItem.quantity + item.quantity,
+      product: {
+        ...item.product,
+        ...existingItem.product,
+        image: existingItem.product.image || item.product.image,
+        slug: existingItem.product.slug || item.product.slug,
+      },
+      variant: existingItem.variant ?? item.variant,
+    });
+  });
+
+  return Array.from(mergedItems.values());
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -233,9 +265,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [locale, queryClient]);
 
-  const baseCartItems = isAuthenticated
-    ? (cart?.items || []).map(normalizeCartItem)
-    : guestItems;
+  const authenticatedCartItems = useMemo(
+    () => mergeCartItems((cart?.items || []).map(normalizeCartItem), guestItems),
+    [cart?.items, guestItems]
+  );
+
+  const baseCartItems = isAuthenticated ? authenticatedCartItems : guestItems;
 
   const cartItems = useMemo(() => {
     if (!lastAddedItemKey) {

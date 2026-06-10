@@ -12,6 +12,7 @@ import { AddToCartButton } from "./add-to-cart-button";
 import { FloatingCartButton } from "./floating-cart-button";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 
 
 
@@ -39,7 +40,9 @@ export function ProductCard({
   const router = useRouter();
   const { items, openCart } = useCart();
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
+  const { data: seoSettings } = useSeoSettings();
   const [cartButtonStatus, setCartButtonStatus] = useState<"idle" | "loading" | "success">("idle");
+  const showSalePricing = seoSettings?.show_sale_pricing !== false;
 
   const isRecent = useMemo(() => {
     if (!product.createdAt) return false;
@@ -69,8 +72,10 @@ export function ProductCard({
 
   const hasVariants = hasMultipleVariants;
 
-  const discount = product.compareAtPrice
-    ? calculateDiscount(product.compareAtPrice, product.price)
+  const visibleCompareAtPrice = showSalePricing ? product.compareAtPrice : undefined;
+
+  const discount = visibleCompareAtPrice
+    ? calculateDiscount(visibleCompareAtPrice, product.price)
     : 0;
 
   const wishlistVariantId = product.defaultVariantId != null && String(product.defaultVariantId).length > 0
@@ -169,9 +174,9 @@ export function ProductCard({
               <span className="text-lg font-bold text-primary">
                 {formatPrice(product.price, undefined, locale)}
               </span>
-              {product.compareAtPrice && (
+              {visibleCompareAtPrice && (
                 <span className="text-sm text-third line-through">
-                  {formatPrice(product.compareAtPrice, undefined, locale)}
+                  {formatPrice(visibleCompareAtPrice, undefined, locale)}
                 </span>
               )}
             </div>
@@ -371,9 +376,9 @@ export function ProductCard({
           <span className="text-lg font-bold text-secondary">
             {formatPrice(product.price, undefined, locale)}
           </span>
-          {product.compareAtPrice && (
+          {visibleCompareAtPrice && (
             <span className="text-sm text-third line-through">
-              {formatPrice(product.compareAtPrice, undefined, locale)}
+              {formatPrice(visibleCompareAtPrice, undefined, locale)}
             </span>
           )}
         </div>

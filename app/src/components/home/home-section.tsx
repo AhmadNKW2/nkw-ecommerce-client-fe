@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -42,8 +41,6 @@ export type HomeSectionProps = ProductsVariantProps;
 
 export function HomeSection(props: HomeSectionProps) {
   const t = useTranslations("common");
-  const locale = useLocale();
-  const isArabic = locale === "ar";
   const showViewAll = props.showViewAll ?? true;
 
   // products variant
@@ -128,9 +125,9 @@ export function HomeSection(props: HomeSectionProps) {
                 ? "bg-white hover:bg-gray-50 hover:border-primary text-primary hover:text-primary"
                 : "bg-gray-100 text-third cursor-not-allowed"
             )}
-            aria-label={isArabic ? "Scroll next" : "Scroll left"}
+            aria-label="Scroll left"
           >
-            {isArabic ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+            <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => scrollRight()}
@@ -141,9 +138,9 @@ export function HomeSection(props: HomeSectionProps) {
                 ? "bg-white hover:bg-gray-50 hover:border-primary text-primary hover:text-primary"
                 : "bg-gray-100 text-third cursor-not-allowed"
             )}
-            aria-label={isArabic ? "Scroll previous" : "Scroll right"}
+            aria-label="Scroll right"
           >
-            {isArabic ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       ) : null}

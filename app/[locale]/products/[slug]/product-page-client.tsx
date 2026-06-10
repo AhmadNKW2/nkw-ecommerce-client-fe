@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
 import { useProductBySlug, useProductsByCategory } from "@/hooks/useProducts";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { apiClient } from "@/lib/api-client";
 import { CURRENCY_CONFIG } from "@/lib/constants";
 import { transformProduct, type Locale } from "@/lib/transformers";
@@ -572,6 +573,8 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const t = useTranslations();
   const searchParams = useSearchParams();
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
+  const { data: seoSettings } = useSeoSettings();
+  const showSalePricing = seoSettings?.show_sale_pricing !== false;
 
   const requestedVariantId = useMemo(() => {
     const rawValue = searchParams.get("variant") ?? searchParams.get("variantId");
@@ -829,7 +832,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   }
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
-  const currentCompareAtPrice = selectedVariant?.compareAtPrice ? selectedVariant.compareAtPrice : product.compareAtPrice;
+  const currentCompareAtPrice = showSalePricing
+    ? (selectedVariant?.compareAtPrice ? selectedVariant.compareAtPrice : product.compareAtPrice)
+    : undefined;
   const currentDimensions = selectedVariant?.dimensions || product.dimensions;
   const currentStock = selectedVariant ? selectedVariant.stock : product.stock;
   const discount = currentCompareAtPrice ? calculateDiscount(currentCompareAtPrice, currentPrice) : 0;
@@ -1112,8 +1117,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             title={t("product.relatedProducts")}
             subtitle={t("product.relatedProductsSubtitle")}
             viewAllHref={`/categories/${product.category.slug}`}
+            initialVisibleCount={10}
             showLoadMore={false}
-            showNavArrows={true}
+            showNavArrows={false}
           />
         </section>
       ) : null}

@@ -21,7 +21,7 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { sellWithUsSchema, type SellWithUsFormData } from "@/lib/sell-with-us";
 
-type SellWithUsCtaVariant = "desktop" | "drawer" | "compact";
+type SellWithUsCtaVariant = "desktop" | "drawer" | "compact" | "headerMobile";
 
 interface SellWithUsCtaProps {
   variant?: SellWithUsCtaVariant;
@@ -58,6 +58,8 @@ async function submitSellWithUs(values: SellWithUsFormData): Promise<SubmitRespo
 const triggerStyles: Record<SellWithUsCtaVariant, string> = {
   desktop:
     "hidden lg:inline-flex items-center gap-2 rounded-full border border-white/10 bg-secondary/10 px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-secondary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/25",
+  headerMobile:
+    "inline-flex h-10 items-center gap-1.5 rounded-full border border-white/10 bg-secondary/10 px-2.5 py-1 text-white transition-all hover:bg-secondary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/25",
   drawer:
     "mx-auto flex w-fit items-center gap-2 rounded-full border border-secondary/15 bg-secondary/10 px-3 py-1.5 text-primary transition-all hover:bg-secondary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/20",
   compact:
@@ -255,16 +257,16 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
         <Store
           className={cn(
             "shrink-0 text-secondary",
-            variant === "compact" ? "h-3.5 w-3.5" : "h-4 w-4"
+            variant === "compact" ? "h-3.5 w-3.5" : variant === "headerMobile" ? "h-3 w-3" : "h-4 w-4"
           )}
         />
         <span
           className={cn(
             "leading-none text-start",
-            variant === "compact" ? "flex items-center" : "flex flex-col"
+            variant === "compact" || variant === "headerMobile" ? "flex items-center" : "flex flex-col"
           )}
         >
-          {variant === "compact" ? null : (
+          {variant === "compact" || variant === "headerMobile" ? null : (
             <span
               className={cn(
                 "text-[10px] font-medium",
@@ -276,8 +278,8 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
           )}
           <span
             className={cn(
-              variant === "compact" ? "text-sm font-semibold" : "text-sm font-bold",
-              variant === "desktop" ? "text-white" : "text-primary"
+              variant === "compact" ? "text-sm font-semibold" : variant === "headerMobile" ? "text-[11px] font-semibold whitespace-nowrap" : "text-sm font-bold",
+              variant === "desktop" || variant === "headerMobile" ? "text-white" : "text-primary"
             )}
           >
             {copy.button}

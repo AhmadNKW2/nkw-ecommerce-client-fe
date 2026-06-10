@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
@@ -11,12 +12,10 @@ import {
   MapPin,
   LogOut,
   LayoutDashboard,
-  Heart,
-  Globe
+  Heart
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/header-components/language-switcher";
-import { SellWithUsCta } from "@/components/layout/header-components/sell-with-us-cta";
 
 const navigation = [
   { key: "dashboard", href: "/profile", icon: LayoutDashboard },
@@ -32,19 +31,21 @@ export function ProfileSidebar() {
   const { logout, user } = useAuth();
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
-  const tNav = useTranslations("nav");
+  const [imageFailed, setImageFailed] = useState(false);
+  const profileImage = user?.image || user?.avatar;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="p-6 border-b border-gray-100 bg-primary/5">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl overflow-hidden relative">
-            {user?.image ? (
+            {profileImage && !imageFailed ? (
               <Image 
-                src={user.image} 
+                src={profileImage} 
                 alt={user.firstName || "User"} 
                 fill 
                 className="object-cover"
+                onError={() => setImageFailed(true)}
               />
             ) : (
               user?.firstName?.[0] || "U"
@@ -99,7 +100,6 @@ export function ProfileSidebar() {
 
         <div className="mt-4 border-t border-gray-100 px-4 py-4">
           <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-            <SellWithUsCta variant="compact" />
             <div className="lg:hidden">
               <LanguageSwitcher />
             </div>

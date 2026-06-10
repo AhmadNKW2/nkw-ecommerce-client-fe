@@ -51,22 +51,21 @@ export function Header() {
       {/* Main Header - Logo, Search, Actions */}
       <div className="bg-primary lg:border-b border-gray-100">
         <div className="container mx-auto px-4 md:px-5">
-          <div className="relative flex items-center justify-between gap-2 md:gap-4 h-16 md:h-20">
-            <div className="relative z-10 flex items-center lg:hidden">
-              {/* Mobile Menu Button */}
-              <IconButton
-                variant="header"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
-                icon={isMenuOpen ? "x" : "menu"}
+          <div className="flex items-center justify-between gap-2 h-16 md:h-20">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="lg:hidden flex items-center">
+                <IconButton
+                  variant="header"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  aria-label="Toggle menu"
+                  icon={isMenuOpen ? "x" : "menu"}
+                />
+              </div>
+              <Logo
+                className="shrink-0"
+                imageClassName="h-6 w-auto md:h-11 md:max-w-none"
               />
             </div>
-
-            {/* Logo */}
-            <Logo
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:left-auto lg:top-auto lg:translate-x-0 lg:translate-y-0"
-              imageClassName="h-10 md:h-11 md:max-w-none"
-            />
 
             {/* Search Box with Autocomplete */}
             <div className="hidden lg:block flex-1 max-w-2xl mx-auto">
@@ -74,7 +73,7 @@ export function Header() {
             </div>
 
             {/* Actions - Wishlist, Profile, Cart */}
-            <div className="relative z-10">
+            <div className="relative z-10 flex items-center gap-2">
               <HeaderActions />
             </div>
           </div>

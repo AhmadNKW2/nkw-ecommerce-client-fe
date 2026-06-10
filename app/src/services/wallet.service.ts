@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 import { CURRENCY_CONFIG } from '@/lib/constants';
 import { 
+  CashbackPreview,
   Wallet, 
   WalletTransaction, 
   AddFundsPayload, 
@@ -99,6 +100,14 @@ function normalizeWalletTransactions(payload: unknown): WalletTransaction[] {
   return transactions.map((transaction) => normalizeWalletTransaction(transaction));
 }
 
+function normalizeCashbackPreview(payload: unknown): CashbackPreview {
+  const preview = unwrapDataPayload(payload) as Record<string, unknown> | null;
+
+  return {
+    amount: toFiniteNumber(preview?.amount),
+  };
+}
+
 export const walletService = {
   getWallet: async (): Promise<Wallet> => {
     const response = await apiClient.get<unknown>(`/wallet`);
@@ -113,6 +122,11 @@ export const walletService = {
   filterTransactions: async (payload: TransactionFilterPayload): Promise<WalletTransaction[]> => {
      const response = await apiClient.post<TransactionsResponse | WalletTransaction[]>('/wallet/transactions/filter', payload);
      return normalizeWalletTransactions(response);
+  },
+
+  getCashbackPreview: async (orderAmount: number): Promise<CashbackPreview> => {
+    const response = await apiClient.get<unknown>(`/wallet/cashback-preview?orderAmount=${encodeURIComponent(String(orderAmount))}`);
+    return normalizeCashbackPreview(response);
   },
 
   addFunds: async (payload: AddFundsPayload): Promise<Wallet> => {

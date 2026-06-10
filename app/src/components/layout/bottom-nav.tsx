@@ -5,17 +5,17 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { Home, LayoutGrid, Store, User, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { AuthModal } from "@/components/auth/auth-modal";
 
 export function BottomNav() {
   const pathname = usePathname();
   const { totalItems } = useCart();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const t = useTranslations("common");
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -78,6 +78,46 @@ export function BottomNav() {
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const requiresAuth = item.href === "/profile" && !isAuthenticated;
+
+          if (requiresAuth) {
+            return (
+              <button
+                key={item.href}
+                type="button"
+                className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                  isActive ? "text-secondary" : "text-gray-500 hover:text-secondary"
+                }`}
+                onClick={() => {
+                  if (isAuthLoading) {
+                    return;
+                  }
+
+                  openAuthModal("login", { returnTo: item.href });
+                }}
+              >
+                <div className="relative">
+                  <motion.div
+                    initial={false}
+                    animate={isActive ? { scale: 1.2 } : { scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <Icon
+                      className="w-6 h-6 transition-all duration-300"
+                    />
+                  </motion.div>
+                  {item.badge ? (
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </span>
+                  ) : null}
+                </div>
+                <span className="text-[10px] font-bold tracking-wide">
+                  {t(item.label) || item.label}
+                </span>
+              </button>
+            );
+          }
 
           return (
             <Link
@@ -86,21 +126,6 @@ export function BottomNav() {
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
                 isActive ? "text-secondary" : "text-gray-500 hover:text-secondary"
               }`}
-              onClick={(event) => {
-                if (item.href !== "/profile") {
-                  return;
-                }
-
-                if (isAuthLoading) {
-                  event.preventDefault();
-                  return;
-                }
-
-                if (!isAuthenticated) {
-                  event.preventDefault();
-                  setIsAuthModalOpen(true);
-                }
-              }}
             >
               <div className="relative">
                 <motion.div
@@ -125,12 +150,6 @@ export function BottomNav() {
           );
         })}
       </div>
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        returnTo="/profile"
-      />
     </div>
   );
 }

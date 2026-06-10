@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useInfiniteProducts } from "@/hooks/useProducts";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 import type { Locale } from "@/lib/transformers";
 
 interface SalePageClientProps {
@@ -17,6 +18,8 @@ interface SalePageClientProps {
 export function SalePageClient({ emptyTitle, emptyDescription }: SalePageClientProps) {
   const locale = useLocale() as Locale;
   const tCommon = useTranslations("common");
+  const { data: seoSettings } = useSeoSettings();
+  const showSalePricing = seoSettings?.show_sale_pricing !== false;
 
   const {
     data,
@@ -45,8 +48,10 @@ export function SalePageClient({ emptyTitle, emptyDescription }: SalePageClientP
   const { products } = useListingVariantProducts(rawProducts, locale);
 
   const saleProducts = useMemo(
-    () => products.filter((product) => product.compareAtPrice != null && product.compareAtPrice > product.price),
-    [products],
+    () => showSalePricing
+      ? products.filter((product) => product.compareAtPrice != null && product.compareAtPrice > product.price)
+      : [],
+    [products, showSalePricing],
   );
 
   if (isLoading) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -30,6 +30,8 @@ export function CartPageClient() {
   const { toggleItem, isInWishlist } = useWishlist();
   const { handleCheckout } = useCheckout();
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  const [showFloatingMobileBar, setShowFloatingMobileBar] = useState(true);
+  const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const { data: seoSettings } = useQuery({
     queryKey: ["seo-settings"],
@@ -96,6 +98,33 @@ export function CartPageClient() {
       ? attribute.value_ar || attribute.value_en
       : attribute.value_en || attribute.value_ar;
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const sentinel = mobileActionsSentinelRef.current;
+    if (!sentinel) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingMobileBar(!entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: "0px 0px -88px 0px",
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   if (items.length === 0) {
     return (
       <div className="px-4 py-16">
@@ -135,7 +164,7 @@ export function CartPageClient() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pb-32 lg:pb-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 pb-5 lg:pb-0">
         <div className="lg:col-span-2 flex flex-col gap-5">
           {items.map((item) => {
             const productPricing = getEffectivePricing(item.product);
@@ -295,6 +324,7 @@ export function CartPageClient() {
         </div>
       </div>
 
+      {showFloatingMobileBar ? (
       <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden">
         <AnimatePresence>
           {isMobileSummaryOpen ? (
@@ -348,7 +378,7 @@ export function CartPageClient() {
         <div className="flex items-center justify-between p-4 gap-4 bg-white">
           <div className="flex flex-col cursor-pointer min-w-30" onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}>
             <div className="flex items-center gap-2 select-none">
-              <span className="font-bold text-primary text-xl tracking-tight">{formatPrice(finalTotal)}</span>
+              <span className="font-bold text-primary text-xl tracking-tight whitespace-nowrap">{formatPrice(finalTotal)}</span>
               {isMobileSummaryOpen ? (
                 <ChevronDown className="w-4 h-4 text-primary" />
               ) : (
@@ -368,6 +398,18 @@ export function CartPageClient() {
             {t("checkout").toUpperCase()}
           </Button>
         </div>
+      </div>
+      ) : null}
+
+      <div className="lg:hidden pb-5">
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={handleCheckout}
+        >
+          {t("checkout").toUpperCase()}
+        </Button>
+        <div ref={mobileActionsSentinelRef} className="h-5" aria-hidden="true" />
       </div>
     </>
   );

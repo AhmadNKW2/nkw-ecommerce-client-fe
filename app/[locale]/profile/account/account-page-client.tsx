@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { User } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -26,19 +27,24 @@ export function AccountPageClient() {
 }
 
 function AccountForm({ user, t }: { user: User | null; t: (key: string) => string }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   if (!user) return null;
+
+  const profileImage = user.image || user.avatar;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
       <div className="flex flex-col items-center gap-4 mb-8 border-b border-gray-100 pb-8">
         <div className="relative group">
           <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm relative">
-            {user.image ? (
+            {profileImage && !imageFailed ? (
               <Image
-                src={user.image}
+                src={profileImage}
                 alt={`${user.firstName} ${user.lastName}`}
                 fill
                 className="object-cover"
+                onError={() => setImageFailed(true)}
               />
             ) : (
               <span className="text-3xl font-bold text-gray-400">{user.firstName?.[0] || "U"}</span>

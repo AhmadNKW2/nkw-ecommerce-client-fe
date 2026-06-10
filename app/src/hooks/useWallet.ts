@@ -7,6 +7,7 @@ export const WALLET_QUERY_KEYS = {
   details: () => [...WALLET_QUERY_KEYS.all, 'details'] as const,
   transactions: () => [...WALLET_QUERY_KEYS.all, 'transactions'] as const,
   filteredTransactions: (filters: TransactionFilterPayload) => [...WALLET_QUERY_KEYS.transactions(), filters] as const,
+  cashbackPreview: (orderAmount: number) => [...WALLET_QUERY_KEYS.all, 'cashback-preview', orderAmount] as const,
 };
 
 /**
@@ -40,6 +41,14 @@ export function useFilterTransactions(filters: TransactionFilterPayload) {
         queryFn: () => walletService.filterTransactions(filters),
         // Helper to not run if no filters or different triggering logic could be added
     });
+}
+
+export function useCashbackPreview(orderAmount: number, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: WALLET_QUERY_KEYS.cashbackPreview(orderAmount),
+    queryFn: () => walletService.getCashbackPreview(orderAmount),
+    enabled: options?.enabled && orderAmount > 0,
+  });
 }
 
 /**

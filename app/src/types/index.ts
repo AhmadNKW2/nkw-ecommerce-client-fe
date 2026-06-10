@@ -222,6 +222,10 @@ export interface WalletResponse {
   data: Wallet;
 }
 
+export interface CashbackPreview {
+  amount: number;
+}
+
 export interface TransactionsResponse {
   data: WalletTransaction[];
   meta?: {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,7 +20,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button, Input, Card, Radio, Textarea, Select, Checkbox } from "@/components/ui";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/useAuth";
-import { useWallet } from "@/hooks/useWallet";
+import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
 import { FREE_SHIPPING_MIN_ORDER_AMOUNT, SHIPPING_OPTIONS, JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
@@ -124,18 +124,31 @@ export function CheckoutPageClient() {
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const [isMobileKeyboardOpen, setIsMobileKeyboardOpen] = useState(false);
+  const [showFloatingMobileBar, setShowFloatingMobileBar] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
+  const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
 
   const selectedShipping = SHIPPING_OPTIONS.find((shippingOption) => shippingOption.id === shippingMethod) ?? SHIPPING_OPTIONS[0];
   const shipping = totalPrice >= FREE_SHIPPING_MIN_ORDER_AMOUNT && selectedShipping.price > 0 ? 0 : selectedShipping.price;
   const finalTotal = totalPrice + shipping;
+  const { data: cashbackPreview } = useCashbackPreview(totalPrice, {
+    enabled: !!user?.id && totalPrice > 0,
+  });
   const availableWalletBalance = Number(wallet?.balance ?? 0);
   const canUseWallet = availableWalletBalance > 0;
   const walletAppliedAmount = useWalletBalance ? Math.min(availableWalletBalance, finalTotal) : 0;
   const remainingPaymentAmount = Math.max(finalTotal - walletAppliedAmount, 0);
   const payableSummaryAmount = walletAppliedAmount > 0 ? remainingPaymentAmount : finalTotal;
   const payableSummaryLabel = walletAppliedAmount > 0 ? t("cashOnDeliveryAmount") : t("total");
+  const cashbackAmount = Number(cashbackPreview?.amount ?? 0);
+  const mobileStickyBottomOffset = isMobileKeyboardOpen ? 0 : 64;
+  const currentActionLabel =
+    currentStep === "shipping"
+      ? t("continueToPayment")
+      : currentStep === "payment"
+        ? t("reviewOrderAction")
+        : t("placeOrder");
   const cityOptions = JORDAN_CITIES.map((city) => ({
     value: city.value,
     label: isArabic ? city.labelAr : city.label,
@@ -146,10 +159,6 @@ export function CheckoutPageClient() {
     isArabic
       ? item.product.name_ar || item.product.name_en || ""
       : item.product.name_en || item.product.name_ar || "";
-  const getVariantSummary = (item: typeof items[number]) =>
-    item.variant?.attributes
-      ?.map((attribute) => (isArabic ? attribute.value_ar || attribute.value_en : attribute.value_en || attribute.value_ar))
-      .join(", ");
   const optionalLabel = t("optional");
   const shippingAddressLine = [formData.building.trim(), formData.floor.trim(), formData.apartment.trim()]
     .filter(Boolean)
@@ -184,6 +193,33 @@ export function CheckoutPageClient() {
       window.removeEventListener("resize", updateKeyboardState);
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const sentinel = mobileActionsSentinelRef.current;
+    if (!sentinel) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowFloatingMobileBar(!entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: `0px 0px -${mobileStickyBottomOffset + 24}px 0px`,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [mobileStickyBottomOffset]);
 
   useEffect(() => {
     if (!user) {
@@ -316,6 +352,14 @@ export function CheckoutPageClient() {
     if (currentStep === "review") {
       transitionToStep("payment");
     }
+  };
+
+  const handleWalletBalanceToggle = () => {
+    if (!canUseWallet || isProcessing) {
+      return;
+    }
+
+    setUseWalletBalance((current) => !current);
   };
 
   const validateShipping = () => {
@@ -486,12 +530,12 @@ export function CheckoutPageClient() {
           <div className="flex items-center">
             <Link href="/cart">
               <Button
+                aria-label={tCommon("back")}
                 backgroundColor="var(--color-secondary)"
                 textColor="#ffffff"
-                className="h-auto shadow-none hover:shadow-none hover:scale-100"
+                className="h-auto px-3 shadow-none hover:shadow-none hover:scale-100"
               >
                 <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
-                <span>{tCommon("back")}</span>
               </Button>
             </Link>
             <ChevronRight className={`w-5 h-5 text-third mx-2 ${isArabic ? "rotate-180" : ""}`} />
@@ -522,7 +566,7 @@ export function CheckoutPageClient() {
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 gap-5 lg:grid-cols-3 ${isMobileKeyboardOpen ? "pb-6" : "pb-28 lg:pb-0"}`}>
+      <div className="grid grid-cols-1 gap-5 pb-5 lg:grid-cols-3 lg:pb-0">
         <div className="lg:col-span-2">
           <Card>
             {currentStep === "shipping" ? (
@@ -594,6 +638,7 @@ export function CheckoutPageClient() {
                     error={errors.building}
                     inputMode="numeric"
                     dir="ltr"
+                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
                   />
                   <Input
                     label={`${t("floor")} (${optionalLabel})`}
@@ -603,6 +648,7 @@ export function CheckoutPageClient() {
                     error={errors.floor}
                     inputMode="numeric"
                     dir="ltr"
+                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
                   />
                   <Input
                     label={`${t("apartment")} (${optionalLabel})`}
@@ -612,6 +658,7 @@ export function CheckoutPageClient() {
                     error={errors.apartment}
                     inputMode="numeric"
                     dir="ltr"
+                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
                   />
                 </div>
 
@@ -651,11 +698,23 @@ export function CheckoutPageClient() {
                     }
                   />
 
-                  <div className={`rounded-xl border p-4 ${canUseWallet ? "border-secondary/20 bg-secondary/5" : "border-gray-200 bg-gray-50"}`}>
+                  <div
+                    role="checkbox"
+                    aria-checked={useWalletBalance}
+                    aria-disabled={!canUseWallet || isProcessing}
+                    tabIndex={canUseWallet && !isProcessing ? 0 : -1}
+                    onClick={handleWalletBalanceToggle}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleWalletBalanceToggle();
+                      }
+                    }}
+                    className={`rounded-xl border p-4 transition-colors ${canUseWallet ? "cursor-pointer border-secondary/20 bg-secondary/5 hover:bg-secondary/10" : "border-gray-200 bg-gray-50"}`}
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <p className="font-semibold text-primary">{t("useWalletBalance")}</p>
-                        <p className="text-sm text-third">{t("walletBalanceDesc")}</p>
                         <p className="text-sm font-medium text-primary">
                           {t("walletBalance")}: {formatPrice(availableWalletBalance, undefined, locale)}
                         </p>
@@ -664,32 +723,11 @@ export function CheckoutPageClient() {
                       <Checkbox
                         checked={useWalletBalance}
                         onChange={(event) => setUseWalletBalance(event.target.checked)}
+                        onClick={(event) => event.stopPropagation()}
                         disabled={!canUseWallet || isProcessing}
                         aria-label={t("useWalletBalance")}
                       />
                     </div>
-
-                    {!canUseWallet ? <p className="mt-3 text-sm text-third">{t("noWalletBalance")}</p> : null}
-
-                    {useWalletBalance && walletAppliedAmount > 0 ? (
-                      <div className="mt-4 space-y-2 rounded-lg border border-secondary/15 bg-white/80 p-3 text-sm">
-                        <div className="flex justify-between gap-3 text-third">
-                          <span>{t("walletWillApply")}</span>
-                          <span className="font-semibold text-secondary">
-                            {formatPrice(walletAppliedAmount, undefined, locale)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between gap-3 text-primary">
-                          <span>{t("cashOnDeliveryAmount")}</span>
-                          <span className="font-semibold">
-                            {formatPrice(remainingPaymentAmount, undefined, locale)}
-                          </span>
-                        </div>
-                        {remainingPaymentAmount === 0 ? (
-                          <p className="text-secondary">{t("walletCoversOrder")}</p>
-                        ) : null}
-                      </div>
-                    ) : null}
                   </div>
                 </div>
               </div>
@@ -746,33 +784,6 @@ export function CheckoutPageClient() {
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-primary">{t("orderItems")}</h3>
-                  <div className="flex flex-col gap-3">
-                    {items.map((item) => (
-                      <div key={item.product.id} className="flex items-center gap-5 p-3 bg-gray-50 rounded-lg">
-                        <div className="relative w-16 h-16 shrink-0">
-                          <Image
-                            src={item.product.image || "/placeholder.svg"}
-                              alt={getProductName(item)}
-                            fill
-                            className="object-cover rounded-lg"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-primary truncate">{getProductName(item)}</p>
-                          <p className="text-sm text-third">{t("quantity", { count: item.quantity })}</p>
-                          {getVariantSummary(item) ? (
-                            <p className="text-xs text-third mt-1">{getVariantSummary(item)}</p>
-                          ) : null}
-                        </div>
-                        <p className="font-semibold text-primary">
-                          {formatPrice(item.product.price * item.quantity, undefined, locale)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             ) : null}
           </Card>
@@ -839,16 +850,22 @@ export function CheckoutPageClient() {
               <span className="text-primary">{formatPrice(payableSummaryAmount, undefined, locale)}</span>
             </div>
 
-            <div className="flex gap-5">
+            {cashbackAmount > 0 ? (
+              <div className="rounded-lg border border-secondary/15 bg-secondary/5 px-4 py-3 text-sm text-primary">
+                {t("cashbackPreview", { amount: formatPrice(cashbackAmount, undefined, locale) })}
+              </div>
+            ) : null}
+
+            <div className="hidden lg:flex gap-5">
               {currentStep !== "shipping" ? (
                 <Button
+                  aria-label={tCommon("back")}
                   variant="outline"
                   size="lg"
                   onClick={handleBackStep}
-                  className="gap-2"
+                  className="gap-2 px-4"
                 >
                   <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
-                  <span>{tCommon("back")}</span>
                 </Button>
               ) : null}
               <Button
@@ -865,16 +882,44 @@ export function CheckoutPageClient() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-sm text-third pt-5 border-t border-gray-100">
+            <div className="flex items-center gap-3 lg:hidden">
+              {currentStep !== "shipping" ? (
+                <Button
+                  aria-label={tCommon("back")}
+                  variant="outline"
+                  size="lg"
+                  className="px-3"
+                  onClick={handleBackStep}
+                >
+                  <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
+                </Button>
+              ) : null}
+
+              <Button
+                size="lg"
+                className="flex-1 text-sm sm:text-base px-2 sm:px-4"
+                onClick={handleAdvanceStep}
+                isLoading={isProcessing}
+              >
+                {currentActionLabel}
+              </Button>
+            </div>
+
+            <div ref={mobileActionsSentinelRef} className="h-5 lg:hidden" aria-hidden="true" />
+
+            {/* <div className="flex items-center justify-center gap-2 text-sm text-third pt-5 border-t border-gray-100">
               <Lock className="w-4 h-4" />
               <span>{t("secureCheckout")}</span>
-            </div>
+            </div> */}
           </Card>
         </div>
       </div>
 
-      {!isMobileKeyboardOpen ? (
-      <div className="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden">
+      {showFloatingMobileBar ? (
+      <div
+        className="fixed left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden"
+        style={{ bottom: `${mobileStickyBottomOffset}px` }}
+      >
         <AnimatePresence>
           {isMobileSummaryOpen ? (
             <motion.div
@@ -909,19 +954,19 @@ export function CheckoutPageClient() {
         <div className="flex items-center gap-3 p-4 bg-white">
           {currentStep !== "shipping" ? (
             <Button
+              aria-label={tCommon("back")}
               variant="outline"
               size="lg"
-              className="gap-2 px-3"
+              className="px-3"
               onClick={handleBackStep}
             >
               <ArrowLeft className={`w-5 h-5 ${isArabic ? "rotate-180" : ""}`} />
-              <span>{tCommon("back")}</span>
             </Button>
           ) : null}
 
           <div className="flex-1 flex flex-col justify-center cursor-pointer" onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}>
             <div className="flex items-center gap-2 select-none">
-              <span className="font-bold text-primary text-xl tracking-tight">
+              <span className="font-bold text-primary text-xl tracking-tight whitespace-nowrap">
                 {formatPrice(payableSummaryAmount, undefined, locale)}
               </span>
               {isMobileSummaryOpen ? (
@@ -939,13 +984,12 @@ export function CheckoutPageClient() {
             onClick={handleAdvanceStep}
             isLoading={isProcessing}
           >
-            {currentStep === "shipping" ? t("continueToPayment") : null}
-            {currentStep === "payment" ? t("reviewOrderAction") : null}
-            {currentStep === "review" ? t("placeOrder") : null}
+            {currentActionLabel}
           </Button>
         </div>
       </div>
       ) : null}
+
     </>
   );
 }

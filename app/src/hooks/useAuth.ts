@@ -3,10 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type User } from "@/types";
 import { authService } from "@/services/auth.service";
-import { useBaseRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
 import { apiClient, ApiError } from "@/lib/api-client";
 import { setCookie, deleteCookie } from "@/lib/utils";
+import { useLoading } from "@/components/ui/global-loader";
 
 const AUTH_KEYS = {
   user: ["auth", "user"],
@@ -14,7 +15,8 @@ const AUTH_KEYS = {
 
 export function useAuth() {
   const queryClient = useQueryClient();
-  const router = useBaseRouter();
+  const router = useRouter();
+  const { setIsLoading } = useLoading();
 
   useEffect(() => {
     const handler = () => {
@@ -101,6 +103,12 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: authService.logout,
+    onMutate: () => {
+      setIsLoading(true);
+    },
+    onError: () => {
+      setIsLoading(false);
+    },
     onSettled: () => {
       apiClient.clearAccessToken();
       deleteCookie('is_logged_in');
