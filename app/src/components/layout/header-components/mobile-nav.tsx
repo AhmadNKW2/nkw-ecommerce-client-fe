@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useState, useEffect, useMemo } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
-import { ChevronRight, ArrowLeft, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
+import { AnimatePresence, motion } from "framer-motion";
 import { LanguageSwitcher } from "./language-switcher";
 import { useHome } from "@/hooks/useHome";
 import { transformHomeCategory, type Locale } from "@/lib/transformers";
-import { Category } from "@/types";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -17,29 +16,12 @@ interface MobileNavProps {
   topOffset?: number;
 }
 
-const variants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction: number) => ({
-    x: direction < 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-};
-
 export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const pathname = usePathname();
-  const [history, setHistory] = useState<Category[]>([]);
-  const [direction, setDirection] = useState(0);
-
-  const isArabic = locale === 'ar';
+  const [activeRootCategoryId, setActiveRootCategoryId] = useState<string | null>(null);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
   // Close menu when route changes
   useEffect(() => {
@@ -49,108 +31,172 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
   // Fetch Categories
   const { data: homeData } = useHome();
 
-  const categories = (homeData?.categories || [])
-    .filter(c => c.level === 0 || c.parent_id === null)
-    .map(c => transformHomeCategory(c, locale));
+  const rootCategories = useMemo(
+    () =>
+      (homeData?.categories || [])
+        .filter((category) => category.level === 0 || category.parent_id === null)
+        .map((category) => transformHomeCategory(category, locale)),
+    [homeData?.categories, locale],
+  );
 
-  const currentCategory = history.length > 0 ? history[history.length - 1] : null;
-  const displayedCategories = currentCategory ? currentCategory.children || [] : categories;
-
-  const handleCategoryClick = (category: Category) => {
-    if (category.children && category.children.length > 0) {
-      setDirection(1);
-      setHistory([...history, category]);
-    } else {
-      onClose();
+  useEffect(() => {
+    if (!isOpen) {
+      return;
     }
-  };
 
-  const goBack = () => {
-    setDirection(-1);
-    setHistory(history.slice(0, -1));
+    if (rootCategories.length === 0) {
+      setActiveRootCategoryId(null);
+      return;
+    }
+
+    const activeStillExists = rootCategories.some(
+      (category) => category.id === activeRootCategoryId,
+    );
+
+    if (!activeRootCategoryId || !activeStillExists) {
+      setActiveRootCategoryId(rootCategories[0]?.id ?? null);
+    }
+  }, [isOpen, rootCategories, activeRootCategoryId]);
+
+  const activeRootCategory =
+    rootCategories.find((category) => category.id === activeRootCategoryId) ??
+    rootCategories[0] ??
+    null;
+  const displayedCategories =
+    activeRootCategory?.children && activeRootCategory.children.length > 0
+      ? activeRootCategory.children
+      : activeRootCategory
+        ? [activeRootCategory]
+        : [];
+
+  const markImageLoaded = (imageKey: string) => {
+    setLoadedImages((current) =>
+      current[imageKey] ? current : { ...current, [imageKey]: true },
+    );
   };
 
   return (
     <div
       className={cn(
-        "lg:hidden fixed inset-x-0 bottom-16 bg-white z-40 transition-transform duration-300 flex flex-col",
-        isOpen ? "translate-x-0" : (isArabic ? "translate-x-full" : "-translate-x-full")
+        "lg:hidden fixed inset-x-0 bottom-16 bg-white z-40 transition-transform duration-200 flex flex-col border-t border-gray-100",
+        isOpen ? "translate-x-0" : "-translate-x-full"
       )}
       style={{ top: topOffset }}
     >
-      <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
-        <nav className="min-h-full">
-          <AnimatePresence initial={false} mode="wait" custom={direction}>
-            <motion.div
-              key={currentCategory?.id || "root"}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "tween", ease: "easeInOut", duration: 0.3 },
-                opacity: { duration: 0.2 }
-              }}
-              className="p-4 flex flex-col gap-1"
-            >
-              {/* Header / Back Button */}
-              {history.length > 0 && (
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="flex w-[34%] min-w-[108px] max-w-[132px] flex-col border-r border-gray-100 bg-gray-50">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
+          >
+            {rootCategories.map((category) => {
+              const isActive = category.id === activeRootCategory?.id;
+
+              return (
                 <button
-                  onClick={goBack}
-                  className="flex items-center gap-2 px-4 py-3 text-gray-800 font-semibold mb-2 hover:bg-gray-50 rounded-lg text-start"
+                  key={category.id}
+                  type="button"
+                  onClick={() => setActiveRootCategoryId(category.id)}
+                  className={cn(
+                    "relative w-full border-b border-gray-100 px-3 py-4 text-start text-sm leading-5 transition-colors",
+                    isActive
+                      ? "bg-white font-semibold text-primary"
+                      : "bg-transparent text-primary/85 hover:bg-white/80",
+                  )}
                 >
-                  {locale === 'en' ? <ArrowLeft size={20} /> : <ChevronRight size={20} />}
-                  <span>{currentCategory?.name}</span>
+                  {isActive ? (
+                    <motion.span
+                      layoutId="mobile-nav-active-category"
+                      className="absolute inset-0 bg-white"
+                      transition={{ type: "spring", stiffness: 520, damping: 40 }}
+                    />
+                  ) : null}
+                  <span className="relative line-clamp-2">{category.name}</span>
                 </button>
-              )}
+              );
+            })}
+          </div>
+        </div>
 
-              {/* Category List */}
-              {displayedCategories.map((category) => {
-                const hasChildren = category.children && category.children.length > 0;
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
+          <div
+            className="min-h-0 flex-1 overflow-y-auto px-3 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={activeRootCategory?.id ?? "empty"}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+              >
+                {displayedCategories.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-x-3 gap-y-4">
+                    {displayedCategories.map((category, index) => {
+                      const imageKey = `${category.id}:${category.image ?? "no-image"}`;
+                      const hasImage = Boolean(category.image);
+                      const isImageLoaded = hasImage ? loadedImages[imageKey] : false;
 
-                return hasChildren ? (
-                  <div key={category.id} className="flex items-center gap-2 w-full group">
-                    {/* Drill-down button */}
-                    <button
-                      onClick={() => handleCategoryClick(category)}
-                      className="flex-1 flex items-center justify-between px-4 py-3 text-start text-primary group-hover:bg-primary/5 rounded-lg transition-all duration-300 font-medium"
-                    >
-                      <span>{category.name}</span>
-                      <ChevronRight size={20} className="text-gray-400 rtl:rotate-180" />
-                    </button>
-
-                    {/* Direct Link Button */}
-                    <Link
-                      href={`/categories/${category.slug}`}
-                      onClick={onClose}
-                      title={category.name}
-                      className="p-3 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors border border-gray-100"
-                    >
-                      <ExternalLink size={18} />
-                    </Link>
+                      return (
+                        <Link
+                          key={category.id}
+                          href={`/categories/${category.slug}`}
+                          onClick={onClose}
+                          className="flex flex-col items-center text-center"
+                        >
+                          <div className="relative h-18 w-18 overflow-hidden rounded-full bg-linear-to-br from-secondary/20 via-primary/5 to-third/20">
+                            {hasImage ? (
+                              <>
+                                <div
+                                  className={cn(
+                                    "absolute inset-0 bg-linear-to-br from-white/55 via-transparent to-white/25 transition-opacity duration-200",
+                                    isImageLoaded ? "opacity-0" : "animate-pulse opacity-100",
+                                  )}
+                                />
+                                <div
+                                  className={cn(
+                                    "absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-primary/45 transition-opacity duration-200",
+                                    isImageLoaded ? "opacity-0" : "opacity-100",
+                                  )}
+                                >
+                                  {category.name.slice(0, 2).toUpperCase()}
+                                </div>
+                                <Image
+                                  src={category.image!}
+                                  alt={category.name}
+                                  fill
+                                  sizes="72px"
+                                  priority={isOpen && index < 6}
+                                  onLoad={() => markImageLoaded(imageKey)}
+                                  className={cn(
+                                    "object-cover transition-all duration-200 ease-out",
+                                    isImageLoaded
+                                      ? "scale-100 opacity-100"
+                                      : "scale-[1.04] opacity-0",
+                                  )}
+                                />
+                              </>
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-primary/60">
+                                {category.name.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <span className="mt-2 line-clamp-2 text-xs font-medium leading-4 text-primary">
+                            {category.name}
+                          </span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
-                  // Leaf Link
-                  <Link
-                    key={category.id}
-                    href={`/categories/${category.slug}`}
-                    className="block px-4 py-3 text-primary hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-300 font-medium"
-                    onClick={onClose}
-                  >
-                    {category.name}
-                  </Link>
-                );
-              })}
-
-              {displayedCategories.length === 0 && (
-                <div className="p-4 text-center text-gray-500">
-                  {t('common.noCategories')}
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </nav>
+                  <div className="flex h-full items-center justify-center p-4 text-center text-sm text-gray-500">
+                    {t("common.noCategories")}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
 
       <div className="p-4 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
