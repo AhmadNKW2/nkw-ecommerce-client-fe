@@ -104,25 +104,22 @@ export function AddressModal({ isOpen, onClose, addressToEdit }: AddressModalPro
                     />
 
                     {/* 2. City */}
-                    <div className="space-y-2">
-                        <label className="block text-sm font-medium text-primary">{t('city')}</label>
-                        <Controller
-                            name="city"
-                            control={control}
-                            rules={{ required: "City is required" }}
-                            render={({ field }) => (
-                                <Select
-                                    options={cityOptions}
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    placeholder={t('city')}
-                                />
-                            )}
-                        />
-                        {errors.city && (
-                          <p className="text-xs text-danger">{errors.city.message}</p>
+                    <Controller
+                        name="city"
+                        control={control}
+                        rules={{ required: "City is required" }}
+                        render={({ field }) => (
+                            <Select
+                                label={t('city')}
+                                name="city"
+                                options={cityOptions}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder={t('city')}
+                                error={errors.city?.message}
+                            />
                         )}
-                    </div>
+                    />
 
                     {/* 3. Street Name / Area */}
                     <div className="col-span-2">

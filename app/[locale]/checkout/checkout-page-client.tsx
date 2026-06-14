@@ -126,6 +126,7 @@ export function CheckoutPageClient() {
   const [isMobileKeyboardOpen, setIsMobileKeyboardOpen] = useState(false);
   const [showFloatingMobileBar, setShowFloatingMobileBar] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errorScrollTarget, setErrorScrollTarget] = useState<{ field: string; nonce: number } | null>(null);
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
   const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -296,6 +297,43 @@ export function CheckoutPageClient() {
     window.scrollTo(0, 0);
   }, [orderComplete]);
 
+  useEffect(() => {
+    if (!errorScrollTarget || typeof window === "undefined") {
+      return;
+    }
+
+    const { field } = errorScrollTarget;
+    const findTarget = (): HTMLElement | null => {
+      const byNamedInput = document.querySelector<HTMLElement>(
+        `input[name="${field}"], textarea[name="${field}"]`,
+      );
+      if (byNamedInput) return byNamedInput;
+      return document.querySelector<HTMLElement>(`[data-field-name="${field}"]`);
+    };
+
+    const scrollToTarget = () => {
+      const target = findTarget();
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      if (
+        typeof (target as HTMLInputElement).focus === "function" &&
+        (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)
+      ) {
+        window.setTimeout(() => {
+          (target as HTMLInputElement | HTMLTextAreaElement).focus({ preventScroll: true });
+        }, 300);
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(scrollToTarget);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [errorScrollTarget]);
+
   const transitionToStep = (step: CheckoutStep) => {
     setCurrentStep(step);
 
@@ -383,7 +421,26 @@ export function CheckoutPageClient() {
     if (apartment && !isArabicOrEnglishDigitsOnly(apartment)) nextErrors.apartment = t("numbersOnly");
 
     setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+
+    const errorKeys = Object.keys(nextErrors);
+    if (errorKeys.length === 0) {
+      return true;
+    }
+
+    const fieldOrder: Array<keyof CheckoutFormData> = [
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "city",
+      "address",
+      "building",
+      "floor",
+      "apartment",
+    ];
+    const firstErrorField = fieldOrder.find((field) => errorKeys.includes(field)) ?? errorKeys[0];
+    setErrorScrollTarget({ field: firstErrorField, nonce: Date.now() });
+    return false;
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -601,23 +658,19 @@ export function CheckoutPageClient() {
                   ))}
                 </div>
 
-                <div className="w-full">
-                  <div className="w-full">
-                    <label className="block text-sm font-medium text-primary mb-2">
-                      {t("city") || "City"} <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      options={cityOptions}
-                      value={formData.city}
-                      onChange={(value) => {
-                        setFormData((current) => ({ ...current, city: value }));
-                        if (errors.city) setErrors((current) => ({ ...current, city: "" }));
-                      }}
-                      placeholder={t("selectCity")}
-                    />
-                    {errors.city ? <p className="text-xs text-red-500 mt-1">{errors.city}</p> : null}
-                  </div>
-                </div>
+                <Select
+                  label={t("city") || "City"}
+                  name="city"
+                  required
+                  options={cityOptions}
+                  value={formData.city}
+                  onChange={(value) => {
+                    setFormData((current) => ({ ...current, city: value }));
+                    if (errors.city) setErrors((current) => ({ ...current, city: "" }));
+                  }}
+                  placeholder={t("selectCity")}
+                  error={errors.city}
+                />
 
                 <Input
                   label={t("address")}

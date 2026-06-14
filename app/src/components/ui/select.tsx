@@ -20,6 +20,10 @@ export interface SelectProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "header";
+  label?: string;
+  required?: boolean;
+  name?: string;
+  error?: string;
 }
 
 const Select = React.forwardRef<HTMLDivElement, SelectProps>(
@@ -33,9 +37,15 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
       className,
       size = "md",
       variant = "default",
+      label,
+      required,
+      name,
+      error,
     },
     ref
   ) => {
+    const generatedId = React.useId();
+    const fieldId = label ? generatedId : undefined;
     const [isOpen, setIsOpen] = React.useState(false);
     const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -56,8 +66,8 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         // Remove specific border/bg because they are in base
         "h-11", // Match Input height
         "flex items-center justify-between", // specific to Select layout
-        INPUT_STYLES.default,
-        isOpen && "border-primary ring-2 ring-primary/20"
+        error ? INPUT_STYLES.error : INPUT_STYLES.default,
+        isOpen && !error && "border-primary ring-2 ring-primary/20"
       ),
       header: cn(
         "bg-transparent text-white rounded-r1 transition-all",
@@ -151,15 +161,27 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
     return (
       <div
         ref={containerRef}
+        data-field-name={name}
         className={cn("relative inline-block w-full", className)}
       >
+        {label && variant === "default" && (
+          <label
+            htmlFor={fieldId}
+            className="block text-sm font-medium text-primary mb-2"
+          >
+            {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+        )}
         {/* Trigger Button */}
         <button
+          id={fieldId}
           ref={ref as React.Ref<HTMLButtonElement>}
           type="button"
           onClick={handleToggle}
           onKeyDown={handleKeyDown}
           disabled={disabled}
+          aria-invalid={Boolean(error) || undefined}
           className={cn(
             // Structure
             "relative w-full flex items-center justify-between gap-2",
@@ -187,7 +209,7 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         <div
           className={cn(
             "absolute z-50 mt-1.5",
-            variant === 'header' ? "w-50 end-0" : "w-full min-w-[var(--radix-select-trigger-width)]",
+            variant === 'header' ? "w-50 end-0" : "w-full min-w-(--radix-select-trigger-width)",
             "transition-all duration-200 ease-out origin-top",
             isOpen
               ? "opacity-100 scale-100 translate-y-0 visible"
@@ -246,6 +268,11 @@ const Select = React.forwardRef<HTMLDivElement, SelectProps>(
             })}
           </ul>
         </div>
+        {error && variant === "default" && (
+          <p className="mt-1 text-xs text-danger animate-in slide-in-from-top-1">
+            {error}
+          </p>
+        )}
       </div>
     );
   }

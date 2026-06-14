@@ -66,7 +66,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-secondary">{error}</p>
+          <p className="mt-1 text-xs text-danger animate-in slide-in-from-top-1">
+            {error}
+          </p>
         )}
       </div>
     );
