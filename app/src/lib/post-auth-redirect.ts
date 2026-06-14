@@ -1,6 +1,6 @@
 import { normalizeReturnTo } from "./auth-redirect";
 
-const POST_AUTH_REDIRECT_STORAGE_KEY = "ordonsooq.post-auth-redirect";
+const POST_AUTH_REDIRECT_STORAGE_KEY = "storefront.post-auth-redirect";
 
 function getRedirectStorage(): Storage | undefined {
   if (typeof window === "undefined") {

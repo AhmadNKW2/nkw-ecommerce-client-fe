@@ -1,16 +1,16 @@
 // Site Configuration
 export const SITE_CONFIG = {
-  name: "ordonsooq",
-  description: "Your premier destination for online shopping - Quality products, great prices, fast delivery",
-  url: "https://ordonsooq.com",
+  name: "Storefront",
+  description: "A modern online shopping destination with quality products, fair prices, and reliable delivery.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ogImage: "/og-image.jpg",
   links: {
-    twitter: "https://twitter.com/ordonsooq",
-    facebook: "https://facebook.com/ordonsooq",
-    instagram: "https://instagram.com/ordonsooq",
+    twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "",
+    facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || "",
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
   },
   contact: {
-    email: "help@ordonsooq.com",
+    email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@example.com",
     phone: "+962 791001410",
     address: {
       en: "Jordan, Amman, Alwaha Circle, Wasfi Al-Tal St., Almehanya Towers, 1st floor, office 101",
@@ -173,11 +173,11 @@ export const BREAKPOINTS = {
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
-  cart: "ordonsooq-cart",
-  wishlist: "ordonsooq-wishlist",
-  recentlyViewed: "ordonsooq-recently-viewed",
-  user: "ordonsooq-user",
-  theme: "ordonsooq-theme",
+  cart: "storefront-cart",
+  wishlist: "storefront-wishlist",
+  recentlyViewed: "storefront-recently-viewed",
+  user: "storefront-user",
+  theme: "storefront-theme",
 };
 
 export const JORDAN_CITIES = [

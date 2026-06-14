@@ -1,5 +1,5 @@
 const API_REQUEST_LOG_INGEST_PATH = "/api/internal/request-logs";
-export const API_REQUEST_LOG_INGEST_HEADER_NAME = "x-ordonsooq-api-log";
+export const API_REQUEST_LOG_INGEST_HEADER_NAME = "x-storefront-api-log";
 export const API_REQUEST_LOG_INGEST_HEADER_VALUE = "1";
 const MAX_API_LOG_STRING_LENGTH = 2_000;
 const MAX_API_LOG_ARRAY_ITEMS = 20;

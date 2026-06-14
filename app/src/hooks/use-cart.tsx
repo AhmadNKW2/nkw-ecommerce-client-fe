@@ -8,6 +8,7 @@ import { cartService } from "@/services/cart.service";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productService } from "@/services/product.service";
 import { PRODUCT_QUERY_KEYS } from "@/hooks/useProducts";
+import { STORAGE_KEYS } from "@/lib/constants";
 import { transformProduct, type Locale } from "@/lib/transformers";
 
 interface CartContextType {
@@ -37,7 +38,7 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
-const GUEST_CART_KEY = "ordonsooq-cart";
+const GUEST_CART_KEY = STORAGE_KEYS.cart;
 
 function getCartItemKey(productId: number | string, variantId?: number | string | null) {
   return `${productId}:${variantId ?? "base"}`;

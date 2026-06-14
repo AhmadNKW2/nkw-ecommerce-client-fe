@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   Accessibility,
   BadgePercent,
@@ -34,6 +34,8 @@ import {
 } from "./footer-content-page";
 import { ContactFormPlaceholder } from "./contact-form-placeholder";
 import { TrackOrderLookupCard } from "./track-order-lookup-card";
+import { settingsService } from "@/services/settings.service";
+import { resolveLocalizedSiteName } from "@/lib/site-branding";
 
 export type FooterPageKey =
   | "sale"
@@ -75,8 +77,11 @@ export async function generateFooterPageMetadata(pageKey: FooterPageKey): Promis
 }
 
 export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProps) {
+  const locale = await getLocale();
   const t = await getTranslations("footerPages");
   const commonT = await getTranslations("common");
+  const seoSettings = await settingsService.getSeoSettings().catch(() => null);
+  const siteName = resolveLocalizedSiteName(locale, seoSettings);
 
   const homeLabel = commonT("home");
 
@@ -616,7 +621,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("about.badge"),
         t("about.title"),
         t("about.subtitle"),
-        t("about.intro"),
+        t("about.intro", { siteName }),
         [
           {
             icon: <Building2 className="size-5" />,
@@ -648,7 +653,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
           {
             id: "our-promise",
             title: t("about.sections.promise.title"),
-            body: [t("about.sections.promise.body")],
+            body: [t("about.sections.promise.body", { siteName })],
             items: [
               t("about.sections.promise.items.quality"),
               t("about.sections.promise.items.support"),
@@ -671,7 +676,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("careers.badge"),
         t("careers.title"),
         t("careers.subtitle"),
-        t("careers.intro"),
+        t("careers.intro", { siteName }),
         [
           {
             icon: <BriefcaseBusiness className="size-5" />,
@@ -715,7 +720,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
           title: t("careers.cta.title"),
           description: t("careers.cta.description"),
           primary: { label: t("careers.cta.primary"), href: "/contact" },
-          secondary: { label: t("careers.cta.secondary"), href: "/about" },
+          secondary: { label: t("careers.cta.secondary", { siteName }), href: "/about" },
         },
       );
     }
@@ -781,7 +786,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("press.badge"),
         t("press.title"),
         t("press.subtitle"),
-        t("press.intro"),
+        t("press.intro", { siteName }),
         [
           {
             icon: <Newspaper className="size-5" />,
@@ -803,7 +808,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
           {
             id: "company-overview",
             title: t("press.sections.overview.title"),
-            body: [t("press.sections.overview.body")],
+            body: [t("press.sections.overview.body", { siteName })],
             items: [
               t("press.sections.overview.items.ecommerce"),
               t("press.sections.overview.items.customerExperience"),
@@ -880,7 +885,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
           title: t("affiliate.cta.title"),
           description: t("affiliate.cta.description"),
           primary: { label: t("affiliate.cta.primary"), href: "/contact" },
-          secondary: { label: t("affiliate.cta.secondary"), href: "/about" },
+          secondary: { label: t("affiliate.cta.secondary", { siteName }), href: "/about" },
         },
       );
     }

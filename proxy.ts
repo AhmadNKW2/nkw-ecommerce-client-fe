@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getReturnToFromPath } from './app/src/lib/auth-redirect';
 
 const handleI18nRouting = createMiddleware(routing);
-const API_REQUEST_LOG_INGEST_HEADER_NAME = 'x-ordonsooq-api-log';
+const API_REQUEST_LOG_INGEST_HEADER_NAME = 'x-storefront-api-log';
 const API_REQUEST_LOG_INGEST_HEADER_VALUE = '1';
 
 function isEnabledFlag(value?: string): boolean {

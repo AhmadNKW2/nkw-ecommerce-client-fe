@@ -15,6 +15,7 @@ import { ROOT_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
 import { homeKeys } from "@/hooks/useHome";
 import { homeService } from "@/services/home.service";
 import { settingsService } from "@/services/settings.service";
+import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { Analytics } from "@vercel/analytics/next";
 import "./../globals.css";
 
@@ -60,7 +61,7 @@ function normalizeTwitterHandle(twitterHandle?: string | null) {
   const trimmedHandle = twitterHandle?.trim();
 
   if (!trimmedHandle) {
-    return "@ordonsooq";
+    return "@storefront";
   }
 
   return trimmedHandle.startsWith("@") ? trimmedHandle : `@${trimmedHandle}`;
@@ -70,12 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const seoSettings = await settingsService.getSeoSettings().catch(() => null);
 
-  const siteName = resolveLocalizedValue(
-    locale,
-    seoSettings?.site_name_en,
-    seoSettings?.site_name_ar,
-    SITE_CONFIG.name,
-  );
+  const siteName = resolveLocalizedSiteName(locale, seoSettings);
   const defaultTitle = resolveLocalizedValue(
     locale,
     seoSettings?.default_meta_title_en,
@@ -98,8 +94,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       template: `%s | ${siteName}`,
     },
     description: defaultDescription,
-    keywords: ["e-commerce", "online shopping", "ordonsooq", "shop", "buy"],
-    authors: [{ name: "ordonsooq Team" }],
+    keywords: ["e-commerce", "online shopping", "storefront", "shop", "buy"],
+    authors: [{ name: `${siteName} Team` }],
     creator: siteName,
     openGraph: {
       type: "website",

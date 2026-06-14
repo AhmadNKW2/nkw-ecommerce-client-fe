@@ -1,3 +1,5 @@
+"use client";
+
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import {
@@ -14,6 +16,8 @@ import { FooterNewsletterForm } from "@/components/footer-pages/footer-newslette
 import { Logo } from "./header-components";
 import { IconButton, IconName } from "../ui/icon-button";
 import { useLocale, useTranslations } from "next-intl";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
+import { resolveLocalizedSiteName } from "@/lib/site-branding";
 
 const FEATURES = [
   {
@@ -61,7 +65,9 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const t = useTranslations();
   const locale = useLocale();
+  const { data: seoSettings } = useSeoSettings();
   const containerClass = "container mx-auto py-5 px-4 md:px-12";
+  const siteName = resolveLocalizedSiteName(locale, seoSettings);
   const contactAddress = locale === "ar"
     ? SITE_CONFIG.contact.address.ar
     : SITE_CONFIG.contact.address.en;
@@ -171,7 +177,7 @@ export function Footer() {
       <div>
         <div className={containerClass}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-5 text-sm text-third2">
-            <p>© {currentYear} {SITE_CONFIG.name}. All rights reserved</p>
+            <p>© {currentYear} {siteName}. All rights reserved</p>
             <div className="flex items-center gap-5">
               {FOOTER_LINKS.legal.map((link) => (
                 <Link

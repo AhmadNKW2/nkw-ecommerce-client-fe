@@ -150,5 +150,5 @@ export function wait(ms: number): Promise<void> {
 }
 
 export function getImagePlaceholder(width: number, height: number): string {
-  return `https://placehold.co/${width}x${height}/e0d6ff/6d4bdd?text=ordonsooq`;
+  return `https://placehold.co/${width}x${height}/e0d6ff/6d4bdd?text=store`;
 }

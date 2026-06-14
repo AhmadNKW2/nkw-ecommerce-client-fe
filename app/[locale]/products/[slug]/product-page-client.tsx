@@ -23,6 +23,7 @@ import { useProductBySlug, useProductsByCategory } from "@/hooks/useProducts";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { apiClient } from "@/lib/api-client";
 import { CURRENCY_CONFIG } from "@/lib/constants";
+import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { transformProduct, type Locale } from "@/lib/transformers";
 import { calculateDiscount, cn, formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/products/product-gallery";
@@ -506,11 +507,13 @@ function LinkedProductChoices({ title, groupName, choices }: { title: string; gr
 function ProductSellerCard({
   product,
   vendorHref,
+  siteName,
   t,
   className,
 }: {
   product: any;
   vendorHref?: string;
+  siteName: string;
   t: any;
   className?: string;
 }) {
@@ -538,11 +541,11 @@ function ProductSellerCard({
                 href={vendorHref}
                 className="font-semibold text-primary hover:text-secondary ltr:hover:translate-x-1.5 rtl:hover:-translate-x-1.5 transition-all flex items-center gap-1"
               >
-                {product.vendor?.name || "OrdonSooq"}
+                {product.vendor?.name || siteName}
                 <ChevronRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             ) : (
-              <span className="font-semibold text-primary flex items-center gap-1">{product.vendor?.name || "OrdonSooq"}</span>
+              <span className="font-semibold text-primary flex items-center gap-1">{product.vendor?.name || siteName}</span>
             )}
             {product.vendor ? (
               <div className="flex items-center gap-1 mt-1">
@@ -575,6 +578,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
+  const siteName = resolveLocalizedSiteName(locale, seoSettings);
 
   const requestedVariantId = useMemo(() => {
     const rawValue = searchParams.get("variant") ?? searchParams.get("variantId");
@@ -911,7 +915,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          <ProductSellerCard product={product} vendorHref={vendorHref} t={t} />
+          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
       </div>
@@ -972,7 +976,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          <ProductSellerCard product={product} vendorHref={vendorHref} t={t} />
+          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (
             <Card className="p-4">

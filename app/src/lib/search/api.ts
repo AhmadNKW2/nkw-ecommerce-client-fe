@@ -9,7 +9,10 @@ import type {
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
-const ORDON_DB_SEARCH_URL = process.env.ORDON_DB_SEARCH_URL || process.env.NEXT_PUBLIC_ORDON_DB_SEARCH_URL || 'https://api1.bawwabs.com/api/SearchOrdonDBProduct';
+const EXTERNAL_SEARCH_API_URL =
+  process.env.EXTERNAL_SEARCH_API_URL ||
+  process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL ||
+  '';
 const LOCAL_SEARCH_API_PATH = '/api/search';
 const LOCAL_AUTOCOMPLETE_API_PATH = '/api/search/autocomplete';
 const DEFAULT_PER_PAGE = 20;
@@ -45,37 +48,37 @@ async function shouldShowSalePricing(): Promise<boolean> {
   }
 }
 
-type OrdonDbAttributeValue = {
+type ExternalSearchAttributeValue = {
   name_en?: string | null;
   name_ar?: string | null;
 };
 
-type OrdonDbAttributeGroup = {
+type ExternalSearchAttributeGroup = {
   name_en?: string | null;
   name_ar?: string | null;
-  values?: Record<string, OrdonDbAttributeValue | undefined> | null;
+  values?: Record<string, ExternalSearchAttributeValue | undefined> | null;
 };
 
-type OrdonDbMedia = {
+type ExternalSearchMedia = {
   url?: string | null;
   is_primary?: boolean | null;
   sort_order?: number | null;
 };
 
-type OrdonDbCategory = {
+type ExternalSearchCategory = {
   id?: number | string | null;
   name_en?: string | null;
   name_ar?: string | null;
   slug?: string | null;
 };
 
-type OrdonDbEntitySummary = {
+type ExternalSearchEntitySummary = {
   id?: number | string | null;
   name_en?: string | null;
   name_ar?: string | null;
 };
 
-type OrdonDbProduct = {
+type ExternalSearchProduct = {
   id?: number | string | null;
   slug?: string | null;
   name_en?: string | null;
@@ -86,25 +89,25 @@ type OrdonDbProduct = {
   average_rating?: number | string | null;
   is_out_of_stock?: boolean | null;
   created_at?: string | null;
-  brand?: OrdonDbEntitySummary | null;
-  vendor?: OrdonDbEntitySummary | null;
-  categories?: OrdonDbCategory[] | null;
+  brand?: ExternalSearchEntitySummary | null;
+  vendor?: ExternalSearchEntitySummary | null;
+  categories?: ExternalSearchCategory[] | null;
   categories_ids?: Array<number | string> | null;
-  attributes?: Record<string, OrdonDbAttributeGroup> | null;
-  specifications?: Record<string, OrdonDbAttributeGroup> | null;
-  media?: OrdonDbMedia[] | null;
+  attributes?: Record<string, ExternalSearchAttributeGroup> | null;
+  specifications?: Record<string, ExternalSearchAttributeGroup> | null;
+  media?: ExternalSearchMedia[] | null;
 };
 
-type OrdonDbSearchResult = {
+type ExternalSearchResult = {
   name?: string | null;
   name_ar?: string | null;
-  product?: OrdonDbProduct | null;
+  product?: ExternalSearchProduct | null;
   score?: number | string | null;
 };
 
-type OrdonDbSearchResponse = {
+type ExternalSearchResponse = {
   expanded_queries?: string[] | null;
-  results?: OrdonDbSearchResult[] | null;
+  results?: ExternalSearchResult[] | null;
   pagination?: {
     page?: number | null;
     page_size?: number | null;
@@ -128,7 +131,7 @@ type OrdonDbSearchResponse = {
   >> | null;
 };
 
-type OrdonDbSearchRequest = {
+type ExternalSearchRequest = {
   query: string;
   filters?: {
     brand_ids?: number[];
@@ -205,7 +208,7 @@ type FacetFieldBuildOptions = {
   hideUnresolvedNumericValues?: boolean;
 };
 
-type NormalizedOrdonDbItem = {
+type NormalizedExternalSearchItem = {
   hit: SearchHit;
   categories: SearchFacetMeta[];
   brand?: SearchFacetMeta;
@@ -216,7 +219,7 @@ type NormalizedOrdonDbItem = {
   rating: number;
 };
 
-export type SearchUpstreamSource = 'ordondb' | 'legacy';
+export type SearchUpstreamSource = 'external' | 'legacy';
 
 export type SearchRequestDebugResult<T> = {
   data: T;
@@ -643,11 +646,11 @@ function matchesGroupedSelections(
 }
 
 function filterItemsByGroupedSelections(
-  items: NormalizedOrdonDbItem[],
+  items: NormalizedExternalSearchItem[],
   filters: SearchFilters,
   facets: FacetCount[] | undefined,
   catalogs: FacetCatalogs
-): NormalizedOrdonDbItem[] {
+): NormalizedExternalSearchItem[] {
   const attributeFacet = facets?.find((facet) => facet.field_name === 'attributes_values_ids');
   const specificationFacet = facets?.find((facet) => facet.field_name === 'specifications_values_ids');
   const attributeLookup = mergeValueGroupLookups(
@@ -711,8 +714,8 @@ function buildFacetFromCountMap(
   return counts.length > 0 ? { field_name: fieldName, counts } : undefined;
 }
 
-function dedupeNormalizedItems(items: NormalizedOrdonDbItem[]): NormalizedOrdonDbItem[] {
-  const uniqueItems = new Map<string, NormalizedOrdonDbItem>();
+function dedupeNormalizedItems(items: NormalizedExternalSearchItem[]): NormalizedExternalSearchItem[] {
+  const uniqueItems = new Map<string, NormalizedExternalSearchItem>();
 
   items.forEach((item) => {
     if (!uniqueItems.has(item.hit.id)) {
@@ -724,7 +727,7 @@ function dedupeNormalizedItems(items: NormalizedOrdonDbItem[]): NormalizedOrdonD
 }
 
 function buildLocalFacetsFromItems(
-  items: NormalizedOrdonDbItem[],
+  items: NormalizedExternalSearchItem[],
   filters: SearchFilters,
   catalogs: FacetCatalogs
 ): FacetCount[] {
@@ -799,7 +802,7 @@ function buildLocalFacetsFromItems(
 }
 
 function createLocalSearchResponseFromItems(
-  items: NormalizedOrdonDbItem[],
+  items: NormalizedExternalSearchItem[],
   requestFilters: SearchFilters,
   selectionFilters: SearchFilters,
   catalogs: FacetCatalogs
@@ -825,7 +828,7 @@ function toNumberArray(value?: string): number[] {
     .filter((entry) => Number.isFinite(entry));
 }
 
-function resolveTotalPages(payload: OrdonDbSearchResponse, filters: SearchFilters): number {
+function resolveTotalPages(payload: ExternalSearchResponse, filters: SearchFilters): number {
   if (payload.pagination?.total_pages != null) {
     return payload.pagination.total_pages;
   }
@@ -837,17 +840,17 @@ function resolveTotalPages(payload: OrdonDbSearchResponse, filters: SearchFilter
 }
 
 type UpstreamSearchPayload = {
-  rawData: OrdonDbSearchResponse;
+  rawData: ExternalSearchResponse;
   status: number;
   durationMs: number;
 };
 
-async function fetchAllOrdonDbSearchPayloads(
+async function fetchAllExternalSearchPayloads(
   filters: SearchFilters,
   signal?: AbortSignal,
   initialUpstream?: UpstreamSearchPayload
 ): Promise<UpstreamSearchPayload[]> {
-  const firstUpstream = initialUpstream ?? await fetchOrdonDbSearchPayloadWithSignal(buildOrdonDbSearchRequest({
+  const firstUpstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(buildExternalSearchRequest({
     ...filters,
     page: filters.page && filters.page > 0 ? filters.page : 1,
   }), signal);
@@ -863,8 +866,8 @@ async function fetchAllOrdonDbSearchPayloads(
     Array.from({ length: totalPages }, (_, index) => index + 1)
       .filter((page) => page !== currentPage)
       .map(async (page) => {
-        const pageUpstream = await fetchOrdonDbSearchPayloadWithSignal(
-          buildOrdonDbSearchRequest({
+        const pageUpstream = await fetchExternalSearchPayloadWithSignal(
+          buildExternalSearchRequest({
             ...filters,
             page,
           }),
@@ -898,8 +901,8 @@ async function buildSearchResponseForFilters(
   status: number;
   durationMs: number;
 }> {
-  const upstream = initialUpstream ?? await fetchOrdonDbSearchPayloadWithSignal(buildOrdonDbSearchRequest(requestFilters), signal);
-  const primaryData = createOrdonDbSearchResponse(
+  const upstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(buildExternalSearchRequest(requestFilters), signal);
+  const primaryData = createExternalSearchResponse(
     upstream.rawData,
     selectionFilters,
     locale,
@@ -916,10 +919,10 @@ async function buildSearchResponseForFilters(
     };
   }
 
-  const allPayloads = await fetchAllOrdonDbSearchPayloads(requestFilters, signal, upstream);
+  const allPayloads = await fetchAllExternalSearchPayloads(requestFilters, signal, upstream);
   const allItems = dedupeNormalizedItems(
     allPayloads.flatMap((payload) =>
-      normalizeOrdonDbItems(payload.rawData, locale, showSalePricing),
+      normalizeExternalSearchItems(payload.rawData, locale, showSalePricing),
     )
   );
   const filteredItems = filterItemsByGroupedSelections(allItems, requestFilters, primaryData.facets, catalogs);
@@ -951,7 +954,7 @@ function buildTokens(values: Array<unknown>): string[] {
   return Array.from(tokenSet);
 }
 
-function sortMedia(media: OrdonDbMedia[] | null | undefined): OrdonDbMedia[] {
+function sortMedia(media: ExternalSearchMedia[] | null | undefined): ExternalSearchMedia[] {
   if (!Array.isArray(media)) return [];
 
   return [...media].sort((left, right) => {
@@ -964,7 +967,7 @@ function sortMedia(media: OrdonDbMedia[] | null | undefined): OrdonDbMedia[] {
   });
 }
 
-function extractImages(product: OrdonDbProduct): string[] {
+function extractImages(product: ExternalSearchProduct): string[] {
   return sortMedia(product.media)
     .map((item) => item.url?.trim())
     .filter((url): url is string => Boolean(url));
@@ -984,7 +987,7 @@ function dedupeFacetEntries(entries: SearchFacetMeta[]): SearchFacetMeta[] {
   return Array.from(uniqueEntries.values());
 }
 
-function buildFacetEntriesFromCategories(product: OrdonDbProduct, locale: SearchLocale): SearchFacetMeta[] {
+function buildFacetEntriesFromCategories(product: ExternalSearchProduct, locale: SearchLocale): SearchFacetMeta[] {
   const categories = (product.categories ?? []).map((category) => ({
     id: category.id != null ? String(category.id) : '',
     label: getLocalizedText(
@@ -1020,7 +1023,7 @@ function buildFacetEntry(id: unknown, locale: SearchLocale, englishLabel: unknow
 }
 
 function buildFacetEntriesFromGroups(
-  groups: Record<string, OrdonDbAttributeGroup> | null | undefined,
+  groups: Record<string, ExternalSearchAttributeGroup> | null | undefined,
   locale: SearchLocale
 ): SearchFacetMeta[] {
   const entries: SearchFacetMeta[] = [];
@@ -1043,11 +1046,11 @@ function buildFacetEntriesFromGroups(
   return dedupeFacetEntries(entries);
 }
 
-function normalizeOrdonDbItem(
-  result: OrdonDbSearchResult,
+function normalizeExternalSearchItem(
+  result: ExternalSearchResult,
   locale: SearchLocale,
   showSalePricing: boolean,
-): NormalizedOrdonDbItem | null {
+): NormalizedExternalSearchItem | null {
   const product = result.product;
   if (!product?.id) return null;
 
@@ -1176,9 +1179,9 @@ function buildFacetFromIds(
   return counts.length > 0 ? { field_name: fieldName, counts } : undefined;
 }
 
-function buildOrdonDbFacets(
-  payload: OrdonDbSearchResponse,
-  items: NormalizedOrdonDbItem[],
+function buildExternalSearchFacets(
+  payload: ExternalSearchResponse,
+  items: NormalizedExternalSearchItem[],
   filters: SearchFilters,
   catalogs: FacetCatalogs
 ): FacetCount[] {
@@ -1257,28 +1260,28 @@ function buildOrdonDbFacets(
   return facets;
 }
 
-function normalizeOrdonDbItems(
-  payload: OrdonDbSearchResponse,
+function normalizeExternalSearchItems(
+  payload: ExternalSearchResponse,
   locale: SearchLocale,
   showSalePricing = true,
-): NormalizedOrdonDbItem[] {
+): NormalizedExternalSearchItem[] {
   if (!Array.isArray(payload?.results)) {
-    throw new Error('Invalid SearchOrdonDBProduct response');
+    throw new Error('Invalid ExternalSearchProduct response');
   }
 
   return payload.results
-    .map((result) => normalizeOrdonDbItem(result, locale, showSalePricing))
-    .filter((item): item is NormalizedOrdonDbItem => Boolean(item));
+    .map((result) => normalizeExternalSearchItem(result, locale, showSalePricing))
+    .filter((item): item is NormalizedExternalSearchItem => Boolean(item));
 }
 
-function createOrdonDbSearchResponse(
-  payload: OrdonDbSearchResponse,
+function createExternalSearchResponse(
+  payload: ExternalSearchResponse,
   filters: SearchFilters,
   locale: SearchLocale,
   catalogs: FacetCatalogs,
   showSalePricing: boolean,
 ): SearchResponse {
-  const normalizedItems = normalizeOrdonDbItems(
+  const normalizedItems = normalizeExternalSearchItems(
     payload,
     locale,
     showSalePricing,
@@ -1295,26 +1298,26 @@ function createOrdonDbSearchResponse(
     page,
     per_page: perPage,
     total_pages: totalPages,
-    facets: buildOrdonDbFacets(payload, normalizedItems, filters, catalogs),
+    facets: buildExternalSearchFacets(payload, normalizedItems, filters, catalogs),
   };
 }
 
-async function normalizeOrdonDbSearchResponse(
-  payload: OrdonDbSearchResponse,
+async function normalizeExternalSearchResponse(
+  payload: ExternalSearchResponse,
   filters: SearchFilters,
   locale: SearchLocale
 ): Promise<SearchResponse> {
   const catalogs = await loadFacetCatalogs(locale);
 
-  return createOrdonDbSearchResponse(payload, filters, locale, catalogs, true);
+  return createExternalSearchResponse(payload, filters, locale, catalogs, true);
 }
 
-function normalizeOrdonDbAutocompleteResponse(
-  payload: OrdonDbSearchResponse,
+function normalizeExternalSearchAutocompleteResponse(
+  payload: ExternalSearchResponse,
   perPage: number,
   locale: SearchLocale
 ): AutocompleteResponse {
-  const suggestions = normalizeOrdonDbItems(payload, locale)
+  const suggestions = normalizeExternalSearchItems(payload, locale)
     .slice(0, perPage)
     .map((item) => ({
       id: item.hit.id,
@@ -1372,23 +1375,27 @@ function logProcessedResult(
   });
 }
 
-async function fetchOrdonDbSearchPayload(query?: string): Promise<{
-  rawData: OrdonDbSearchResponse;
+async function fetchExternalSearchPayload(query?: string): Promise<{
+  rawData: ExternalSearchResponse;
   status: number;
   durationMs: number;
 }> {
-  return fetchOrdonDbSearchPayloadWithSignal({ query: normalizeQuery(query) });
+  return fetchExternalSearchPayloadWithSignal({ query: normalizeQuery(query) });
 }
 
-async function fetchOrdonDbSearchPayloadWithSignal(
-  requestPayload: OrdonDbSearchRequest,
+async function fetchExternalSearchPayloadWithSignal(
+  requestPayload: ExternalSearchRequest,
   signal?: AbortSignal
 ): Promise<{
-  rawData: OrdonDbSearchResponse;
+  rawData: ExternalSearchResponse;
   status: number;
   durationMs: number;
 }> {
-  const response = await debugFetch<OrdonDbSearchResponse>('SearchOrdonDBProduct', ORDON_DB_SEARCH_URL, {
+  if (!EXTERNAL_SEARCH_API_URL) {
+    throw new Error('External search API URL is not configured');
+  }
+
+  const response = await debugFetch<ExternalSearchResponse>('ExternalSearchProduct', EXTERNAL_SEARCH_API_URL, {
     method: 'POST',
     cache: 'no-store',
     headers: {
@@ -1399,7 +1406,7 @@ async function fetchOrdonDbSearchPayloadWithSignal(
   });
 
   if (!response.ok) {
-    throw new Error(`SearchOrdonDBProduct failed: ${response.status}`);
+    throw new Error(`ExternalSearchProduct failed: ${response.status}`);
   }
 
   return {
@@ -1409,7 +1416,7 @@ async function fetchOrdonDbSearchPayloadWithSignal(
   };
 }
 
-function buildOrdonDbSort(sortBy?: SortOption): OrdonDbSearchRequest['sort'] | undefined {
+function buildExternalSearchSort(sortBy?: SortOption): ExternalSearchRequest['sort'] | undefined {
   switch (sortBy) {
     case 'created_at:desc':
       return { key: 'created_at', order: 'desc' };
@@ -1424,8 +1431,8 @@ function buildOrdonDbSort(sortBy?: SortOption): OrdonDbSearchRequest['sort'] | u
   }
 }
 
-function buildOrdonDbSearchRequest(filters: SearchFilters): OrdonDbSearchRequest {
-  const requestFilters: NonNullable<OrdonDbSearchRequest['filters']> = {};
+function buildExternalSearchRequest(filters: SearchFilters): ExternalSearchRequest {
+  const requestFilters: NonNullable<ExternalSearchRequest['filters']> = {};
 
   const categoryIds = toNumberArray(filters.category_ids);
   const brandIds = toNumberArray(filters.brand_ids);
@@ -1457,7 +1464,7 @@ function buildOrdonDbSearchRequest(filters: SearchFilters): OrdonDbSearchRequest
     };
   }
 
-  const sort = buildOrdonDbSort(filters.sort_by);
+  const sort = buildExternalSearchSort(filters.sort_by);
   const hasEntityFilter = categoryIds.length > 0 || brandIds.length > 0 || vendorIds.length > 0;
 
   return {
@@ -1471,7 +1478,7 @@ function buildOrdonDbSearchRequest(filters: SearchFilters): OrdonDbSearchRequest
   };
 }
 
-async function requestOrdonDbSearch(
+async function requestExternalSearch(
   filters: SearchFilters,
   signal?: AbortSignal,
   locale?: string
@@ -1480,8 +1487,8 @@ async function requestOrdonDbSearch(
   const startedAt = Date.now();
   const showSalePricing = await shouldShowSalePricing();
   const catalogsPromise = loadFacetCatalogs(normalizedLocale);
-  const requestPayload = buildOrdonDbSearchRequest(filters);
-  const upstream = await fetchOrdonDbSearchPayloadWithSignal(requestPayload, signal);
+  const requestPayload = buildExternalSearchRequest(filters);
+  const upstream = await fetchExternalSearchPayloadWithSignal(requestPayload, signal);
   const catalogs = await catalogsPromise;
   const primaryResult = await buildSearchResponseForFilters(
     filters,
@@ -1496,12 +1503,12 @@ async function requestOrdonDbSearch(
   const result: SearchRequestDebugResult<SearchResponse> = {
     data: primaryResult.data,
     rawData: primaryResult.rawData,
-    source: 'ordondb',
+    source: 'external',
     status: upstream.status,
     durationMs: Date.now() - startedAt,
   };
 
-  logProcessedResult('ORDONDB SEARCH FINAL', result, {
+  logProcessedResult('EXTERNAL SEARCH FINAL', result, {
     query: requestPayload.query,
     payload: requestPayload,
   });
@@ -1509,8 +1516,9 @@ async function requestOrdonDbSearch(
   return result;
 }
 
-function shouldUseOrdonDbSearch(filters: SearchFilters): boolean {
-  return typeof filters.q === 'string'
+function shouldUseExternalSearch(filters: SearchFilters): boolean {
+  return Boolean(EXTERNAL_SEARCH_API_URL) && (
+    typeof filters.q === 'string'
     || Boolean(
       filters.category_ids
       || filters.brand_ids
@@ -1521,7 +1529,8 @@ function shouldUseOrdonDbSearch(filters: SearchFilters): boolean {
       || filters.max_price != null
       || filters.is_out_of_stock != null
       || filters.average_rating_min != null
-    );
+    )
+  );
 }
 
 async function legacyServerSearch(
@@ -1601,14 +1610,14 @@ export async function serverAutocompleteWithSource(
     return {
       data: { suggestions: [] },
       rawData: { suggestions: [] },
-      source: 'ordondb',
+      source: 'external',
       status: 200,
       durationMs: 0,
     };
   }
 
   try {
-    const upstream = await fetchOrdonDbSearchPayloadWithSignal({
+    const upstream = await fetchExternalSearchPayloadWithSignal({
       query: normalizeQuery(normalizedQ),
       pagination: {
         page: 1,
@@ -1616,14 +1625,14 @@ export async function serverAutocompleteWithSource(
       },
     }, signal);
     const result: SearchRequestDebugResult<AutocompleteResponse> = {
-      data: normalizeOrdonDbAutocompleteResponse(upstream.rawData, perPage, normalizedLocale),
+      data: normalizeExternalSearchAutocompleteResponse(upstream.rawData, perPage, normalizedLocale),
       rawData: upstream.rawData,
-      source: 'ordondb',
+      source: 'external',
       status: upstream.status,
       durationMs: upstream.durationMs,
     };
 
-    logProcessedResult('ORDONDB AUTOCOMPLETE FINAL', result, {
+    logProcessedResult('EXTERNAL AUTOCOMPLETE FINAL', result, {
       query: normalizedQ,
       perPage,
     });
@@ -1645,12 +1654,12 @@ export async function serverSearchWithSource(
   signal?: AbortSignal,
   locale?: string
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
-  if (!shouldUseOrdonDbSearch(filters)) {
+  if (!shouldUseExternalSearch(filters)) {
     return legacyServerSearch(filters, signal, locale);
   }
 
   try {
-    return requestOrdonDbSearch(filters, signal, locale);
+    return requestExternalSearch(filters, signal, locale);
   } catch {
     return legacyServerSearch(filters, signal, locale);
   }
@@ -1694,3 +1703,5 @@ export async function clientAutocomplete(
 
   return response.data;
 }
+
+

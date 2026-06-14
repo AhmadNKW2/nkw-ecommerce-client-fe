@@ -311,7 +311,7 @@
       "supportTitle": "Launch-ready support",
       "supportDescription": "We help you prepare listings, pricing, and storefront visibility for launch."
     },
-    "privacy": "Your details are only used to contact you about opening your store on ordonsooq.",
+    "privacy": "Your details are only used to contact you about opening your store on this marketplace.",
     "formEyebrow": "Start now",
     "formTitle": "Tell us about your business",
     "formDescription": "Fill in these details and we will get back to you shortly.",
@@ -353,7 +353,7 @@
     "disclaimer": "By subscribing, you agree to our Privacy Policy and consent to receive updates."
   },
   "home": {
-    "heroTitle": "Welcome to ordonsooq",
+    "heroTitle": "Welcome to our store",
     "heroSubtitle": "Discover amazing products at great prices",
     "shopByCategory": "Shop by Category",
     "exploreCategories": "Explore our wide range of categories",
@@ -1088,7 +1088,7 @@
       "badge": "Our story",
       "title": "About Us",
       "subtitle": "A credible brand page for an ecommerce business serving shoppers in Jordan with a practical, trust-building voice.",
-      "intro": "ordonsooq is framed as a modern shopping destination that values clarity, quality, and a smooth customer experience from browsing to delivery.",
+      "intro": "{siteName} is framed as a modern shopping destination that values clarity, quality, and a smooth customer experience from browsing to delivery.",
       "highlights": {
         "rooted": {
           "title": "Rooted in Jordan",
@@ -1115,7 +1115,7 @@
         },
         "promise": {
           "title": "Our promise",
-          "body": "The page should reassure shoppers that ordonsooq is serious about consistency, transparency, and service quality.",
+          "body": "The page should reassure shoppers that {siteName} is serious about consistency, transparency, and service quality.",
           "items": {
             "quality": "Present products with enough detail to make confident choices.",
             "support": "Keep support reachable when shoppers need help after the click.",
@@ -1134,7 +1134,7 @@
       "badge": "Join the team",
       "title": "Careers",
       "subtitle": "A polished careers landing page that explains culture, growth, and role areas without pretending a jobs backend already exists.",
-      "intro": "The page positions ordonsooq as a growing team for people who want visible impact across ecommerce, operations, and customer experience.",
+      "intro": "The page positions {siteName} as a growing team for people who want visible impact across ecommerce, operations, and customer experience.",
       "highlights": {
         "growth": {
           "title": "Room to grow",
@@ -1173,7 +1173,7 @@
         "title": "Interested in future opportunities?",
         "description": "Use the contact route to share your background and the role area that fits you best.",
         "primary": "Contact us",
-        "secondary": "About ordonsooq"
+        "secondary": "About {siteName}"
       }
     },
     "blog": {
@@ -1226,7 +1226,7 @@
       "badge": "Media",
       "title": "Press",
       "subtitle": "A clean press page for media and partners who need a fast overview of the brand, context, and contact path.",
-      "intro": "The press page gives journalists and collaborators a simple way to understand ordonsooq without needing a separate backend or media portal.",
+      "intro": "The press page gives journalists and collaborators a simple way to understand {siteName} without needing a separate backend or media portal.",
       "highlights": {
         "brandStory": {
           "title": "Brand overview",
@@ -1244,7 +1244,7 @@
       "sections": {
         "overview": {
           "title": "Company overview",
-          "body": "The page presents ordonsooq as an ecommerce business focused on a smoother and more trustworthy shopping experience.",
+          "body": "The page presents {siteName} as an ecommerce business focused on a smoother and more trustworthy shopping experience.",
           "items": {
             "ecommerce": "A modern ecommerce storefront built around easier discovery and checkout.",
             "customerExperience": "A customer experience that prioritizes clarity and responsiveness.",
@@ -1311,7 +1311,7 @@
         "title": "Interested in partnering?",
         "description": "Reach out with your audience details and the team can discuss the current front-end-only setup.",
         "primary": "Contact us",
-        "secondary": "About ordonsooq"
+        "secondary": "About {siteName}"
       }
     },
     "privacy": {
