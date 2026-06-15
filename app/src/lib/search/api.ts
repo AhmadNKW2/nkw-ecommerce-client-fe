@@ -198,6 +198,7 @@ type PublicAttributeNode = {
 
 type FacetCatalogs = {
   categories: Map<string, SearchFacetMeta>;
+  categoryDescendants: Map<string, string[]>;
   brands: Map<string, SearchFacetMeta>;
   vendors: Map<string, SearchFacetMeta>;
   attributeValues: Map<string, SearchFacetMeta>;
@@ -233,6 +234,7 @@ const FACET_CATALOG_TTL_MS = 5 * 60 * 1000;
 
 const EMPTY_FACET_CATALOGS: FacetCatalogs = {
   categories: new Map(),
+  categoryDescendants: new Map(),
   brands: new Map(),
   vendors: new Map(),
   attributeValues: new Map(),
@@ -376,6 +378,38 @@ function collectCategoryNodes(
   return lookup;
 }
 
+function collectCategoryDescendants(
+  nodes: PublicCategoryNode[],
+  lookup = new Map<string, string[]>()
+): Map<string, string[]> {
+  const visitNode = (node: PublicCategoryNode): string[] => {
+    const normalizedId = String(node.id ?? '').trim();
+    const descendantIds = new Set<string>();
+
+    if (normalizedId) {
+      descendantIds.add(normalizedId);
+    }
+
+    (node.children ?? []).forEach((childNode) => {
+      visitNode(childNode).forEach((childId) => {
+        descendantIds.add(childId);
+      });
+    });
+
+    if (normalizedId) {
+      lookup.set(normalizedId, Array.from(descendantIds));
+    }
+
+    return Array.from(descendantIds);
+  };
+
+  nodes.forEach((node) => {
+    visitNode(node);
+  });
+
+  return lookup;
+}
+
 function collectEntityNodes(nodes: PublicEntitySummary[], locale: SearchLocale): Map<string, SearchFacetMeta> {
   return nodes.reduce((lookup, node) => {
     const normalizedId = String(node.id ?? '').trim();
@@ -459,6 +493,7 @@ async function loadFacetCatalogs(locale: SearchLocale): Promise<FacetCatalogs> {
 
     const catalogs: FacetCatalogs = {
       categories: collectCategoryNodes(categories, locale),
+      categoryDescendants: collectCategoryDescendants(categories),
       brands: collectEntityNodes(brands, locale),
       vendors: collectEntityNodes(vendors, locale),
       attributeValues: collectAttributeValueNodes(attributes, locale),
@@ -828,6 +863,40 @@ function toNumberArray(value?: string): number[] {
     .filter((entry) => Number.isFinite(entry));
 }
 
+function toNumberArrayFromValues(values: string[]): number[] {
+  return values
+    .map((entry) => Number(entry))
+    .filter((entry) => Number.isFinite(entry));
+}
+
+function expandCategoryFilterValues(
+  value: string | undefined,
+  catalogs?: Pick<FacetCatalogs, 'categoryDescendants'>
+): string[] {
+  const selectedIds = splitFilterValues(value);
+
+  if (selectedIds.length === 0) {
+    return [];
+  }
+
+  const expandedIds = new Set<string>();
+
+  selectedIds.forEach((selectedId) => {
+    const descendantIds = catalogs?.categoryDescendants.get(selectedId);
+
+    if (descendantIds && descendantIds.length > 0) {
+      descendantIds.forEach((descendantId) => {
+        expandedIds.add(descendantId);
+      });
+      return;
+    }
+
+    expandedIds.add(selectedId);
+  });
+
+  return Array.from(expandedIds);
+}
+
 function resolveTotalPages(payload: ExternalSearchResponse, filters: SearchFilters): number {
   if (payload.pagination?.total_pages != null) {
     return payload.pagination.total_pages;
@@ -847,13 +916,20 @@ type UpstreamSearchPayload = {
 
 async function fetchAllExternalSearchPayloads(
   filters: SearchFilters,
+  catalogs: FacetCatalogs,
   signal?: AbortSignal,
   initialUpstream?: UpstreamSearchPayload
 ): Promise<UpstreamSearchPayload[]> {
-  const firstUpstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(buildExternalSearchRequest({
-    ...filters,
-    page: filters.page && filters.page > 0 ? filters.page : 1,
-  }), signal);
+  const firstUpstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(
+    buildExternalSearchRequest(
+      {
+        ...filters,
+        page: filters.page && filters.page > 0 ? filters.page : 1,
+      },
+      catalogs
+    ),
+    signal
+  );
   const totalPages = resolveTotalPages(firstUpstream.rawData, filters);
   const currentPage = firstUpstream.rawData.pagination?.page ?? (filters.page && filters.page > 0 ? filters.page : 1);
 
@@ -867,10 +943,13 @@ async function fetchAllExternalSearchPayloads(
       .filter((page) => page !== currentPage)
       .map(async (page) => {
         const pageUpstream = await fetchExternalSearchPayloadWithSignal(
-          buildExternalSearchRequest({
-            ...filters,
-            page,
-          }),
+          buildExternalSearchRequest(
+            {
+              ...filters,
+              page,
+            },
+            catalogs
+          ),
           signal,
         );
 
@@ -901,7 +980,10 @@ async function buildSearchResponseForFilters(
   status: number;
   durationMs: number;
 }> {
-  const upstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(buildExternalSearchRequest(requestFilters), signal);
+  const upstream = initialUpstream ?? await fetchExternalSearchPayloadWithSignal(
+    buildExternalSearchRequest(requestFilters, catalogs),
+    signal
+  );
   const primaryData = createExternalSearchResponse(
     upstream.rawData,
     selectionFilters,
@@ -919,7 +1001,7 @@ async function buildSearchResponseForFilters(
     };
   }
 
-  const allPayloads = await fetchAllExternalSearchPayloads(requestFilters, signal, upstream);
+  const allPayloads = await fetchAllExternalSearchPayloads(requestFilters, catalogs, signal, upstream);
   const allItems = dedupeNormalizedItems(
     allPayloads.flatMap((payload) =>
       normalizeExternalSearchItems(payload.rawData, locale, showSalePricing),
@@ -1431,10 +1513,12 @@ function buildExternalSearchSort(sortBy?: SortOption): ExternalSearchRequest['so
   }
 }
 
-function buildExternalSearchRequest(filters: SearchFilters): ExternalSearchRequest {
+function buildExternalSearchRequest(filters: SearchFilters, catalogs?: Pick<FacetCatalogs, 'categoryDescendants'>): ExternalSearchRequest {
   const requestFilters: NonNullable<ExternalSearchRequest['filters']> = {};
 
-  const categoryIds = toNumberArray(filters.category_ids);
+  const categoryIds = toNumberArrayFromValues(
+    expandCategoryFilterValues(filters.category_ids, catalogs)
+  );
   const brandIds = toNumberArray(filters.brand_ids);
   const vendorIds = toNumberArray(filters.vendor_ids);
   const attributeValueIds = toNumberArray(filters.attributes_values_ids);
@@ -1485,11 +1569,12 @@ async function requestExternalSearch(
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
   const normalizedLocale = normalizeSearchLocale(locale);
   const startedAt = Date.now();
-  const showSalePricing = await shouldShowSalePricing();
   const catalogsPromise = loadFacetCatalogs(normalizedLocale);
-  const requestPayload = buildExternalSearchRequest(filters);
-  const upstream = await fetchExternalSearchPayloadWithSignal(requestPayload, signal);
+  const showSalePricingPromise = shouldShowSalePricing();
   const catalogs = await catalogsPromise;
+  const showSalePricing = await showSalePricingPromise;
+  const requestPayload = buildExternalSearchRequest(filters, catalogs);
+  const upstream = await fetchExternalSearchPayloadWithSignal(requestPayload, signal);
   const primaryResult = await buildSearchResponseForFilters(
     filters,
     filters,
