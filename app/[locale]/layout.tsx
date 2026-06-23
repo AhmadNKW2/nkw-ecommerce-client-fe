@@ -17,6 +17,7 @@ import { homeService } from "@/services/home.service";
 import { settingsService } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { Analytics } from "@vercel/analytics/next";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import "./../globals.css";
 
 const figtree = Figtree({
@@ -142,6 +143,9 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} className={`${figtree.variable} ${almarai.variable}`}>
+      <head>
+        <GoogleAnalytics />
+      </head>
       <body className={`${isRTL ? almarai.className : figtree.className} antialiased min-h-screen flex flex-col bg-gray-50/50`}>
         <RouteIntlProvider locale={resolvedLocale} namespaces={ROOT_MESSAGE_NAMESPACES}>
           <Providers>
