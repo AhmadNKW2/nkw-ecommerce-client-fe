@@ -7,6 +7,10 @@ import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button, Badge, Card, Checkbox, Radio, Input } from "@/components/ui";
 import { RATING_OPTIONS } from "@/lib/constants";
+import {
+  resolveProductFieldToggles,
+  useProductFieldToggles,
+} from "@/hooks/useProductFieldToggles";
 import type { FacetCount, FacetCountValue } from "@/lib/search/types";
 
 const CATEGORY_FACET_FIELDS = ["categories_ids", "category", "category_id", "category_ids", "categories.name_en"];
@@ -282,6 +286,15 @@ export function ProductFilters({
   const t = useTranslations();
   const locale = useLocale();
 
+  // Product field toggles — hide vendor/attribute/specification facets when
+  // disabled. Fail open to all-enabled while loading or on error.
+  const { data: productFieldToggles } = useProductFieldToggles();
+  const {
+    vendorsEnabled,
+    attributesEnabled,
+    specificationsEnabled,
+  } = resolveProductFieldToggles(productFieldToggles);
+
   const activeFiltersCount =
     filters.categories.length +
     filters.brands.length +
@@ -392,7 +405,7 @@ export function ProductFilters({
               <X className="w-3 h-3" />
             </Badge>
           ))}
-          {filters.vendors.map((vendorVal) => (
+          {vendorsEnabled && filters.vendors.map((vendorVal) => (
             <Badge
               key={vendorVal}
               variant="outline"
@@ -403,7 +416,7 @@ export function ProductFilters({
               <X className="w-3 h-3" />
             </Badge>
           ))}
-          {filters.attributeValues.map((attributeValueId) => (
+          {attributesEnabled && filters.attributeValues.map((attributeValueId) => (
             <Badge
               key={attributeValueId}
               variant="outline"
@@ -414,7 +427,7 @@ export function ProductFilters({
               <X className="w-3 h-3" />
             </Badge>
           ))}
-          {filters.specificationValues.map((specificationValueId) => (
+          {specificationsEnabled && filters.specificationValues.map((specificationValueId) => (
             <Badge
               key={specificationValueId}
               variant="outline"
@@ -566,7 +579,7 @@ export function ProductFilters({
 
 
       {/* Attributes dynamically grouped by original attribute name */}
-      {Object.entries(attributeGroups).map(([key, group]) => (
+      {attributesEnabled && Object.entries(attributeGroups).map(([key, group]) => (
         <FilterSection
           key={key}
           title={group.title}
@@ -597,7 +610,7 @@ export function ProductFilters({
       ))}
 
       {/* Specifications Section */}
-      {Object.entries(specificationGroups).map(([key, group]) => (
+      {specificationsEnabled && Object.entries(specificationGroups).map(([key, group]) => (
         <FilterSection
           key={key}
           title={group.title}
@@ -628,7 +641,7 @@ export function ProductFilters({
       ))}
 
       {/* Vendors Section */}
-      {resolvedVendorCounts.length > 0 && (
+      {vendorsEnabled && resolvedVendorCounts.length > 0 && (
         <FilterSection
           title={t('nav.stores') || 'Vendors'}
           isExpanded={expandedSections.includes("vendors")}

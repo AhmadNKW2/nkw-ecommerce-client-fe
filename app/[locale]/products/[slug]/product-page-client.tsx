@@ -21,6 +21,10 @@ import { useWishlist } from "@/hooks/use-wishlist";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
 import { useProductBySlug, useProductsByCategory } from "@/hooks/useProducts";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
+import {
+  resolveProductFieldToggles,
+  useProductFieldToggles,
+} from "@/hooks/useProductFieldToggles";
 import { apiClient } from "@/lib/api-client";
 import { CURRENCY_CONFIG } from "@/lib/constants";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
@@ -510,13 +514,19 @@ function ProductSellerCard({
   siteName,
   t,
   className,
+  vendorsEnabled = true,
 }: {
   product: any;
   vendorHref?: string;
   siteName: string;
   t: any;
   className?: string;
+  vendorsEnabled?: boolean;
 }) {
+  if (!vendorsEnabled) {
+    return null;
+  }
+
   return (
     <Card className={cn("p-4 flex flex-col gap-4", className)}>
       <div className="flex justify-between items-center">
@@ -579,6 +589,16 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
+
+  // Product field toggles — hide disabled fields on the storefront. Fail open
+  // to all-enabled (every field visible) while loading or on error.
+  const { data: productFieldToggles } = useProductFieldToggles();
+  const {
+    vendorsEnabled,
+    attributesEnabled,
+    specificationsEnabled,
+    weightAndDimensionsEnabled,
+  } = resolveProductFieldToggles(productFieldToggles);
 
   const requestedVariantId = useMemo(() => {
     const rawValue = searchParams.get("variant") ?? searchParams.get("variantId");
@@ -906,7 +926,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
 
           <LinkedProductChoices title={t("product.chooseOptions")} groupName={linkedOptionsGroupName} choices={linkedProductChoices} />
 
-          {chooserAttributes.length > 0 ? (
+          {attributesEnabled && chooserAttributes.length > 0 ? (
             <ProductOptions
               attributes={chooserAttributes}
               selectedOptions={selectedOptions}
@@ -915,7 +935,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
+          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} vendorsEnabled={vendorsEnabled} />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
       </div>
@@ -965,7 +985,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             dangerouslySetInnerHTML={{ __html: product.description }}
           />
 
-          {chooserAttributes.length > 0 ? (
+          {attributesEnabled && chooserAttributes.length > 0 ? (
             <ProductOptions
               attributes={chooserAttributes}
               selectedOptions={selectedOptions}
@@ -976,7 +996,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
+          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} vendorsEnabled={vendorsEnabled} />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (
             <Card className="p-4">
@@ -1053,13 +1073,16 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
 
       {(() => {
         const hasDimensions = currentDimensions && (currentDimensions.weight || currentDimensions.length || currentDimensions.width || currentDimensions.height);
-        return specificationAttributes.length > 0 || hasDimensions;
+        const hasSpecAttributes = specificationsEnabled && specificationAttributes.length > 0;
+        const hasVisibleDimensions = weightAndDimensionsEnabled && hasDimensions;
+        return hasSpecAttributes || hasVisibleDimensions;
       })() ? (
         <section>
           <h2 className="text-2xl font-bold text-primary mb-2">{t("product.specifications")}</h2>
           <Card className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-              {specificationAttributes.map((attribute) => (
+              {specificationsEnabled
+                ? specificationAttributes.map((attribute) => (
                 <div key={attribute.name} className="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
                   <span className="text-third font-medium">{attribute.name}</span>
                   <span className="text-primary font-semibold">
@@ -1068,8 +1091,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
                       : selectedOptions[attribute.name] || attribute.values.map((value) => value.value).join(", ")}
                   </span>
                 </div>
-              ))}
-              {currentDimensions ? (
+              ))
+                : null}
+              {weightAndDimensionsEnabled && currentDimensions ? (
                 <>
                   {currentDimensions.weight ? (
                     <div className="grid grid-cols-2 gap-4 py-3 border-b border-gray-100">
