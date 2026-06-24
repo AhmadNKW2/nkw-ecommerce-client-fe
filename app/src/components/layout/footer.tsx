@@ -11,8 +11,7 @@ import {
   HeadphonesIcon,
   PackageCheck,
 } from "lucide-react";
-import { SITE_CONFIG, FOOTER_LINKS } from "@/lib/constants";
-import { FooterNewsletterForm } from "@/components/footer-pages/footer-newsletter-form";
+import { SITE_CONFIG, FOOTER_DISABLED_LINK_LABELS, FOOTER_LINKS } from "@/lib/constants";
 import { Logo } from "./header-components";
 import { IconButton, IconName } from "../ui/icon-button";
 import { useLocale, useTranslations } from "next-intl";
@@ -43,7 +42,6 @@ const FEATURES = [
 ] as const;
 
 const FOOTER_COLUMNS = [
-  { title: "footer.links.shop", links: FOOTER_LINKS.shop },
   { title: "footer.links.support", links: FOOTER_LINKS.support },
   { title: "footer.links.company", links: FOOTER_LINKS.company },
 ] as const;
@@ -68,6 +66,9 @@ export function Footer() {
   const { data: seoSettings } = useSeoSettings();
   const containerClass = "container mx-auto py-5 px-4 md:px-12";
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
+  const features = seoSettings?.free_delivery_enabled === false
+    ? FEATURES.filter((feature) => feature.title !== "features.freeShipping")
+    : FEATURES;
   const contactAddress = locale === "ar"
     ? SITE_CONFIG.contact.address.ar
     : SITE_CONFIG.contact.address.en;
@@ -76,7 +77,7 @@ export function Footer() {
     <footer className="bg-gray-900 text-third2">
       <div className={containerClass}>
         <div className="grid grid-cols-2 md:grid-cols-none md:grid-flow-col justify-between gap-5">
-          {FEATURES.map(({ title, description, Icon }) => (
+          {features.map(({ title, description, Icon }) => (
             <div key={title} className="flex items-center gap-5">
               <div className="p-3 bg-secondary rounded-full">
                 <Icon className="w-6 h-6 text-white" />
@@ -144,31 +145,23 @@ export function Footer() {
               <ul className="flex flex-col gap-2">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-third2 hover:text-secondary transition-colors"
-                    >
-                      {t(link.label)}
-                    </Link>
+                    {FOOTER_DISABLED_LINK_LABELS.has(link.label) ? (
+                      <span className="text-third2">
+                        {t(link.label)}
+                      </span>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-third2 hover:text-secondary transition-colors"
+                      >
+                        {t(link.label)}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-        </div>
-      </div>
-
-      <div className="h-px bg-gray-800"></div>
-
-      <div>
-        <div className={containerClass}>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
-            <div>
-              <h3 className="text-white font-semibold text-lg mb-1">{t("footer.subscribeTitle")}</h3>
-              <p className="text-third2 text-sm">{t("footer.subscribeDesc")}</p>
-            </div>
-            <FooterNewsletterForm />
-          </div>
         </div>
       </div>
 

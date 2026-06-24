@@ -82,6 +82,9 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
   const commonT = await getTranslations("common");
   const seoSettings = await settingsService.getSeoSettings().catch(() => null);
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
+  const freeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
+  const freeDeliveryAmount =
+    seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
 
   const homeLabel = commonT("home");
 
@@ -307,7 +310,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-[20px] border border-secondary/15 bg-white/80 p-4 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-third">{t("contact.contactCard.phoneLabel")}</p>
-                  <p className="mt-2 text-base font-semibold text-primary">{SITE_CONFIG.contact.phone}</p>
+                  <p dir="ltr" className="mt-2 text-left text-base font-semibold text-primary">{SITE_CONFIG.contact.phone}</p>
                 </div>
                 <div className="rounded-[20px] border border-primary/10 bg-white/80 p-4 shadow-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-third">{t("contact.contactCard.emailLabel")}</p>
@@ -435,10 +438,12 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("shipping.badge"),
         t("shipping.title"),
         t("shipping.subtitle"),
-        t("shipping.intro", {
-          fee: String(STANDARD_SHIPPING_FEE),
-          threshold: String(FREE_SHIPPING_MIN_ORDER_AMOUNT),
-        }),
+        freeDeliveryEnabled
+          ? t("shipping.intro", {
+              fee: String(STANDARD_SHIPPING_FEE),
+              threshold: String(freeDeliveryAmount),
+            })
+          : t("shipping.highlights.standard.description"),
         [
           {
             icon: <Truck className="size-5" />,
@@ -473,12 +478,18 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
             body: [
               t("shipping.sections.fees.body", {
                 fee: String(STANDARD_SHIPPING_FEE),
-                threshold: String(FREE_SHIPPING_MIN_ORDER_AMOUNT),
+                threshold: String(freeDeliveryAmount),
               }),
             ],
             items: [
               t("shipping.sections.fees.items.standardFee", { fee: String(STANDARD_SHIPPING_FEE) }),
-              t("shipping.sections.fees.items.freeThreshold", { threshold: String(FREE_SHIPPING_MIN_ORDER_AMOUNT) }),
+              ...(freeDeliveryEnabled
+                ? [
+                    t("shipping.sections.fees.items.freeThreshold", {
+                      threshold: String(freeDeliveryAmount),
+                    }),
+                  ]
+                : []),
               t("shipping.sections.fees.items.finalReview"),
             ],
           },

@@ -3,16 +3,20 @@
 import { Truck, RotateCcw, Shield, Headphones, Clock, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ResponsiveGrid } from "@/components/ui";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 
 export function FeaturesSection() {
   const t = useTranslations('features');
+  const { data: seoSettings } = useSeoSettings();
 
   const features = [
-    {
-      icon: Truck,
-      title: t('freeShipping'),
-      description: t('freeShippingDesc'),
-    },
+    ...(seoSettings?.free_delivery_enabled === false
+      ? []
+      : [{
+          icon: Truck,
+          title: t('freeShipping'),
+          description: t('freeShippingDesc'),
+        }]),
     {
       icon: RotateCcw,
       title: t('easyReturns'),

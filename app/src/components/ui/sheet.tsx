@@ -56,7 +56,7 @@ export function Sheet({ isOpen, onClose, children, side = "left", className, tit
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 z-60 backdrop-blur-sm"
           />
           
           {/* Sheet */}
@@ -67,7 +67,7 @@ export function Sheet({ isOpen, onClose, children, side = "left", className, tit
             exit="exit"
             transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
             className={cn(
-              "fixed z-[70] bg-white shadow-2xl flex flex-col",
+              "fixed z-70 bg-white shadow-2xl flex flex-col",
               sideClasses[side],
               className
             )}
@@ -85,7 +85,7 @@ export function Sheet({ isOpen, onClose, children, side = "left", className, tit
             </div>
             
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4">
               {children}
             </div>
           </motion.div>

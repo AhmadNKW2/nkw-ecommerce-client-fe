@@ -96,10 +96,11 @@ export function CartSidebar() {
   };
 
   const freeShippingThreshold = seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
+  const isFreeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
   const freeShippingUnlocked = totalAmount >= freeShippingThreshold;
   const remainingAmountForFreeShipping = Math.max(freeShippingThreshold - totalAmount, 0);
   const freeShippingProgress = Math.min((totalAmount / freeShippingThreshold) * 100, 100);
-  const shippingAmount = freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
+  const shippingAmount = isFreeDeliveryEnabled && freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -276,6 +277,7 @@ export function CartSidebar() {
         {/* Footer */}
         {items.length > 0 && (
           <div className="flex flex-col gap-5 p-4 border-t border-gray-100 bg-gray-50/50">
+            {isFreeDeliveryEnabled ? (
             <div className="p-4 bg-white rounded-xl border border-gray-100">
               <div className="flex items-center gap-2 mb-2">
                 <Truck className="w-4 h-4 text-secondary" />
@@ -295,6 +297,7 @@ export function CartSidebar() {
                 />
               </div>
             </div>
+            ) : null}
 
             <div className="flex flex-col gap-2">
               <div className="flex justify-between text-sm">
@@ -303,8 +306,8 @@ export function CartSidebar() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">{tCart("shipping")}</span>
-                <span className={freeShippingUnlocked ? "text-green-600 font-medium" : "font-medium text-gray-900"}>
-                  {freeShippingUnlocked ? tCart("free") : formatPrice(shippingAmount, undefined, locale)}
+                <span className={isFreeDeliveryEnabled && freeShippingUnlocked ? "text-green-600 font-medium" : "font-medium text-gray-900"}>
+                  {isFreeDeliveryEnabled && freeShippingUnlocked ? tCart("free") : formatPrice(shippingAmount, undefined, locale)}
                 </span>
               </div>
             </div>

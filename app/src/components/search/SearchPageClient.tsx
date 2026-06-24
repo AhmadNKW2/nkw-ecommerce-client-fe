@@ -12,6 +12,7 @@ import { Button, Card, Sheet, Select } from '@/components/ui';
 import { useLoading } from '@/components/ui/global-loader';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/analytics';
 import type { SearchResponse, SearchFilters, SortOption } from '@/lib/search/types';
 
 // Map UI sort keys → Typesense sort_by values (mirrors ProductListingPage mapping)
@@ -64,6 +65,11 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     }
 
     setIsLoading(true);
+    trackEvent('search_sort_click', {
+      query: filters.q?.trim() || initialFilters.q,
+      sort_key: key,
+      page_path: '/search',
+    });
     setSortKey(key);
     void setSortBy(key === 'popular' ? null : (SORT_MAP[key] ?? null));
     setShowSort(false);
@@ -118,6 +124,16 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
   const handleFilterChange = (newState: FilterState) => {
     if (JSON.stringify(newState) !== JSON.stringify(filterState)) {
       setIsLoading(true);
+      trackEvent('search_filter_change', {
+        query: filters.q?.trim() || initialFilters.q,
+        categories_count: newState.categories.length,
+        brands_count: newState.brands.length,
+        vendors_count: newState.vendors.length,
+        attributes_count: newState.attributeValues.length,
+        specifications_count: newState.specificationValues.length,
+        has_price_range: Boolean(newState.priceRange),
+        rating: newState.rating,
+      });
     }
 
     setFilterState(newState);
@@ -266,15 +282,26 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
 
       {/* Floating Filter/Sort Pill (Mobile Only) */}
       <FloatingFilterSort
-        onSortClick={() => setShowSort(true)}
-        onFilterClick={() => setShowFilters(true)}
+        onSortClick={() => {
+          trackEvent('search_sort_sheet_open', {
+            query: filters.q?.trim() || initialFilters.q,
+          });
+          setShowSort(true);
+        }}
+        onFilterClick={() => {
+          trackEvent('search_filter_sheet_open', {
+            query: filters.q?.trim() || initialFilters.q,
+            active_filters_count: activeFiltersCount,
+          });
+          setShowFilters(true);
+        }}
         activeFiltersCount={activeFiltersCount}
       />
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters — always visible on desktop, same as product listing pages */}
         <aside className="w-full lg:w-64 shrink-0 hidden lg:block">
-          <div className="sticky top-[180px] max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
+          <div className="sticky top-45 max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
             {filtersComponent}
           </div>
         </aside>
@@ -328,14 +355,18 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
               <Button
                 onClick={() => {
                   if (isFetchingNextPage) return;
+                  trackEvent('search_load_more_click', {
+                    query: filters.q?.trim() || initialFilters.q,
+                    loaded_results: resultHits.length,
+                  });
                   void fetchNextPage();
                 }}
-                variant="outline"
+                variant="pill"
                 size="lg"
-                className="text-primary border-primary hover:bg-primary/5"
+                className="min-w-50 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30"
               >
                 {isFetchingNextPage ? (
-                  <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>

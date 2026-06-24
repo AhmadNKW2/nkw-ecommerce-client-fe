@@ -21,6 +21,7 @@ import { Button, Input, Card, Radio, Textarea, Select, Checkbox } from "@/compon
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
 import { FREE_SHIPPING_MIN_ORDER_AMOUNT, SHIPPING_OPTIONS, JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
@@ -105,6 +106,7 @@ export function CheckoutPageClient() {
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const isArabic = locale === "ar";
+  const { data: seoSettings } = useSeoSettings();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, totalItems, totalPrice, clearCart, isLoading: isCartLoading } = useCart();
   const { data: wallet } = useWallet({ enabled: !!user?.id });
@@ -130,8 +132,16 @@ export function CheckoutPageClient() {
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
   const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
 
+  const freeShippingThreshold =
+    seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
+  const isFreeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
   const selectedShipping = SHIPPING_OPTIONS.find((shippingOption) => shippingOption.id === shippingMethod) ?? SHIPPING_OPTIONS[0];
-  const shipping = totalPrice >= FREE_SHIPPING_MIN_ORDER_AMOUNT && selectedShipping.price > 0 ? 0 : selectedShipping.price;
+  const shipping =
+    isFreeDeliveryEnabled &&
+    totalPrice >= freeShippingThreshold &&
+    selectedShipping.price > 0
+      ? 0
+      : selectedShipping.price;
   const finalTotal = totalPrice + shipping;
   const { data: cashbackPreview } = useCashbackPreview(totalPrice, {
     enabled: !!user?.id && totalPrice > 0,

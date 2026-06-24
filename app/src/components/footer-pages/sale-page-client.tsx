@@ -100,7 +100,9 @@ export function SalePageClient({ emptyTitle, emptyDescription }: SalePageClientP
             type="button"
             onClick={() => void fetchNextPage()}
             isLoading={isFetchingNextPage}
-            backgroundColor="var(--color-secondary)"
+            variant="pill"
+            size="lg"
+            className="min-w-50 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30"
           >
             {tCommon("loadMoreProducts")}
           </Button>

@@ -458,7 +458,6 @@ export function ProductFilters({
           title={t('common.categories')}
           isExpanded={expandedSections.includes("categories")}
           onToggle={() => toggleSection("categories")}
-          bodyClassName="max-h-72"
         >
           <div className="flex flex-col gap-3">
             {resolvedCategoryCounts.map((catCount) => (
@@ -488,7 +487,6 @@ export function ProductFilters({
         title={t('common.price')}
         isExpanded={expandedSections.includes("price")}
         onToggle={() => toggleSection("price")}
-        bodyClassName="max-h-48"
       >
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -542,7 +540,6 @@ export function ProductFilters({
           title={t('common.brands')}
           isExpanded={expandedSections.includes("brands")}
           onToggle={() => toggleSection("brands")}
-          bodyClassName="max-h-64"
         >
           <div className="flex flex-col gap-3">
             {resolvedBrandCounts.map((brandCount) => (
@@ -575,7 +572,6 @@ export function ProductFilters({
           title={group.title}
           isExpanded={expandedSections.includes(`attr-${key}`)}
           onToggle={() => toggleSection(`attr-${key}`)}
-          bodyClassName="max-h-80"
         >
           <div className="flex flex-col gap-3">
             {group.items.map((item) => (
@@ -607,7 +603,6 @@ export function ProductFilters({
           title={group.title}
           isExpanded={expandedSections.includes(`spec-${key}`)}
           onToggle={() => toggleSection(`spec-${key}`)}
-          bodyClassName="max-h-80"
         >
           <div className="flex flex-col gap-3">
             {group.items.map((item) => (
@@ -638,7 +633,6 @@ export function ProductFilters({
           title={t('nav.stores') || 'Vendors'}
           isExpanded={expandedSections.includes("vendors")}
           onToggle={() => toggleSection("vendors")}
-          bodyClassName="max-h-64"
         >
           <div className="flex flex-col gap-3">
             {resolvedVendorCounts.map((vendorCount) => (
@@ -669,7 +663,6 @@ export function ProductFilters({
         title={t('common.rating')}
         isExpanded={expandedSections.includes("rating")}
         onToggle={() => toggleSection("rating")}
-        bodyClassName="max-h-44"
       >
         <div className="flex flex-col gap-3">
           {RATING_OPTIONS.map((option) => (
@@ -699,10 +692,9 @@ interface FilterSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
   children: React.ReactNode;
-  bodyClassName?: string;
 }
 
-function FilterSection({ title, isExpanded, onToggle, children, bodyClassName }: FilterSectionProps) {
+function FilterSection({ title, isExpanded, onToggle, children }: FilterSectionProps) {
   return (
     <div className="border-b border-gray-100 py-4 last:border-b-0">
       <button
@@ -727,13 +719,12 @@ function FilterSection({ title, isExpanded, onToggle, children, bodyClassName }:
           marginTop: isExpanded ? 16 : 0,
         }}
         transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-        className="overflow-hidden"
+        className={cn(isExpanded ? "overflow-visible" : "overflow-hidden")}
       >
         <div
           className={cn(
-            "overflow-y-auto pe-1",
-            !isExpanded && "pointer-events-none",
-            bodyClassName,
+            "max-h-[50vh] overflow-y-auto overscroll-contain pe-1",
+            !isExpanded && "pointer-events-none"
           )}
         >
           {children}

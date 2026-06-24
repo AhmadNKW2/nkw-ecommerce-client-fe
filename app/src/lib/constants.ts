@@ -28,6 +28,11 @@ export const CURRENCY_CONFIG = {
 export const BELOW_50_JOD_MAX_PRICE = 50;
 export const FREE_SHIPPING_MIN_ORDER_AMOUNT = 50;
 export const STANDARD_SHIPPING_FEE = 2;
+export const FOOTER_DISABLED_LINK_LABELS = new Set([
+  "footer.links.faqs",
+  "footer.links.shippingInfo",
+  "footer.links.aboutUs",
+]);
 
 // Navigation Links
 export const NAV_LINKS = [
@@ -41,11 +46,6 @@ export const NAV_LINKS = [
 
 // Footer Links
 export const FOOTER_LINKS = {
-  shop: [
-    { label: "footer.links.allProducts", href: "/products" },
-    { label: "footer.links.newArrivals", href: "/products?filter=new" },
-    { label: "footer.links.bestSellers", href: "/products?filter=bestsellers" },
-  ],
   support: [
     { label: "footer.links.contactUs", href: "/contact" },
     { label: "footer.links.faqs", href: "/faqs" },

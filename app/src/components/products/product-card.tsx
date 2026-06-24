@@ -13,6 +13,8 @@ import { FloatingCartButton } from "./floating-cart-button";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
+import { productService } from "@/services/product.service";
+import { trackEvent } from "@/lib/analytics";
 
 
 
@@ -42,6 +44,7 @@ export function ProductCard({
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
   const { data: seoSettings } = useSeoSettings();
   const [cartButtonStatus, setCartButtonStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [isResolvingSlug, setIsResolvingSlug] = useState(false);
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
 
   const isRecent = useMemo(() => {
@@ -105,9 +108,12 @@ export function ProductCard({
 
   // Use next-intl navigation objects to keep locale stable.
   // Also include variant id so the product details page can auto-select options.
-  const productHref = product.defaultVariantId
-    ? `/products/${product.slug}?variant=${product.defaultVariantId}`
-    : `/products/${product.slug}`;
+  const resolvedSlug = product.slug?.trim();
+  const productHref = resolvedSlug
+    ? product.defaultVariantId
+      ? `/products/${resolvedSlug}?variant=${product.defaultVariantId}`
+      : `/products/${resolvedSlug}`
+    : "/products";
 
   // Check if item is in cart
   const cartItem = items.find(
@@ -121,12 +127,53 @@ export function ProductCard({
   );
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  const handleCardClick = () => {
-    router.push(productHref);
+  const handleCardClick = async () => {
+    trackEvent("product_card_click", {
+      product_id: product.id,
+      product_name: product.name,
+      product_slug: resolvedSlug,
+      source: "product_card",
+    });
+
+    if (resolvedSlug) {
+      router.push(productHref);
+      return;
+    }
+
+    if (isResolvingSlug) {
+      return;
+    }
+
+    const productId = Number(product.id);
+    if (!Number.isFinite(productId)) {
+      return;
+    }
+
+    setIsResolvingSlug(true);
+
+    try {
+      const resolvedProduct = await productService.getById(productId);
+      const fetchedSlug = resolvedProduct?.slug?.trim();
+
+      if (fetchedSlug) {
+        router.push(`/products/${fetchedSlug}`);
+      }
+    } finally {
+      setIsResolvingSlug(false);
+    }
   };
 
   const handleCartButtonStatusChange = (status: "idle" | "loading" | "success") => {
     setCartButtonStatus(status);
+
+    if (status === "success") {
+      trackEvent("add_to_cart_click", {
+        product_id: product.id,
+        product_name: product.name,
+        variant_id: singleVariant?.id,
+        source: "product_card",
+      });
+    }
   };
 
   const handleCartAnimationEnd = () => {
@@ -137,6 +184,12 @@ export function ProductCard({
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
+    trackEvent("wishlist_toggle_click", {
+      product_id: product.id,
+      product_name: product.name,
+      in_wishlist: !inWishlist,
+      variant_id: wishlistVariantId,
+    });
     toggleItem(product, wishlistVariantId);
   };
 
@@ -284,7 +337,14 @@ export function ProductCard({
               <button
                 type="button"
                 aria-label={t('product.chooseOptions')}
-                onClick={() => router.push(productHref)}
+                onClick={() => {
+                  trackEvent("choose_options_click", {
+                    product_id: product.id,
+                    product_name: product.name,
+                    source: "product_card_fab",
+                  });
+                  router.push(productHref);
+                }}
                 className={cn(
                   "h-9 w-9 rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform",
                   cartButtonColor === "white" 
@@ -326,7 +386,14 @@ export function ProductCard({
               <button
                 type="button"
                 className="w-full h-11 rounded-full bg-white/80 text-primary hover:bg-white hover:scale-103 transition-all text-sm font-bold shadow-s1 flex items-center justify-center gap-2"
-                onClick={() => router.push(productHref)}
+                onClick={() => {
+                  trackEvent("choose_options_click", {
+                    product_id: product.id,
+                    product_name: product.name,
+                    source: "product_card_panel",
+                  });
+                  router.push(productHref);
+                }}
                 aria-label={t('product.chooseOptions')}
               >
                 <ShoppingCart size={18} />

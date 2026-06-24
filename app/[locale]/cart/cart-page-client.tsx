@@ -83,10 +83,12 @@ export function CartPageClient() {
     return accumulator;
   }, 0);
 
-  const freeShippingUnlocked = totalPrice >= FREE_SHIPPING_MIN_ORDER_AMOUNT;
-  const remainingAmountForFreeShipping = Math.max(FREE_SHIPPING_MIN_ORDER_AMOUNT - totalPrice, 0);
-  const freeShippingProgress = Math.min((totalPrice / FREE_SHIPPING_MIN_ORDER_AMOUNT) * 100, 100);
-  const shipping = freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
+  const freeShippingThreshold = seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
+  const isFreeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
+  const freeShippingUnlocked = totalPrice >= freeShippingThreshold;
+  const remainingAmountForFreeShipping = Math.max(freeShippingThreshold - totalPrice, 0);
+  const freeShippingProgress = Math.min((totalPrice / freeShippingThreshold) * 100, 100);
+  const shipping = isFreeDeliveryEnabled && freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
   const finalTotal = totalPrice + shipping;
   const getProductName = (item: typeof items[number]) =>
     isArabic
@@ -284,8 +286,8 @@ export function CartPageClient() {
                 </div>
                 <div className="flex justify-between text-third">
                   <span>{t("shipping")}</span>
-                  <span className={shipping === 0 ? "text-secondary font-medium" : ""}>
-                    {shipping === 0 ? t("free") : formatPrice(shipping)}
+                  <span className={isFreeDeliveryEnabled && shipping === 0 ? "text-secondary font-medium" : ""}>
+                    {isFreeDeliveryEnabled && shipping === 0 ? t("free") : formatPrice(shipping)}
                   </span>
                 </div>
               </div>
@@ -295,6 +297,7 @@ export function CartPageClient() {
                 <span className="text-primary">{formatPrice(finalTotal)}</span>
               </div>
 
+              {isFreeDeliveryEnabled ? (
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Truck className="w-4 h-4 text-secondary" />
@@ -314,6 +317,7 @@ export function CartPageClient() {
                   />
                 </div>
               </div>
+              ) : null}
 
               <Button size="lg" className="w-full" onClick={handleCheckout}>
                 {t("proceedToCheckout")}
@@ -348,12 +352,13 @@ export function CartPageClient() {
                   </div>
                   <div className="flex justify-between text-sm text-third">
                     <span>{t("shipping")}</span>
-                    <span className={shipping === 0 ? "text-secondary font-medium" : ""}>
-                      {shipping === 0 ? t("free") : formatPrice(shipping)}
+                    <span className={isFreeDeliveryEnabled && shipping === 0 ? "text-secondary font-medium" : ""}>
+                      {isFreeDeliveryEnabled && shipping === 0 ? t("free") : formatPrice(shipping)}
                     </span>
                   </div>
                 </div>
 
+                {isFreeDeliveryEnabled ? (
                 <div className="py-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Truck className="w-3 h-3 text-secondary" />
@@ -370,6 +375,7 @@ export function CartPageClient() {
                     />
                   </div>
                 </div>
+                ) : null}
               </div>
             </motion.div>
           ) : null}
