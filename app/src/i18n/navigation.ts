@@ -9,15 +9,15 @@ export { Link, redirect, usePathname, getPathname, useBaseRouter };
 
 export function useRouter() {
   const router = useBaseRouter();
-  const { setIsLoading } = useLoading();
+  const { startLoading } = useLoading();
 
   const push = (href: string, options?: Parameters<typeof router.push>[1]) => {
-    setIsLoading(true);
+    startLoading();
     router.push(href, options);
   };
 
   const replace = (href: string, options?: Parameters<typeof router.replace>[1]) => {
-    setIsLoading(true);
+    startLoading();
     router.replace(href, options);
   };
 

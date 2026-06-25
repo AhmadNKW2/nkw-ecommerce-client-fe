@@ -1,6 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef, Suspense } from "react";
+import React, {
+  Suspense,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useIsFetching } from "@tanstack/react-query";
@@ -8,11 +17,15 @@ import { useIsFetching } from "@tanstack/react-query";
 interface LoadingContextType {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
+  startLoading: () => void;
+  markPageRendered: (routeKey: string) => void;
 }
 
 const LoadingContext = createContext<LoadingContextType>({
   isLoading: false,
   setIsLoading: () => {},
+  startLoading: () => {},
+  markPageRendered: () => {},
 });
 
 export const useLoading = () => useContext(LoadingContext);
@@ -21,161 +34,205 @@ interface GlobalLoaderProps {
   children: React.ReactNode;
 }
 
-// Separate component that uses search params/pathnames to isolate Suspense requirement
 function RouteObserver() {
   const { isLoading, setIsLoading } = useLoading();
-  const [isSignalingComplete, setIsSignalingComplete] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isFetching = useIsFetching();
-
-  // Track the previous path to detect actual navigation changes
   const previousPathRef = useRef(pathname);
-  const previousParamsRef = useRef(searchParams?.toString());
+  const previousParamsRef = useRef(searchParams?.toString() || "");
+  const pendingRouteKeyRef = useRef<string | null>(null);
+  const renderedRouteKeyRef = useRef<string | null>(null);
 
-  // Watch for successful navigation / route changes
   useEffect(() => {
-    const paramsString = searchParams?.toString();
+    const handleLoadingStarted = () => {
+      pendingRouteKeyRef.current = null;
+      renderedRouteKeyRef.current = null;
+    };
+
+    window.addEventListener("global-loader:start", handleLoadingStarted);
+
+    return () => {
+      window.removeEventListener("global-loader:start", handleLoadingStarted);
+    };
+  }, []);
+
+  useEffect(() => {
+    const paramsString = searchParams?.toString() || "";
     const hasPathChanged = pathname !== previousPathRef.current;
     const hasParamsChanged = paramsString !== previousParamsRef.current;
-    
-    // Only update refs if changed
-    if (hasPathChanged) previousPathRef.current = pathname;
-    if (hasParamsChanged) previousParamsRef.current = paramsString || '';
+    const routeKey = paramsString ? `${pathname}?${paramsString}` : pathname;
 
-    if (hasPathChanged || hasParamsChanged) {
-      if (typeof window !== "undefined" && hasPathChanged) {
-        window.scrollTo(0, 0);
-      }
+    if (hasPathChanged) {
+      previousPathRef.current = pathname;
+    }
 
-      // When route changes, we don't immediately stop loading.
-      // We signal that the route transition is done.
-      if (isLoading) {
-        const signalTimer = window.setTimeout(() => {
-          setIsSignalingComplete(true);
-        }, 0);
+    if (hasParamsChanged) {
+      previousParamsRef.current = paramsString;
+    }
 
-        return () => window.clearTimeout(signalTimer);
-      }
+    if (!hasPathChanged && !hasParamsChanged) {
+      return;
+    }
+
+    if (typeof window !== "undefined" && hasPathChanged) {
+      window.scrollTo(0, 0);
+    }
+
+    if (isLoading) {
+      pendingRouteKeyRef.current = routeKey;
     }
   }, [pathname, searchParams, isLoading]);
 
-  // Handle the logic for stopping the loader
   useEffect(() => {
-    // Only run this logic if we are loading and waiting for completion signal
-    if (!isLoading || !isSignalingComplete) return;
-
-    // Additional Safety:
-    // When a route changes, components might take a few milliseconds to mount 
-    // and fire their useQuery calls.
-    // We start a small timer to allow for that "render gap".
-    
-    // Wait for route-mounted queries/UI work to settle before hiding.
-    const GRACE_PERIOD_MS = 500;
-
-    const timer = setTimeout(() => {
-      // After grace period, check if we are still fetching data
-      // Only close if NO queries are running
-      if (isFetching === 0) {
-        setIsLoading(false);
-        setIsSignalingComplete(false);
+    const handlePageRendered = (event: Event) => {
+      const renderedRouteKey = (event as CustomEvent<string>).detail;
+      if (!renderedRouteKey) {
+        return;
       }
-      // If isFetching > 0, this effect will re-run when isFetching changes to 0
-    }, GRACE_PERIOD_MS);
+
+      renderedRouteKeyRef.current = renderedRouteKey;
+
+      if (
+        isLoading &&
+        pendingRouteKeyRef.current != null &&
+        pendingRouteKeyRef.current === renderedRouteKey &&
+        isFetching === 0
+      ) {
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener("global-loader:page-rendered", handlePageRendered);
 
     return () => {
-      clearTimeout(timer);
+      window.removeEventListener("global-loader:page-rendered", handlePageRendered);
     };
-  }, [isLoading, isSignalingComplete, isFetching, setIsLoading]);
+  }, [isLoading, isFetching, setIsLoading]);
+
+  useEffect(() => {
+    if (!isLoading || !pendingRouteKeyRef.current || !renderedRouteKeyRef.current) {
+      return;
+    }
+
+    if (
+      isFetching === 0 &&
+      pendingRouteKeyRef.current === renderedRouteKeyRef.current
+    ) {
+      setIsLoading(false);
+    }
+  }, [isLoading, isFetching, setIsLoading]);
 
   return null;
 }
 
 function LoaderVisuals({ isLoading }: { isLoading: boolean }) {
-  // We can add more complex visual logic here if needed, 
-  // but for now relying on isLoading is sufficient for enter/exit.
   return (
     <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="fixed inset-0 z-9999 flex items-center justify-center bg-white/28 backdrop-blur-[0.5px]"
-          >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-primary">
-               <motion.div
-                className="h-full bg-white"
-                initial={{ width: "0%" }}
-                animate={{ width: "90%" }} 
-                transition={{ duration: 1.1, ease: "easeOut" }}
-               />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isLoading ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="fixed inset-0 z-9999 flex items-center justify-center bg-white/28 backdrop-blur-[0.5px]"
+        >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-primary">
+            <motion.div
+              className="h-full bg-white"
+              initial={{ width: "0%" }}
+              animate={{ width: "90%" }}
+              transition={{ duration: 1.1, ease: "easeOut" }}
+            />
+          </div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
 export function GlobalLoaderProvider({ children }: GlobalLoaderProps) {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Safety timeout
+  const startLoading = useCallback(() => {
+    setIsLoading(true);
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("global-loader:start"));
+    }
+  }, []);
+
+  const markPageRendered = useCallback((routeKey: string) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("global-loader:page-rendered", { detail: routeKey }));
+    }
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      isLoading,
+      setIsLoading,
+      startLoading,
+      markPageRendered,
+    }),
+    [isLoading, startLoading, markPageRendered],
+  );
+
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: NodeJS.Timeout | undefined;
 
     if (isLoading) {
-      // Final fallback in case navigation never resolves.
       timeoutId = setTimeout(() => {
         setIsLoading(false);
-      }, 6000); 
+      }, 6000);
     }
 
     return () => {
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, [isLoading]);
 
   useEffect(() => {
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+    const handleAnchorClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
       const anchor = target.closest("a");
-      
-      if (anchor?.getAttribute("data-prevent-loader") === "true") return;
 
-      
+      if (anchor?.getAttribute("data-prevent-loader") === "true") {
+        return;
+      }
+
       if (
-        anchor &&
-        anchor.href &&
-        anchor.target !== "_blank" &&
-        anchor.target !== "_parent" &&
-        anchor.target !== "_top" &&
-        !e.ctrlKey &&
-        !e.metaKey &&
-        !e.shiftKey &&
-        !e.altKey
+        !anchor ||
+        !anchor.href ||
+        anchor.target === "_blank" ||
+        anchor.target === "_parent" ||
+        anchor.target === "_top" ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.altKey
       ) {
-        const url = new URL(anchor.href);
-        // Compare full href to detect query param changes too
-        if (
-          url.origin === window.location.origin &&
-          url.href !== window.location.href
-        ) {
-          setIsLoading(true);
-        }
+        return;
+      }
+
+      const url = new URL(anchor.href);
+
+      if (url.origin === window.location.origin && url.href !== window.location.href) {
+        startLoading();
       }
     };
 
     document.addEventListener("click", handleAnchorClick);
-    
+
     return () => {
       document.removeEventListener("click", handleAnchorClick);
     };
-  }, []);
+  }, [startLoading]);
 
   return (
-    <LoadingContext.Provider value={{ isLoading, setIsLoading }}>
+    <LoadingContext.Provider value={contextValue}>
       {children}
       <Suspense fallback={null}>
         <RouteObserver />
