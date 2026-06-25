@@ -24,7 +24,8 @@ import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
-import { FREE_SHIPPING_MIN_ORDER_AMOUNT, SHIPPING_OPTIONS, JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
+import { JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
+import { calculateShipping, resolveFreeShippingThreshold } from "@/lib/shipping";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { addressService } from "@/services/address.service";
 import { orderService } from "@/services/order.service";
@@ -116,7 +117,6 @@ export function CheckoutPageClient() {
     enabled: !!user?.id,
   });
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("shipping");
-  const [shippingMethod] = useState(SHIPPING_OPTIONS[0].id);
   const [paymentMethod] = useState("cod");
   const [useWalletBalance, setUseWalletBalance] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -132,16 +132,8 @@ export function CheckoutPageClient() {
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
   const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const freeShippingThreshold =
-    seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
-  const isFreeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
-  const selectedShipping = SHIPPING_OPTIONS.find((shippingOption) => shippingOption.id === shippingMethod) ?? SHIPPING_OPTIONS[0];
-  const shipping =
-    isFreeDeliveryEnabled &&
-    totalPrice >= freeShippingThreshold &&
-    selectedShipping.price > 0
-      ? 0
-      : selectedShipping.price;
+  const freeShippingThreshold = resolveFreeShippingThreshold(seoSettings);
+  const shipping = calculateShipping(totalPrice, seoSettings);
   const finalTotal = totalPrice + shipping;
   const { data: cashbackPreview } = useCashbackPreview(totalPrice, {
     enabled: !!user?.id && totalPrice > 0,

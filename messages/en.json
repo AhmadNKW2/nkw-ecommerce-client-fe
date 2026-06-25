@@ -450,6 +450,7 @@
     "customerReviews": "Customer Reviews",
     "verifiedReviews": "{count} Verified Reviews",
     "soldBy": "Sold by",
+    "kingdomDelivery": "Delivery all over the Kingdom",
     "viewOffer": "View offer",
     "tags": "Tags",
     "freeShipping": "Free Shipping",
@@ -801,72 +802,23 @@
       }
     },
     "contact": {
-      "badge": "We are here to help",
       "title": "Contact Us",
-      "subtitle": "Reach the team quickly with a clear, trustworthy contact page that fits the existing storefront style.",
-      "intro": "Use this page for order questions, product help, delivery follow-up, account guidance, and general support.",
-      "highlights": {
-        "phone": {
-          "title": "Phone"
-        },
-        "email": {
-          "title": "Email"
-        },
-        "address": {
-          "title": "Address"
-        },
-        "hours": {
-          "title": "Working hours",
-          "description": "Responses are usually fastest during standard business hours in Jordan, with follow-up for the rest queued clearly."
-        }
-      },
-      "sections": {
-        "whatToInclude": {
-          "title": "What to include in your message",
-          "body": "A little context helps the team solve issues faster and reduces the number of back-and-forth messages.",
-          "items": {
-            "orderNumber": "Share the order number when your question is tied to an existing purchase.",
-            "productName": "Mention the product or vendor if you need catalog help.",
-            "bestChannel": "Tell us the best way and time to reach you back."
-          }
-        },
-        "helpTopics": {
-          "title": "Popular help topics",
-          "body": "The page is structured around the most common support reasons shoppers usually need.",
-          "items": {
-            "orders": "Order status, delivery timing, and checkout questions.",
-            "productQuestions": "Sizing, availability, price clarification, and product guidance.",
-            "returns": "Account access, payment guidance, and policy clarifications."
-          }
-        }
-      },
-      "cta": {
-        "title": "Prefer self-service first?",
-        "description": "You can review the FAQ or check shipping details before sending a message.",
-        "primary": "Read FAQs",
-        "secondary": "Shipping info"
-      },
-      "contactCard": {
-        "title": "Support details",
-        "body": "Use the contact methods below whenever you need help from a real person.",
-        "phoneLabel": "Phone",
-        "emailLabel": "Email",
-        "addressLabel": "Address",
-        "callAction": "Call support",
-        "emailAction": "Email support",
-        "directionsAction": "Get directions"
-      },
+      "subtitle": "We're here to help. Reach out anytime.",
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "hours": "Hours",
+      "hoursValue": "Sun–Thu, 9 AM – 6 PM",
       "form": {
         "title": "Send a message",
-        "description": "This form is a frontend-only placeholder for now, so submissions stay in-page instead of calling a backend endpoint.",
+        "description": "Fill out the form and we'll get back to you as soon as possible.",
         "nameLabel": "Full name",
         "emailLabel": "Email address",
         "phoneLabel": "Phone number",
         "messageLabel": "How can we help?",
         "submitLabel": "Send message",
-        "successTitle": "Message draft saved locally",
-        "successDescription": "This frontend-only preview confirms the form flow without sending data to a server yet.",
-        "note": "Frontend-only preview: this form does not submit to a live support backend yet.",
+        "successTitle": "Message received",
+        "successDescription": "Thank you for reaching out. We'll respond shortly.",
         "resetLabel": "Send another message",
         "emailSupportAction": "Email support instead"
       }

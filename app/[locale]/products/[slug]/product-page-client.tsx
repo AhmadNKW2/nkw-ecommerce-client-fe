@@ -508,27 +508,37 @@ function LinkedProductChoices({ title, groupName, choices }: { title: string; gr
   );
 }
 
+function ProductKingdomDelivery({ t, className }: { t: any; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl border border-secondary/15 bg-linear-to-r from-secondary/5 to-primary2/5 px-4 py-3",
+        className,
+      )}
+    >
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
+        <Truck className="size-4" />
+      </div>
+      <p className="text-sm font-medium leading-snug text-primary">{t("product.kingdomDelivery")}</p>
+    </div>
+  );
+}
+
 function ProductSellerCard({
   product,
   vendorHref,
   siteName,
   t,
   className,
-  vendorsEnabled = true,
 }: {
   product: any;
   vendorHref?: string;
   siteName: string;
   t: any;
   className?: string;
-  vendorsEnabled?: boolean;
 }) {
-  if (!vendorsEnabled) {
-    return null;
-  }
-
   return (
-    <Card className={cn("p-4 flex flex-col gap-4", className)}>
+    <Card className={cn("p-4", className)}>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           {product.vendor?.logo ? (
@@ -935,7 +945,10 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} vendorsEnabled={vendorsEnabled} />
+          {vendorsEnabled ? (
+            <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
+          ) : null}
+          <ProductKingdomDelivery t={t} />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
       </div>
@@ -996,7 +1009,10 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} vendorsEnabled={vendorsEnabled} />
+          {vendorsEnabled ? (
+            <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
+          ) : null}
+          <ProductKingdomDelivery t={t} />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (
             <Card className="p-4">

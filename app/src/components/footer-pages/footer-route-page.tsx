@@ -6,16 +6,13 @@ import {
   Bookmark,
   BriefcaseBusiness,
   Building2,
-  Clock3,
   Cookie,
   FileText,
   Gift,
   HelpCircle,
   Mail,
-  MapPin,
   Newspaper,
   PackageSearch,
-  Phone,
   RotateCcw,
   ShieldCheck,
   Sparkles,
@@ -23,8 +20,7 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
-import { SITE_CONFIG, FREE_SHIPPING_MIN_ORDER_AMOUNT, STANDARD_SHIPPING_FEE } from "@/lib/constants";
-import { Card } from "@/components/ui/card";
+import { FREE_SHIPPING_MIN_ORDER_AMOUNT, STANDARD_SHIPPING_FEE } from "@/lib/constants";
 import {
   FooterContentPage,
   type FooterPageCta,
@@ -32,7 +28,6 @@ import {
   type FooterPageHighlight,
   type FooterPageSection,
 } from "./footer-content-page";
-import { ContactFormPlaceholder } from "./contact-form-placeholder";
 import { TrackOrderLookupCard } from "./track-order-lookup-card";
 import { settingsService } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
@@ -40,7 +35,6 @@ import { resolveLocalizedSiteName } from "@/lib/site-branding";
 export type FooterPageKey =
   | "sale"
   | "giftCards"
-  | "contact"
   | "faqs"
   | "shipping"
   | "returns"
@@ -85,6 +79,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
   const freeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
   const freeDeliveryAmount =
     seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
+  const deliveryFee = seoSettings?.delivery_fee ?? STANDARD_SHIPPING_FEE;
 
   const homeLabel = commonT("home");
 
@@ -237,133 +232,6 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
       );
     }
 
-    case "contact": {
-      const contactAddress = `${SITE_CONFIG.contact.address.en} / ${SITE_CONFIG.contact.address.ar}`;
-      const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.contact.address.en)}`;
-
-      return renderPage(
-        "/contact",
-        t("contact.badge"),
-        t("contact.title"),
-        t("contact.subtitle"),
-        t("contact.intro"),
-        [
-          {
-            icon: <Phone className="size-5" />,
-            title: t("contact.highlights.phone.title"),
-            description: SITE_CONFIG.contact.phone,
-          },
-          {
-            icon: <Mail className="size-5" />,
-            title: t("contact.highlights.email.title"),
-            description: SITE_CONFIG.contact.email,
-          },
-          {
-            icon: <MapPin className="size-5" />,
-            title: t("contact.highlights.address.title"),
-            description: contactAddress,
-          },
-          {
-            icon: <Clock3 className="size-5" />,
-            title: t("contact.highlights.hours.title"),
-            description: t("contact.highlights.hours.description"),
-          },
-        ],
-        [
-          {
-            id: "what-to-include",
-            title: t("contact.sections.whatToInclude.title"),
-            body: [t("contact.sections.whatToInclude.body")],
-            items: [
-              t("contact.sections.whatToInclude.items.orderNumber"),
-              t("contact.sections.whatToInclude.items.productName"),
-              t("contact.sections.whatToInclude.items.bestChannel"),
-            ],
-          },
-          {
-            id: "help-topics",
-            title: t("contact.sections.helpTopics.title"),
-            body: [t("contact.sections.helpTopics.body")],
-            items: [
-              t("contact.sections.helpTopics.items.orders"),
-              t("contact.sections.helpTopics.items.productQuestions"),
-              t("contact.sections.helpTopics.items.returns"),
-            ],
-          },
-        ],
-        {
-          title: t("contact.cta.title"),
-          description: t("contact.cta.description"),
-          primary: { label: t("contact.cta.primary"), href: "/faqs" },
-          secondary: { label: t("contact.cta.secondary"), href: "/shipping" },
-        },
-        undefined,
-        "default",
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <Card className="overflow-hidden border-secondary/20 bg-linear-to-br from-white via-white to-secondary/10 p-0">
-            <div className="h-1.5 bg-linear-to-r from-secondary via-primary2 to-primary" />
-            <div className="space-y-5 p-5 md:p-6">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-primary">{t("contact.contactCard.title")}</h2>
-                <p className="text-sm leading-7 text-third md:text-base">{t("contact.contactCard.body")}</p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[20px] border border-secondary/15 bg-white/80 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-third">{t("contact.contactCard.phoneLabel")}</p>
-                  <p dir="ltr" className="mt-2 text-left text-base font-semibold text-primary">{SITE_CONFIG.contact.phone}</p>
-                </div>
-                <div className="rounded-[20px] border border-primary/10 bg-white/80 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-third">{t("contact.contactCard.emailLabel")}</p>
-                  <p className="mt-2 text-base font-semibold text-primary">{SITE_CONFIG.contact.email}</p>
-                </div>
-              </div>
-              <div className="rounded-[20px] border border-primary2/20 bg-primary2/10 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-third">{t("contact.contactCard.addressLabel")}</p>
-                <p className="mt-2 text-sm leading-7 text-primary md:text-base">{contactAddress}</p>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <a
-                  href={`tel:${SITE_CONFIG.contact.phone}`}
-                  className="inline-flex h-11 items-center justify-center rounded-full bg-linear-to-r from-secondary to-primary2 px-5 py-2 text-sm font-medium text-white shadow-s1 transition-transform hover:-translate-y-0.5"
-                >
-                  {t("contact.contactCard.callAction")}
-                </a>
-                <a
-                  href={`mailto:${SITE_CONFIG.contact.email}`}
-                  className="inline-flex h-11 items-center justify-center rounded-full border border-primary/10 bg-white/80 px-5 py-2 text-sm font-medium text-primary transition-colors hover:bg-white"
-                >
-                  {t("contact.contactCard.emailAction")}
-                </a>
-                <a
-                  href={mapsHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-11 items-center justify-center rounded-full border border-primary2/20 bg-primary2/10 px-5 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary2/15"
-                >
-                  {t("contact.contactCard.directionsAction")}
-                </a>
-              </div>
-            </div>
-          </Card>
-          <ContactFormPlaceholder
-            title={t("contact.form.title")}
-            description={t("contact.form.description")}
-            nameLabel={t("contact.form.nameLabel")}
-            emailLabel={t("contact.form.emailLabel")}
-            phoneLabel={t("contact.form.phoneLabel")}
-            messageLabel={t("contact.form.messageLabel")}
-            submitLabel={t("contact.form.submitLabel")}
-            successTitle={t("contact.form.successTitle")}
-            successDescription={t("contact.form.successDescription")}
-            noteLabel={t("contact.form.note")}
-            resetLabel={t("contact.form.resetLabel")}
-            supportActionLabel={t("contact.form.emailSupportAction")}
-            supportHref={`mailto:${SITE_CONFIG.contact.email}`}
-          />
-        </div>,
-      );
-    }
-
     case "faqs": {
       return renderPage(
         "/faqs",
@@ -440,7 +308,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("shipping.subtitle"),
         freeDeliveryEnabled
           ? t("shipping.intro", {
-              fee: String(STANDARD_SHIPPING_FEE),
+              fee: String(deliveryFee),
               threshold: String(freeDeliveryAmount),
             })
           : t("shipping.highlights.standard.description"),
@@ -477,12 +345,12 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
             title: t("shipping.sections.fees.title"),
             body: [
               t("shipping.sections.fees.body", {
-                fee: String(STANDARD_SHIPPING_FEE),
+                fee: String(deliveryFee),
                 threshold: String(freeDeliveryAmount),
               }),
             ],
             items: [
-              t("shipping.sections.fees.items.standardFee", { fee: String(STANDARD_SHIPPING_FEE) }),
+              t("shipping.sections.fees.items.standardFee", { fee: String(deliveryFee) }),
               ...(freeDeliveryEnabled
                 ? [
                     t("shipping.sections.fees.items.freeThreshold", {

@@ -8,7 +8,7 @@ import { useCheckout } from "@/hooks/useCheckout";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { QuantitySelector } from "@/components/ui/quantity-selector";
-import { FREE_SHIPPING_MIN_ORDER_AMOUNT, STANDARD_SHIPPING_FEE } from "@/lib/constants";
+import { calculateShipping, isFreeDeliveryEnabled, resolveFreeShippingThreshold } from "@/lib/shipping";
 import { cn, formatPrice } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
@@ -95,12 +95,12 @@ export function CartSidebar() {
     return variant ? pickCompare(variant) : pickCompare(product);
   };
 
-  const freeShippingThreshold = seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
-  const isFreeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
+  const freeShippingThreshold = resolveFreeShippingThreshold(seoSettings);
+  const freeDeliveryEnabled = isFreeDeliveryEnabled(seoSettings);
   const freeShippingUnlocked = totalAmount >= freeShippingThreshold;
   const remainingAmountForFreeShipping = Math.max(freeShippingThreshold - totalAmount, 0);
   const freeShippingProgress = Math.min((totalAmount / freeShippingThreshold) * 100, 100);
-  const shippingAmount = isFreeDeliveryEnabled && freeShippingUnlocked ? 0 : STANDARD_SHIPPING_FEE;
+  const shippingAmount = calculateShipping(totalAmount, seoSettings);
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -277,7 +277,7 @@ export function CartSidebar() {
         {/* Footer */}
         {items.length > 0 && (
           <div className="flex flex-col gap-5 p-4 border-t border-gray-100 bg-gray-50/50">
-            {isFreeDeliveryEnabled ? (
+            {freeDeliveryEnabled ? (
             <div className="p-4 bg-white rounded-xl border border-gray-100">
               <div className="flex items-center gap-2 mb-2">
                 <Truck className="w-4 h-4 text-secondary" />
@@ -306,8 +306,8 @@ export function CartSidebar() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">{tCart("shipping")}</span>
-                <span className={isFreeDeliveryEnabled && freeShippingUnlocked ? "text-green-600 font-medium" : "font-medium text-gray-900"}>
-                  {isFreeDeliveryEnabled && freeShippingUnlocked ? tCart("free") : formatPrice(shippingAmount, undefined, locale)}
+                <span className={freeDeliveryEnabled && freeShippingUnlocked ? "text-green-600 font-medium" : "font-medium text-gray-900"}>
+                  {freeDeliveryEnabled && freeShippingUnlocked ? tCart("free") : formatPrice(shippingAmount, undefined, locale)}
                 </span>
               </div>
             </div>

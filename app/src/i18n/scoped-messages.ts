@@ -86,3 +86,8 @@ export const PROFILE_WISHLIST_MESSAGE_NAMESPACES = [
   "product",
   "productGrid",
 ] satisfies readonly MessageNamespace[];
+
+export const CONTACT_MESSAGE_NAMESPACES = [
+  "common",
+  "footerPages",
+] satisfies readonly MessageNamespace[];
