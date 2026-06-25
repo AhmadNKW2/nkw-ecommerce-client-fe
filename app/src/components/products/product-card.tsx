@@ -420,7 +420,7 @@ export function ProductCard({
       {/* Content */}
       <div className="p-1 flex flex-col grow gap-2">
         {/* Name */}
-        <h3 className="font-medium text-[13px] md:text-sm text-primary group-hover:text-primary transition-colors line-clamp-3 text-center">
+        <h3 className="font-medium text-[13px] md:text-sm text-primary group-hover:text-primary transition-colors line-clamp-4 text-center">
           {product.name}
           {variantAttributesSummary ? (
             <span className="font-normal text-third">{" "}({variantAttributesSummary})</span>

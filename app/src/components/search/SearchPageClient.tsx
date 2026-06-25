@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
 import { useSearchFilters } from '@/lib/search/use-search-params';
 import { useInfiniteSearchProducts } from '@/lib/search/use-search';
-import { ProductFilters, FloatingFilterSort } from '@/components/products';
+import { ProductFilters, FloatingFilterSort, DesktopFiltersSidebar } from '@/components/products';
 import type { FilterState } from '@/components/products/product-filters';
 import { SearchResults } from './SearchResults';
 import { Button, Card, Sheet, Select } from '@/components/ui';
@@ -299,12 +299,10 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
       />
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Filters — always visible on desktop, same as product listing pages */}
-        <aside className="w-full lg:w-64 shrink-0 hidden lg:block">
-          <div className="sticky top-45 max-h-[calc(100vh-200px)] overflow-y-auto pr-1">
-            {filtersComponent}
-          </div>
-        </aside>
+        {/* Sidebar Filters — shared desktop wrapper across listing pages */}
+        <DesktopFiltersSidebar>
+          {filtersComponent}
+        </DesktopFiltersSidebar>
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">

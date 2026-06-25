@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
-import { FilterState, ProductFilters, FloatingFilterSort, MobileContactActions } from "@/components/products";
+import { FilterState, ProductFilters, FloatingFilterSort, MobileContactActions, DesktopFiltersSidebar } from "@/components/products";
 import { ProductGrid } from "@/components/products/product-grid";
 import { Button, Card, ResponsiveGrid, Sheet, Select } from "@/components/ui";
 import { useLoading } from "@/components/ui/global-loader";
@@ -366,13 +366,9 @@ export function ProductListingPage({
 
       <div className="flex flex-col lg:flex-row gap-8 justify-start">
         {/* Sidebar Filters */}
-        <aside
-          className="hidden w-full shrink-0 lg:block lg:w-64"
-        >
-          <div className="sticky top-47.5 max-h-[calc(100vh-200px)] overflow-y-hidden rounded-xl">
-            {filtersComponent}
-          </div>
-        </aside>
+        <DesktopFiltersSidebar topClassName="top-47.5">
+          {filtersComponent}
+        </DesktopFiltersSidebar>
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">

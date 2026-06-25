@@ -1,5 +1,6 @@
 export { AddToCartButton } from "./add-to-cart-button";
 export { ProductCard } from "./product-card";
+export { DesktopFiltersSidebar } from "./desktop-filters-sidebar";
 export { ProductFilters } from "./product-filters";
 export type { FilterState } from "./product-filters";
 export { ProductGallery } from "./product-gallery";

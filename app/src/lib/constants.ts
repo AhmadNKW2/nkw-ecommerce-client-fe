@@ -2,7 +2,7 @@
 export const SITE_CONFIG = {
   name: "Storefront",
   description: "A modern online shopping destination with quality products, fair prices, and reliable delivery.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://ordonsooq.com",
   ogImage: "/og-image.jpg",
   links: {
     twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "",

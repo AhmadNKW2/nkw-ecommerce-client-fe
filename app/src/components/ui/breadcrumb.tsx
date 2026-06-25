@@ -36,13 +36,13 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
             <li key={index} className="flex items-center gap-2">
               <SeparatorIcon className="w-4 h-4 text-muted-foreground/50" />
               {isLast ? (
-                <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-[300px]" aria-current="page">
+                <span className="font-medium text-foreground truncate max-w-50 sm:max-w-75" aria-current="page">
                   {item.label}
                 </span>
               ) : (
                 <Link 
-                  href={item.href || "#"} 
-                  className="hover:text-primary transition-colors truncate max-w-[150px]"
+                  href={item.href || "/"} 
+                  className="hover:text-primary transition-colors truncate max-w-37.5"
                 >
                   {item.label}
                 </Link>

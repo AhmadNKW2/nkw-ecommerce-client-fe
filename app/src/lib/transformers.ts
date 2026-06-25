@@ -624,13 +624,14 @@ export function transformBanner(apiBanner: ApiBanner | HomeBanner, locale: Local
   const titleAr = 'title_ar' in apiBanner ? apiBanner.title_ar : undefined;
   const descEn = 'description_en' in apiBanner ? apiBanner.description_en : undefined;
   const descAr = 'description_ar' in apiBanner ? apiBanner.description_ar : undefined;
+  const normalizedLink = apiBanner.link?.trim() || '/';
   
   return {
     id: String(apiBanner.id),
     title: getLocalizedText(titleEn, titleAr, locale),
     subtitle: getLocalizedText(descEn, descAr, locale) || undefined,
     image: apiBanner.image,
-    link: apiBanner.link || '#',
+    link: normalizedLink,
     buttonText: locale === 'ar' ? 'تسوق الآن' : 'Shop Now',
     isActive: 'status' in apiBanner ? apiBanner.status === 'active' : true,
     order: apiBanner.sort_order,
