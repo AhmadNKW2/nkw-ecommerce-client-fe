@@ -24,7 +24,8 @@ import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
-import { JORDAN_CITIES, SITE_CONFIG } from "@/lib/constants";
+import { JORDAN_CITIES, SITE_CONFIG, CURRENCY_CONFIG } from "@/lib/constants";
+import { trackDataFastEvent } from "@/lib/datafast";
 import { calculateShipping, resolveFreeShippingThreshold } from "@/lib/shipping";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
 import { addressService } from "@/services/address.service";
@@ -512,6 +513,15 @@ export function CheckoutPageClient() {
       };
 
       const order = await orderService.create(payload);
+
+      void trackDataFastEvent("purchase", {
+        order_id: String(order.id),
+        amount: order.totalAmount,
+        currency: CURRENCY_CONFIG.code,
+        items: order.items.length,
+        payment_method: order.paymentMethod,
+      });
+
       setCreatedOrderId(order.id);
       setOrderComplete(true);
       clearCart();
