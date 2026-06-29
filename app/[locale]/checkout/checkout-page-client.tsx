@@ -22,6 +22,10 @@ import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
 import { JORDAN_CITIES, SITE_CONFIG, CURRENCY_CONFIG } from "@/lib/constants";
@@ -109,9 +113,13 @@ export function CheckoutPageClient() {
   const locale = useLocale();
   const isArabic = locale === "ar";
   const { data: seoSettings } = useSeoSettings();
+  const { data: featureToggles } = useFeatureToggles();
+  const { cashbackEnabled } = resolveFeatureToggles(featureToggles);
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, totalItems, totalPrice, clearCart, isLoading: isCartLoading } = useCart();
-  const { data: wallet } = useWallet({ enabled: !!user?.id });
+  const { data: wallet } = useWallet({
+    enabled: !!user?.id && cashbackEnabled,
+  });
   const { data: savedAddresses = [] } = useQuery({
     queryKey: ["addresses", user?.id],
     queryFn: () => addressService.getAll(),
@@ -137,15 +145,15 @@ export function CheckoutPageClient() {
   const shipping = calculateShipping(totalPrice, seoSettings);
   const finalTotal = totalPrice + shipping;
   const { data: cashbackPreview } = useCashbackPreview(totalPrice, {
-    enabled: !!user?.id && totalPrice > 0,
+    enabled: cashbackEnabled && !!user?.id && totalPrice > 0,
   });
-  const availableWalletBalance = Number(wallet?.balance ?? 0);
-  const canUseWallet = availableWalletBalance > 0;
+  const availableWalletBalance = cashbackEnabled ? Number(wallet?.balance ?? 0) : 0;
+  const canUseWallet = cashbackEnabled && availableWalletBalance > 0;
   const walletAppliedAmount = useWalletBalance ? Math.min(availableWalletBalance, finalTotal) : 0;
   const remainingPaymentAmount = Math.max(finalTotal - walletAppliedAmount, 0);
   const payableSummaryAmount = walletAppliedAmount > 0 ? remainingPaymentAmount : finalTotal;
   const payableSummaryLabel = walletAppliedAmount > 0 ? t("cashOnDeliveryAmount") : t("total");
-  const cashbackAmount = Number(cashbackPreview?.amount ?? 0);
+  const cashbackAmount = cashbackEnabled ? Number(cashbackPreview?.amount ?? 0) : 0;
   const mobileStickyBottomOffset = isMobileKeyboardOpen ? 0 : 64;
   const currentActionLabel =
     currentStep === "shipping"
@@ -763,6 +771,7 @@ export function CheckoutPageClient() {
                     }
                   />
 
+                  {cashbackEnabled ? (
                   <div
                     role="checkbox"
                     aria-checked={useWalletBalance}
@@ -794,6 +803,7 @@ export function CheckoutPageClient() {
                       />
                     </div>
                   </div>
+                  ) : null}
                 </div>
               </div>
             ) : null}

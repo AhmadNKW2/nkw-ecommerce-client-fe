@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
 import type { SearchResponse, SearchFilters, SortOption } from '@/lib/search/types';
 
-// Map UI sort keys → Typesense sort_by values (mirrors ProductListingPage mapping)
+// Map UI sort keys to search API sort values (mirrors ProductListingPage mapping)
 const SORT_MAP: Record<string, SortOption> = {
   'popular':    'popularity_score:desc',
   'newest':     'created_at:desc',

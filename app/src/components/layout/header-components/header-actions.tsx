@@ -12,6 +12,10 @@ import { useTranslations } from "next-intl";
 import { User, Package, LogOut, Wallet, Heart, MapPin, UserCog } from "lucide-react";
 
 import { useWallet } from "@/hooks/useWallet";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 import { formatPrice } from "@/lib/utils";
 import { CURRENCY_CONFIG } from "@/lib/constants";
 import { useLocale } from "next-intl";
@@ -25,7 +29,11 @@ export function HeaderActions() {
   const { items: wishlistItems } = useWishlist();
   const { openAuthModal } = useAuthModal();
   const { user, isAuthenticated, isLoading: isAuthLoading, logout, isLoggingOut } = useAuth();
-  const { data: wallet } = useWallet({ enabled: isAuthenticated });
+  const { data: featureToggles } = useFeatureToggles();
+  const { cashbackEnabled } = resolveFeatureToggles(featureToggles);
+  const { data: wallet } = useWallet({
+    enabled: isAuthenticated && cashbackEnabled,
+  });
 
   const handleLogout = async () => {
     try {
@@ -37,7 +45,9 @@ export function HeaderActions() {
 
   const profileOptions: SelectOption[] = [
     { value: "/profile", label: t("myProfile"), icon: User },
-    { value: "/profile/wallet", label: t("myWallet"), icon: Wallet },
+    ...(cashbackEnabled
+      ? [{ value: "/profile/wallet", label: t("myWallet"), icon: Wallet } satisfies SelectOption]
+      : []),
     { value: "/profile/wishlist", label: t("myWishlist"), icon: Heart },
     { value: "/profile/addresses", label: t("addresses"), icon: MapPin },
     { value: "/orders", label: t("myOrders"), icon: Package },
@@ -67,7 +77,7 @@ export function HeaderActions() {
 
       <SellWithUsCta variant="headerMobile" className="lg:hidden" />
 
-      {isAuthenticated && wallet && (
+      {cashbackEnabled && isAuthenticated && wallet && (
         <>
           <div className="w-px h-8 bg-white/10 hidden lg:block"></div>
           <Link href="/profile/wallet" className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 hover:bg-secondary/20 transition-all border border-white/10">

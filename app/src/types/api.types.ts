@@ -466,13 +466,18 @@ export type SeoSettings = {
   updated_at?: string;
 };
 
-export type ProductFieldToggles = {
+export type FeatureToggles = {
   id: number;
   // Disabling toggles — enforced by BE, consumed by the client storefront.
   vendors_enabled: boolean;
   attributes_enabled: boolean;
   specifications_enabled: boolean;
   weight_and_dimensions_enabled: boolean;
+  partners_enabled: boolean;
+  cashback_enabled: boolean;
+  banners_enabled: boolean;
+  import_ai_products_enabled: boolean;
+  linked_products_enabled: boolean;
   // Appearance-only toggles — admin dashboard only; the client ignores these.
   reference_link_visible_admin: boolean;
   meta_title_visible_admin: boolean;
@@ -480,3 +485,6 @@ export type ProductFieldToggles = {
   created_at?: string;
   updated_at?: string;
 };
+
+/** @deprecated Use FeatureToggles */
+export type ProductFieldToggles = FeatureToggles;

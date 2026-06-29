@@ -608,6 +608,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
     attributesEnabled,
     specificationsEnabled,
     weightAndDimensionsEnabled,
+    linkedProductsEnabled,
   } = resolveProductFieldToggles(productFieldToggles);
 
   const requestedVariantId = useMemo(() => {
@@ -652,9 +653,9 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   );
 
   const linkedProductChoices = useMemo(() => {
-    if (!productData) return [];
+    if (!productData || !linkedProductsEnabled) return [];
     return buildLinkedProductChoices(productData, initialLinkedProductData || [], locale, linkedOptionsGroupName);
-  }, [initialLinkedProductData, linkedOptionsGroupName, productData, locale]);
+  }, [initialLinkedProductData, linkedOptionsGroupName, linkedProductsEnabled, productData, locale]);
 
   const selectableAttributes = useMemo(
     () => variantAttributes.filter((attribute) => attribute.values.length > 0),

@@ -16,11 +16,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/layout/header-components/language-switcher";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 
 const navigation = [
   { key: "dashboard", href: "/profile", icon: LayoutDashboard },
   { key: "myOrders", href: "/profile/orders", icon: Package },
-  { key: "myWallet", href: "/profile/wallet", icon: CreditCard },
+  { key: "myWallet", href: "/profile/wallet", icon: CreditCard, requiresCashback: true },
   { key: "wishlist", href: "/profile/wishlist", icon: Heart },
   { key: "addresses", href: "/profile/addresses", icon: MapPin },
   { key: "accountDetails", href: "/profile/account", icon: User },
@@ -29,6 +33,8 @@ const navigation = [
 export function ProfileSidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
+  const { data: featureToggles } = useFeatureToggles();
+  const { cashbackEnabled } = resolveFeatureToggles(featureToggles);
   const tProfile = useTranslations("profile");
   const tAuth = useTranslations("auth");
   const [imageFailed, setImageFailed] = useState(false);
@@ -59,7 +65,9 @@ export function ProfileSidebar() {
       </div>
 
       <nav className="p-2 space-y-1">
-        {navigation.map((item) => {
+        {navigation
+          .filter((item) => !item.requiresCashback || cashbackEnabled)
+          .map((item) => {
           const isActive = pathname === item.href;
 
           const label =

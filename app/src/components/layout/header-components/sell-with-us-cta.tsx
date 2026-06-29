@@ -20,6 +20,10 @@ import { Modal } from "@/components/ui/modal";
 import { SITE_CONFIG } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { sellWithUsSchema, type SellWithUsFormData } from "@/lib/sell-with-us";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 
 type SellWithUsCtaVariant = "desktop" | "drawer" | "compact" | "headerMobile";
 
@@ -158,7 +162,13 @@ const sellWithUsCopy = {
 export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWithUsCtaProps) {
   const locale = useLocale();
   const tCommon = useTranslations("common");
+  const { data: featureToggles } = useFeatureToggles();
+  const { partnersEnabled } = resolveFeatureToggles(featureToggles);
   const copy = locale === "ar" ? sellWithUsCopy.ar : sellWithUsCopy.en;
+
+  if (!partnersEnabled) {
+    return null;
+  }
 
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

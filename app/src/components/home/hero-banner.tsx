@@ -6,6 +6,10 @@ import { Link } from "@/i18n/navigation";
 import { Banner } from "@/types";
 import { cn } from "@/lib/utils";
 import { ArrowButton } from "@/components/ui";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 
 interface HeroBannerProps {
   banners: Banner[];
@@ -18,6 +22,9 @@ export function HeroBanner({
   autoPlay = true,
   interval = 5000
 }: HeroBannerProps) {
+  const { data: featureToggles } = useFeatureToggles();
+  const { bannersEnabled } = resolveFeatureToggles(featureToggles);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progressKey, setProgressKey] = useState(0);
@@ -77,7 +84,7 @@ export function HeroBanner({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [goToPrevious, goToNext]);
 
-  if (activeBanners.length === 0) return null;
+  if (!bannersEnabled || activeBanners.length === 0) return null;
 
   const currentBanner = activeBanners[currentIndex];
 
