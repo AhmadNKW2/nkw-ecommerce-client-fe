@@ -462,6 +462,7 @@ export type SeoSettings = {
   free_delivery_enabled: boolean;
   free_delivery_amount: number;
   delivery_fee: number;
+  low_stock_threshold: number;
   created_at?: string;
   updated_at?: string;
 };
