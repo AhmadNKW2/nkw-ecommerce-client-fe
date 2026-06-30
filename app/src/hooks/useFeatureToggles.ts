@@ -35,6 +35,8 @@ export function resolveFeatureToggles(
     bannersEnabled: data?.banners_enabled ?? true,
     importAiProductsEnabled: data?.import_ai_products_enabled ?? true,
     linkedProductsEnabled: data?.linked_products_enabled ?? true,
+    easyPurchaseEnabled: data?.easy_purchase_enabled ?? false,
+    cartSidebarButtonEnabled: data?.cart_sidebar_button_enabled ?? true,
   };
 }
 

@@ -494,6 +494,7 @@
     "freeShipping": "Free Shipping",
     "estimatedDelivery": "Estimated Delivery",
     "viewCart": "View Cart",
+    "purchaseNow": "Purchase Now",
     "couponCode": "Coupon code",
     "subtotalWithCount": "Subtotal ({count} items)",
     "freeShippingUnlocked": "Free shipping unlocked!",
@@ -589,7 +590,10 @@
     "invalidEmail": "Invalid email address",
     "invalidPhone": "Phone number must start with 07 and contain exactly 10 digits",
     "numbersOnly": "Use Arabic or English digits only",
-    "orderPlacementFailed": "Failed to place order. Please try again."
+    "orderPlacementFailed": "Failed to place order. Please try again.",
+    "easyPurchaseTitle": "Fast purchase in seconds!",
+    "purchaseNow": "Purchase Now",
+    "fullName": "Full Name"
   },
   "footer": {
     "description": "Your premier destination for online shopping - Quality products, great prices, fast delivery",

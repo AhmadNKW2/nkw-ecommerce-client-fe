@@ -13,6 +13,10 @@ import { cn, formatPrice } from "@/lib/utils";
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settings.service";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 
 export function CartSidebar() {
   const tCart = useTranslations("cart");
@@ -30,6 +34,8 @@ export function CartSidebar() {
     loadingItems
   } = useCart();
   const { handleCheckout } = useCheckout();
+  const { data: featureToggles } = useFeatureToggles();
+  const { cartSidebarButtonEnabled, easyPurchaseEnabled } = resolveFeatureToggles(featureToggles);
 
   const closeCart = () => setIsOpen(false);
   const getProductName = (item: typeof items[number]) =>
@@ -313,11 +319,13 @@ export function CartSidebar() {
             </div>
 
             <div className="flex flex-col gap-2">
+              {cartSidebarButtonEnabled ? (
               <Link href="/cart" onClick={closeCart}>
                 <Button variant="outline" className="w-full" size="lg">
                   {tCart("viewCart")}
                 </Button>
               </Link>
+              ) : null}
               <Button 
                 className="w-full gap-2" 
                 size="lg" 
@@ -326,7 +334,7 @@ export function CartSidebar() {
                   handleCheckout(e);
                 }}
               >
-                {tCart("checkout")} <ArrowRight className="w-4 h-4" />
+                {easyPurchaseEnabled ? tCart("purchaseNow") : tCart("checkout")} <ArrowRight className="w-4 h-4" />
               </Button>
 
             </div>

@@ -1,14 +1,15 @@
 import { apiClient } from '@/lib/api-client';
-import type { FeatureToggles, SeoSettings } from '@/types/api.types';
+import type { FeatureToggles, SeoSettings, SitePopupSettings } from '@/types/api.types';
 
 export const settingsService = {
   getSeoSettings: async (): Promise<SeoSettings> => {
     return apiClient.get<SeoSettings>('/settings/seo');
   },
-  // Public endpoint — no auth required. Used by the storefront to hide
-  // disabled product fields (vendors, attributes, specifications, weight & dimensions).
   getFeatureToggles: async (): Promise<FeatureToggles> => {
     return apiClient.get<FeatureToggles>('/settings/features');
+  },
+  getSitePopupSettings: async (): Promise<SitePopupSettings> => {
+    return apiClient.get<SitePopupSettings>('/settings/popup');
   },
 
   /** @deprecated Use getFeatureToggles */

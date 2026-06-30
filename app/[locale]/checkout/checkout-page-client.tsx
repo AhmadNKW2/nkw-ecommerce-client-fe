@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Banknote,
   Check,
   ChevronDown,
   ChevronRight,
@@ -38,6 +39,7 @@ import { orderService } from "@/services/order.service";
 type CheckoutStep = "shipping" | "payment" | "review";
 
 type CheckoutFormData = {
+  fullName: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -77,6 +79,7 @@ const ARABIC_DIGIT_MAP: Record<string, string> = {
 
 function createInitialFormData(): CheckoutFormData {
   return {
+    fullName: "",
     firstName: "",
     lastName: "",
     email: "",
@@ -114,7 +117,7 @@ export function CheckoutPageClient() {
   const isArabic = locale === "ar";
   const { data: seoSettings } = useSeoSettings();
   const { data: featureToggles } = useFeatureToggles();
-  const { cashbackEnabled } = resolveFeatureToggles(featureToggles);
+  const { cashbackEnabled, easyPurchaseEnabled } = resolveFeatureToggles(featureToggles);
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, totalItems, totalPrice, clearCart, isLoading: isCartLoading } = useCart();
   const { data: wallet } = useWallet({
@@ -155,8 +158,9 @@ export function CheckoutPageClient() {
   const payableSummaryLabel = walletAppliedAmount > 0 ? t("cashOnDeliveryAmount") : t("total");
   const cashbackAmount = cashbackEnabled ? Number(cashbackPreview?.amount ?? 0) : 0;
   const mobileStickyBottomOffset = isMobileKeyboardOpen ? 0 : 64;
-  const currentActionLabel =
-    currentStep === "shipping"
+  const currentActionLabel = easyPurchaseEnabled
+    ? t("placeOrder")
+    : currentStep === "shipping"
       ? t("continueToPayment")
       : currentStep === "payment"
         ? t("reviewOrderAction")
@@ -245,6 +249,14 @@ export function CheckoutPageClient() {
       if (!next.firstName.trim() && user.firstName) {
         next.firstName = user.firstName;
         hasChanged = true;
+      }
+
+      if (!next.fullName.trim()) {
+        const combinedName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+        if (combinedName) {
+          next.fullName = combinedName;
+          hasChanged = true;
+        }
       }
 
       if (!next.lastName.trim() && user.lastName) {
@@ -377,7 +389,10 @@ export function CheckoutPageClient() {
 
   const handleAdvanceStep = () => {
     if (currentStep === "shipping") {
-      if (validateShipping()) {
+      const isValid = easyPurchaseEnabled
+        ? validateEasyPurchase()
+        : validateShipping();
+      if (isValid) {
         transitionToStep("payment");
       }
       return;
@@ -409,6 +424,26 @@ export function CheckoutPageClient() {
     }
 
     setUseWalletBalance((current) => !current);
+  };
+
+  const validateEasyPurchase = () => {
+    const nextErrors: Record<string, string> = {};
+    const phone = normalizePhoneNumber(formData.phone);
+
+    if (!formData.fullName.trim()) nextErrors.fullName = t("required");
+    if (!formData.phone.trim()) nextErrors.phone = t("required");
+    else if (!/^07\d{8}$/.test(phone)) nextErrors.phone = t("invalidPhone");
+
+    setErrors(nextErrors);
+
+    const errorKeys = Object.keys(nextErrors);
+    if (errorKeys.length === 0) {
+      return true;
+    }
+
+    const firstErrorField = errorKeys[0];
+    setErrorScrollTarget({ field: firstErrorField, nonce: Date.now() });
+    return false;
   };
 
   const validateShipping = () => {
@@ -463,7 +498,11 @@ export function CheckoutPageClient() {
 
   const handlePlaceOrder = async () => {
     try {
-      if (!validateShipping()) {
+      if (easyPurchaseEnabled) {
+        if (!validateEasyPurchase()) {
+          return;
+        }
+      } else if (!validateShipping()) {
         transitionToStep("shipping");
         return;
       }
@@ -471,9 +510,17 @@ export function CheckoutPageClient() {
       setIsProcessing(true);
       setBookingError(null);
 
-      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
-      const email = formData.email.trim();
+      const fullName = easyPurchaseEnabled
+        ? formData.fullName.trim()
+        : `${formData.firstName} ${formData.lastName}`.trim();
+      const email = easyPurchaseEnabled
+        ? user?.email?.trim() || undefined
+        : formData.email.trim();
       const phone = normalizePhoneNumber(formData.phone);
+      const city = easyPurchaseEnabled
+        ? JORDAN_CITIES[0]?.value || "Amman"
+        : formData.city.trim();
+      const street = easyPurchaseEnabled ? "Cash on delivery" : formData.address.trim();
       const payload = {
         items: items.map((item) => {
           let productId = typeof item.product_id === "number" ? item.product_id : parseInt(String(item.product_id), 10);
@@ -497,18 +544,18 @@ export function CheckoutPageClient() {
           email,
           phone,
           country: "Jordan",
-          city: formData.city.trim(),
-          street: formData.address.trim(),
-          building: getOptionalValue(formData.building),
-          floor: getOptionalValue(formData.floor),
-          apartment: getOptionalValue(formData.apartment),
-          notes: getOptionalValue(formData.notes),
+          city,
+          street,
+          building: easyPurchaseEnabled ? undefined : getOptionalValue(formData.building),
+          floor: easyPurchaseEnabled ? undefined : getOptionalValue(formData.floor),
+          apartment: easyPurchaseEnabled ? undefined : getOptionalValue(formData.apartment),
+          notes: easyPurchaseEnabled ? undefined : getOptionalValue(formData.notes),
         },
         billingAddress: {
           fullName,
           country: "Jordan",
-          city: formData.city.trim(),
-          street: formData.address.trim(),
+          city,
+          street,
         },
         paymentMethod:
           walletAppliedAmount > 0 && remainingPaymentAmount === 0
@@ -517,7 +564,7 @@ export function CheckoutPageClient() {
               ? "cod"
               : "wallet",
         walletAppliedAmount: walletAppliedAmount > 0 ? walletAppliedAmount : undefined,
-        notes: getOptionalValue(formData.notes),
+        notes: easyPurchaseEnabled ? undefined : getOptionalValue(formData.notes),
       };
 
       const order = await orderService.create(payload);
@@ -598,6 +645,190 @@ export function CheckoutPageClient() {
     );
   }
 
+  if (easyPurchaseEnabled) {
+    return (
+      <>
+        <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-5 px-4 pb-24 text-center">
+          <h1 className="text-3xl font-bold text-primary">{t("easyPurchaseTitle")}</h1>
+
+          <Card className="w-full text-start">
+            <div className="flex flex-col gap-4">
+              <Input
+                label={t("fullName")}
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                error={errors.fullName}
+                required
+              />
+              <Input
+                label={t("phone")}
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                dir="ltr"
+                lang="en"
+                value={formData.phone}
+                onChange={handleInputChange}
+                placeholder="07XXXXXXXX"
+                error={errors.phone}
+                required
+                className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+              />
+            </div>
+
+            {bookingError ? (
+              <div className="mt-4 rounded-lg bg-danger/10 p-3 text-sm text-danger">{bookingError}</div>
+            ) : null}
+          </Card>
+
+          <Card className="flex w-full flex-col gap-5">
+            <h2 className="text-center text-xl font-bold text-primary">{t("orderSummary")}</h2>
+
+            <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 text-start">
+              {summaryItems.map((item, index) => (
+                <div key={`${item.product_id}-${item.variant_id ?? "base"}-${index}`} className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 shrink-0">
+                    <Image
+                      src={item.product.image || "/placeholder.svg"}
+                      alt={getProductName(item)}
+                      fill
+                      className="rounded object-cover"
+                    />
+                    <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-xs text-white">
+                      {item.quantity}
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-primary">{getProductName(item)}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-primary">
+                    {formatPrice(item.product.price * item.quantity, undefined, locale)}
+                  </p>
+                </div>
+              ))}
+              {!isSummaryExpanded && remainingSummaryItems > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setIsSummaryExpanded(true)}
+                  className="w-full text-center text-sm text-third transition-colors hover:text-primary"
+                >
+                  {t("moreItems", { count: remainingSummaryItems })}
+                </button>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 text-sm text-third">
+              <div className="flex justify-between">
+                <span>{t("subtotalWithCount", { count: totalItems })}</span>
+                <span>{formatPrice(totalPrice, undefined, locale)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{t("shipping")}</span>
+                <span className={shipping === 0 ? "font-medium text-secondary" : ""}>
+                  {shipping === 0 ? t("free") : formatPrice(shipping, undefined, locale)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between text-lg font-bold text-primary">
+              <span>{t("total")}</span>
+              <span>{formatPrice(finalTotal, undefined, locale)}</span>
+            </div>
+
+            {cashbackAmount > 0 ? (
+              <div className="rounded-lg border border-secondary/15 bg-secondary/5 px-4 py-3 text-sm text-primary">
+                {t("cashbackPreview", { amount: formatPrice(cashbackAmount, undefined, locale) })}
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-3">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => void handlePlaceOrder()}
+                isLoading={isProcessing}
+              >
+                {t("placeOrder")}
+                <Lock className="h-5 w-5" />
+              </Button>
+              <p className="flex items-center justify-center gap-2 text-sm text-third">
+                <Banknote className="h-4 w-4 shrink-0 text-secondary" />
+                <span>{t("cod")}</span>
+              </p>
+            </div>
+          </Card>
+        </div>
+
+        {showFloatingMobileBar ? (
+          <div
+            className="fixed left-0 right-0 z-40 border-t border-gray-100 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] lg:hidden"
+            style={{ bottom: `${mobileStickyBottomOffset}px` }}
+          >
+            <AnimatePresence>
+              {isMobileSummaryOpen ? (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ type: "tween", duration: 0.2 }}
+                  className="border-b border-gray-100 bg-white"
+                >
+                  <div className="space-y-3 p-4 text-sm text-third">
+                    <div className="flex justify-between">
+                      <span>{t("subtotalWithCount", { count: totalItems })}</span>
+                      <span>{formatPrice(totalPrice, undefined, locale)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t("shipping")}</span>
+                      <span className={shipping === 0 ? "font-medium text-secondary" : ""}>
+                        {shipping === 0 ? t("free") : formatPrice(shipping, undefined, locale)}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+
+            <div className="flex flex-col gap-3 bg-white p-4">
+              <div
+                className="flex cursor-pointer items-center justify-center"
+                onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+              >
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-2 select-none">
+                    <span className="text-xl font-bold tracking-tight text-primary">
+                      {formatPrice(finalTotal, undefined, locale)}
+                    </span>
+                    {isMobileSummaryOpen ? (
+                      <ChevronDown className="h-4 w-4 text-primary" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4 text-primary" />
+                    )}
+                  </div>
+                  <span className="text-[10px] text-third">{t("total")}</span>
+                </div>
+              </div>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => void handlePlaceOrder()}
+                isLoading={isProcessing}
+              >
+                {t("placeOrder")}
+                <Lock className="h-5 w-5" />
+              </Button>
+              <p className="flex items-center justify-center gap-2 text-sm text-third">
+                <Banknote className="h-4 w-4 shrink-0 text-secondary" />
+                <span>{t("cod")}</span>
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -654,86 +885,86 @@ export function CheckoutPageClient() {
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {[
-                    { name: "firstName", label: t("firstName"), placeholder: "", required: true },
-                    { name: "lastName", label: t("lastName"), placeholder: "", required: true },
-                    { name: "email", label: t("email"), type: "email", placeholder: "", required: true },
-                    { name: "phone", label: t("phone"), type: "tel", placeholder: "07XXXXXXXX", required: true },
-                  ].map((field) => (
-                    <Input
-                      key={field.name}
-                      label={field.label}
-                      name={field.name}
-                      type={field.type}
-                      inputMode={field.name === "phone" ? "tel" : undefined}
-                      dir={field.name === "phone" ? "ltr" : undefined}
-                      lang={field.name === "phone" ? "en" : undefined}
-                      value={formData[field.name as keyof typeof formData]}
-                      onChange={handleInputChange}
-                      placeholder={field.placeholder}
-                      error={errors[field.name]}
-                      required={field.required}
-                      className={field.name === "phone" && isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+                      {[
+                        { name: "firstName", label: t("firstName"), placeholder: "", required: true },
+                        { name: "lastName", label: t("lastName"), placeholder: "", required: true },
+                        { name: "email", label: t("email"), type: "email", placeholder: "", required: true },
+                        { name: "phone", label: t("phone"), type: "tel", placeholder: "07XXXXXXXX", required: true },
+                      ].map((field) => (
+                        <Input
+                          key={field.name}
+                          label={field.label}
+                          name={field.name}
+                          type={field.type}
+                          inputMode={field.name === "phone" ? "tel" : undefined}
+                          dir={field.name === "phone" ? "ltr" : undefined}
+                          lang={field.name === "phone" ? "en" : undefined}
+                          value={formData[field.name as keyof typeof formData]}
+                          onChange={handleInputChange}
+                          placeholder={field.placeholder}
+                          error={errors[field.name]}
+                          required={field.required}
+                          className={field.name === "phone" && isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+                        />
+                      ))}
+                    </div>
+
+                    <Select
+                      label={t("city") || "City"}
+                      name="city"
+                      required
+                      options={cityOptions}
+                      value={formData.city}
+                      onChange={(value) => {
+                        setFormData((current) => ({ ...current, city: value }));
+                        if (errors.city) setErrors((current) => ({ ...current, city: "" }));
+                      }}
+                      placeholder={t("selectCity")}
+                      error={errors.city}
                     />
-                  ))}
-                </div>
 
-                <Select
-                  label={t("city") || "City"}
-                  name="city"
-                  required
-                  options={cityOptions}
-                  value={formData.city}
-                  onChange={(value) => {
-                    setFormData((current) => ({ ...current, city: value }));
-                    if (errors.city) setErrors((current) => ({ ...current, city: "" }));
-                  }}
-                  placeholder={t("selectCity")}
-                  error={errors.city}
-                />
+                    <Input
+                      label={t("address")}
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder={t("address")}
+                      error={errors.address}
+                      required
+                    />
 
-                <Input
-                  label={t("address")}
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder={t("address")}
-                  error={errors.address}
-                  required
-                />
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                  <Input
-                    label={`${t("building")} (${optionalLabel})`}
-                    name="building"
-                    value={formData.building}
-                    onChange={handleInputChange}
-                    error={errors.building}
-                    inputMode="numeric"
-                    dir="ltr"
-                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
-                  />
-                  <Input
-                    label={`${t("floor")} (${optionalLabel})`}
-                    name="floor"
-                    value={formData.floor}
-                    onChange={handleInputChange}
-                    error={errors.floor}
-                    inputMode="numeric"
-                    dir="ltr"
-                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
-                  />
-                  <Input
-                    label={`${t("apartment")} (${optionalLabel})`}
-                    name="apartment"
-                    value={formData.apartment}
-                    onChange={handleInputChange}
-                    error={errors.apartment}
-                    inputMode="numeric"
-                    dir="ltr"
-                    className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
-                  />
-                </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                      <Input
+                        label={`${t("building")} (${optionalLabel})`}
+                        name="building"
+                        value={formData.building}
+                        onChange={handleInputChange}
+                        error={errors.building}
+                        inputMode="numeric"
+                        dir="ltr"
+                        className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+                      />
+                      <Input
+                        label={`${t("floor")} (${optionalLabel})`}
+                        name="floor"
+                        value={formData.floor}
+                        onChange={handleInputChange}
+                        error={errors.floor}
+                        inputMode="numeric"
+                        dir="ltr"
+                        className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+                      />
+                      <Input
+                        label={`${t("apartment")} (${optionalLabel})`}
+                        name="apartment"
+                        value={formData.apartment}
+                        onChange={handleInputChange}
+                        error={errors.apartment}
+                        inputMode="numeric"
+                        dir="ltr"
+                        className={isArabic ? "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]" : undefined}
+                      />
+                    </div>
 
                 <Textarea
                   label={`${t("notes")} (${optionalLabel})`}
@@ -869,8 +1100,8 @@ export function CheckoutPageClient() {
             <h2 className="text-xl font-bold text-primary">{t("orderSummary")}</h2>
 
             <div className="flex flex-col gap-3 pb-5 border-b border-gray-100">
-              {summaryItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
+              {summaryItems.map((item, index) => (
+                <div key={`${item.product_id}-${item.variant_id ?? "base"}-${index}`} className="flex items-center gap-3">
                   <div className="relative w-12 h-12 shrink-0">
                     <Image
                       src={item.product.image || "/placeholder.svg"}
@@ -1026,7 +1257,7 @@ export function CheckoutPageClient() {
           ) : null}
         </AnimatePresence>
 
-        <div className="flex items-center gap-3 p-4 bg-white">
+        <div className="flex items-center gap-3 bg-white p-4">
           {currentStep !== "shipping" ? (
             <Button
               aria-label={tCommon("back")}

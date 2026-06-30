@@ -494,6 +494,7 @@
     "freeShipping": "شحن مجاني",
     "estimatedDelivery": "التوصيل المتوقع",
     "viewCart": "عرض السلة",
+    "purchaseNow": "اشترِ الآن",
     "couponCode": "رمز القسيمة",
     "subtotalWithCount": "المجموع الفرعي ({count} منتج)",
     "freeShippingUnlocked": "تم فتح الشحن المجاني!",
@@ -589,7 +590,10 @@
     "invalidEmail": "البريد الإلكتروني غير صحيح",
     "invalidPhone": "يجب أن يبدأ رقم الهاتف بـ 07 وأن يتكون من 10 أرقام بالضبط",
     "numbersOnly": "استخدم أرقاماً عربية أو إنجليزية فقط",
-    "orderPlacementFailed": "تعذر إتمام الطلب. حاول مرة أخرى."
+    "orderPlacementFailed": "تعذر إتمام الطلب. حاول مرة أخرى.",
+    "easyPurchaseTitle": "شراء سريع في ثوانٍ!",
+    "purchaseNow": "اشترِ الآن",
+    "fullName": "الاسم الكامل"
   },
   "footer": {
     "description": "وجهتك الأولى للتسوق عبر الإنترنت - منتجات عالية الجودة، أسعار رائعة، وتوصيل سريع",

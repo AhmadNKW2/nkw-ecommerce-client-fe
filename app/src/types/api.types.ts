@@ -489,10 +489,22 @@ export type FeatureToggles = {
   import_ai_products_enabled: boolean;
   linked_products_enabled: boolean;
   reference_links_enabled: boolean;
+  easy_purchase_enabled: boolean;
+  cart_sidebar_button_enabled: boolean;
   // Appearance-only toggles — admin dashboard only; the client ignores these.
   reference_link_visible_admin: boolean;
   meta_title_visible_admin: boolean;
   meta_description_visible_admin: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type SitePopupSettings = {
+  id: number;
+  enabled: boolean;
+  image_url: string | null;
+  link_url: string | null;
+  dismiss_after_seconds: number;
   created_at?: string;
   updated_at?: string;
 };

@@ -12,6 +12,7 @@ import {
   NavigationBar,
 } from "./header-components";
 import { BottomNav } from "./bottom-nav";
+import { SitePopup } from "@/components/site-popup";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -97,6 +98,8 @@ export function Header() {
 
       {/* Bottom Navigation Bar */}
       <BottomNav />
+
+      <SitePopup />
     </header>
   );
 }
