@@ -2,6 +2,7 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from './app/src/i18n/routing';
 import { NextRequest, NextResponse } from 'next/server';
 import { getReturnToFromPath } from './app/src/lib/auth-redirect';
+import { fetchEasyPurchaseEnabled } from './app/src/lib/feature-toggles-server';
 
 const handleI18nRouting = createMiddleware(routing);
 const API_REQUEST_LOG_INGEST_HEADER_NAME = 'x-storefront-api-log';
@@ -70,6 +71,12 @@ export default async function middleware(request: NextRequest) {
   );
 
   if (isProtectedRoute) {
+    const isCheckoutRoute =
+      pathnameWithoutLocale === '/checkout' ||
+      pathnameWithoutLocale.startsWith('/checkout/');
+    const allowGuestCheckout = isCheckoutRoute && (await fetchEasyPurchaseEnabled());
+
+    if (!allowGuestCheckout) {
     // Check for standard server-side tokens and the frontend 'is_logged_in' indicator.
     // OAuth Google login sets HttpOnly cookies that the middleware might miss on first navigation,
     // so we sync an 'is_logged_in' cookie on the client when the profile successfully loads.
@@ -90,6 +97,7 @@ export default async function middleware(request: NextRequest) {
       }
 
       return NextResponse.redirect(url);
+    }
     }
   }
 

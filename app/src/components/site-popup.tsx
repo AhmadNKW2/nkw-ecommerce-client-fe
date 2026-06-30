@@ -95,8 +95,8 @@ export function SitePopup() {
       alt="Promotion"
       width={0}
       height={0}
-      sizes="(max-width: 640px) 92vw, 672px"
-      className="mx-auto block h-auto max-h-[85vh] w-auto max-w-full rounded-2xl object-contain"
+      sizes="(max-width: 640px) 88vw, 480px"
+      className="mx-auto block h-auto max-h-[70vh] w-auto max-w-full rounded-2xl object-contain"
       style={{ width: "auto", height: "auto", maxWidth: "100%" }}
       priority
     />
@@ -124,7 +124,7 @@ export function SitePopup() {
             role="dialog"
             aria-modal="true"
             aria-label="Site promotion"
-            className="relative z-[101] w-full max-w-2xl"
+            className="relative z-[101] w-full max-w-xl"
             initial={
               prefersReducedMotion
                 ? { opacity: 0 }

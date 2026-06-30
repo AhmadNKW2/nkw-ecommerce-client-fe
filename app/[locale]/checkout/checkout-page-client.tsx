@@ -116,7 +116,7 @@ export function CheckoutPageClient() {
   const locale = useLocale();
   const isArabic = locale === "ar";
   const { data: seoSettings } = useSeoSettings();
-  const { data: featureToggles } = useFeatureToggles();
+  const { data: featureToggles, isLoading: isFeatureTogglesLoading } = useFeatureToggles();
   const { cashbackEnabled, easyPurchaseEnabled } = resolveFeatureToggles(featureToggles);
   const { user, isLoading: isAuthLoading } = useAuth();
   const { items, totalItems, totalPrice, clearCart, isLoading: isCartLoading } = useCart();
@@ -600,7 +600,7 @@ export function CheckoutPageClient() {
     { id: "review", label: t("steps.review"), icon: Check },
   ];
 
-  if (isCartLoading || isAuthLoading) {
+  if (isCartLoading || isFeatureTogglesLoading || (!easyPurchaseEnabled && isAuthLoading)) {
     return <PageSkeleton />;
   }
 

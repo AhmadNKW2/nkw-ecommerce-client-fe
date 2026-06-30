@@ -3,9 +3,15 @@
 import { useAuth } from "./useAuth";
 import { useAuthModal } from "@/contexts/auth-modal-context";
 import { useRouter, usePathname } from "@/i18n/navigation";
+import {
+  resolveFeatureToggles,
+  useFeatureToggles,
+} from "@/hooks/useFeatureToggles";
 
 export function useCheckout() {
   const { user } = useAuth();
+  const { data: featureToggles, isLoading: isFeatureTogglesLoading } = useFeatureToggles();
+  const { easyPurchaseEnabled } = resolveFeatureToggles(featureToggles);
   const { openAuthModal } = useAuthModal();
   const router = useRouter();
   const pathname = usePathname();
@@ -15,9 +21,13 @@ export function useCheckout() {
       e.preventDefault();
       e.stopPropagation();
     }
-    
-    if (!user) {
+
+    if (!user && !easyPurchaseEnabled && !isFeatureTogglesLoading) {
       openAuthModal("login", { returnTo: "/checkout" });
+      return;
+    }
+
+    if (!user && !easyPurchaseEnabled && isFeatureTogglesLoading) {
       return;
     }
 
