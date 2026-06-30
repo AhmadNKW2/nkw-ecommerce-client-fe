@@ -449,6 +449,14 @@ export type SeoSettings = {
   id: number;
   site_name_en: string;
   site_name_ar: string;
+  brand_primary: string | null;
+  brand_primary_2: string | null;
+  brand_primary_3: string | null;
+  brand_secondary: string | null;
+  brand_success: string | null;
+  brand_success_2: string | null;
+  brand_danger: string | null;
+  brand_danger_2: string | null;
   default_meta_title_en: string;
   default_meta_title_ar: string;
   default_meta_description_en: string;
