@@ -16,9 +16,9 @@ import {
 } from "@/lib/api-request-log";
 
 export function isSearchDebugEnabled(): boolean {
-  return process.env.NODE_ENV === 'development' && (
-    (typeof window === 'undefined' && process.env.SEARCH_DEBUG === '1') ||
-    (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SEARCH_DEBUG === '1')
+  return (
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_SEARCH_DEBUG === '1'
   );
 }
 

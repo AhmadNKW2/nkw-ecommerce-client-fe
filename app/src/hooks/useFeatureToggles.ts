@@ -26,6 +26,7 @@ export function resolveFeatureToggles(
 ) {
   return {
     vendorsEnabled: data?.vendors_enabled ?? true,
+    ratingsEnabled: data?.ratings_enabled ?? true,
     attributesEnabled: data?.attributes_enabled ?? true,
     specificationsEnabled: data?.specifications_enabled ?? true,
     weightAndDimensionsEnabled: data?.weight_and_dimensions_enabled ?? true,

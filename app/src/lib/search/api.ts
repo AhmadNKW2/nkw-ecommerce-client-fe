@@ -10,9 +10,7 @@ import type {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const EXTERNAL_SEARCH_API_URL =
-  process.env.EXTERNAL_SEARCH_API_URL ||
-  process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL ||
-  '';
+  process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL || '';
 const LOCAL_SEARCH_API_PATH = '/api/search';
 const LOCAL_AUTOCOMPLETE_API_PATH = '/api/search/autocomplete';
 const DEFAULT_PER_PAGE = 20;

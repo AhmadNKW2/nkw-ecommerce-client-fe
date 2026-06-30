@@ -471,6 +471,7 @@ export type FeatureToggles = {
   id: number;
   // Disabling toggles — enforced by BE, consumed by the client storefront.
   vendors_enabled: boolean;
+  ratings_enabled: boolean;
   attributes_enabled: boolean;
   specifications_enabled: boolean;
   weight_and_dimensions_enabled: boolean;

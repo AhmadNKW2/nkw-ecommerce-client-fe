@@ -154,15 +154,16 @@ export function summarizeApiLogValue(value: unknown, depth = 0): unknown {
 }
 
 export function isApiRequestLoggingEnabled(): boolean {
-  return process.env.NODE_ENV === "development" && (
-    isEnabledFlag(process.env.NEXT_PUBLIC_ENABLE_API_REQUEST_LOGGING) ||
-    (typeof window === "undefined" && isEnabledFlag(process.env.ENABLE_API_REQUEST_LOGGING))
+  return (
+    process.env.NODE_ENV === "development" &&
+    isEnabledFlag(process.env.NEXT_PUBLIC_ENABLE_API_REQUEST_LOGGING)
   );
 }
 
 export function isServerApiRequestLoggingEnabled(): boolean {
-  return process.env.NODE_ENV === "development" && typeof window === "undefined" && (
-    isEnabledFlag(process.env.ENABLE_API_REQUEST_LOGGING) ||
+  return (
+    process.env.NODE_ENV === "development" &&
+    typeof window === "undefined" &&
     isEnabledFlag(process.env.NEXT_PUBLIC_ENABLE_API_REQUEST_LOGGING)
   );
 }
@@ -182,10 +183,7 @@ function withTrailingSlash(value: string): string {
 function resolveServerBaseUrl(): string {
   const configuredBaseUrl = [
     process.env.API_LOG_BASE_URL,
-    process.env.NEXT_PUBLIC_APP_URL,
     process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.APP_URL,
-    process.env.SITE_URL,
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
   ]
     .map((value) => value?.trim())

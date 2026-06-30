@@ -17,9 +17,9 @@ function isEnabledFlag(value?: string): boolean {
 }
 
 function isApiRequestLoggingEnabled(): boolean {
-  return process.env.NODE_ENV === 'development' && (
-    isEnabledFlag(process.env.NEXT_PUBLIC_ENABLE_API_REQUEST_LOGGING) ||
-    isEnabledFlag(process.env.ENABLE_API_REQUEST_LOGGING)
+  return (
+    process.env.NODE_ENV === 'development' &&
+    isEnabledFlag(process.env.NEXT_PUBLIC_ENABLE_API_REQUEST_LOGGING)
   );
 }
 

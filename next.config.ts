@@ -1,9 +1,19 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
-import { fa } from "zod/v4/locales";
 
 const withNextIntl = createNextIntlPlugin('./app/src/i18n/request.ts');
 const isDevelopment = process.env.NODE_ENV === 'development';
+
+const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || process.env.R2_PUBLIC_URL;
+
+let r2Hostname = '';
+if (r2PublicUrl) {
+  try {
+    r2Hostname = new URL(r2PublicUrl).hostname;
+  } catch (error) {
+    console.warn('Could not parse R2_PUBLIC_URL in next.config.ts:', error);
+  }
+}
 
 const nextConfig: NextConfig = {
   ...(isDevelopment
@@ -21,11 +31,15 @@ const nextConfig: NextConfig = {
         port: '3001',
         pathname: '/uploads/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'pub-b8afad6fa843477fb61b00764b315e24.r2.dev',
-        pathname: '/**',
-      },
+      ...(r2Hostname
+        ? [
+          {
+            protocol: 'https' as const,
+            hostname: r2Hostname,
+            pathname: '/**',
+          },
+        ]
+        : []),
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
@@ -37,10 +51,8 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-    // Allow loading images from localhost (for development)
     dangerouslyAllowSVG: true,
     unoptimized: true,
-    // unoptimized: process.env.NODE_ENV === 'development',
   },
 };
 

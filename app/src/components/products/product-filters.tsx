@@ -291,6 +291,7 @@ export function ProductFilters({
   const { data: productFieldToggles } = useProductFieldToggles();
   const {
     vendorsEnabled,
+    ratingsEnabled,
     attributesEnabled,
     specificationsEnabled,
   } = resolveProductFieldToggles(productFieldToggles);
@@ -302,7 +303,7 @@ export function ProductFilters({
     filters.attributeValues.length +
     filters.specificationValues.length +
     (filters.priceRange ? 1 : 0) +
-    (filters.rating ? 1 : 0);
+    (ratingsEnabled && filters.rating ? 1 : 0);
 
   const categoryFacet = findFacet(facets, CATEGORY_FACET_FIELDS);
   const brandFacet = findFacet(facets, BRAND_FACET_FIELDS);
@@ -452,7 +453,7 @@ export function ProductFilters({
               <X className="w-3 h-3" />
             </Badge>
           )}
-          {filters.rating && (
+          {ratingsEnabled && filters.rating && (
             <Badge
               variant="outline"
               className="flex items-center gap-1 cursor-pointer"
@@ -671,7 +672,7 @@ export function ProductFilters({
       )}
 
 
-      {/* Rating Section */}
+      {ratingsEnabled && (
       <FilterSection
         title={t('common.rating')}
         isExpanded={expandedSections.includes("rating")}
@@ -696,6 +697,7 @@ export function ProductFilters({
           ))}
         </div>
       </FilterSection>
+      )}
     </Card>
   );
 }
