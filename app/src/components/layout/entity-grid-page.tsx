@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Star } from "lucide-react";
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { cn } from "@/lib/utils";
+import { buildEntityPageHref } from "@/lib/search/entity-routes";
 
 interface EntityGridPageProps {
   type: 'brand' | 'category' | 'vendor';
@@ -106,7 +107,10 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
              rating = 4.8; // Mocked
           }
 
-          const href = `/${type === 'brand' ? 'brands' : type === 'vendor' ? 'vendors' : 'categories'}/${slug}`;
+          const href = buildEntityPageHref(
+            type === 'brand' ? 'brand' : type === 'vendor' ? 'vendor' : 'category',
+            slug || String(id),
+          );
 
           // Render Card
           return (

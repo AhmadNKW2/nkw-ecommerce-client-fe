@@ -51,7 +51,6 @@ function serializeSearchFilterSnapshot(filters: Partial<Omit<SearchFilters, 'pag
     specifications_values_ids: normalizeSearchFilterValue(filters.specifications_values_ids),
     min_price: filters.min_price,
     max_price: filters.max_price,
-    is_out_of_stock: filters.is_out_of_stock,
     average_rating_min: filters.average_rating_min,
     sort_by: normalizeSearchFilterValue(filters.sort_by),
     per_page: filters.per_page,
@@ -69,6 +68,7 @@ interface ProductListingPageProps {
   preloadedBrands?: ApiBrand[];
   productsMeta?: PaginationMeta;
   initialSearchData?: SearchResponse | null;
+  facetLabelFallbacks?: Record<string, string>;
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
@@ -84,6 +84,7 @@ export function ProductListingPage({
   preloadedBrands,
   productsMeta,
   initialSearchData,
+  facetLabelFallbacks,
   onLoadMore,
   hasMore,
   isLoadingMore,
@@ -100,7 +101,6 @@ export function ProductListingPage({
     setMinPrice,
     setMaxPrice,
     setAverageRatingMin,
-    setIsOutOfStock,
     changeFilter,
   } = useSearchFilters();
 
@@ -170,12 +170,6 @@ export function ProductListingPage({
     setFilters(resolvedFilterState);
   }, [resolvedFilterState]);
 
-  useEffect(() => {
-    if (urlFilters.is_out_of_stock != null) {
-      void setIsOutOfStock(null);
-    }
-  }, [setIsOutOfStock, urlFilters.is_out_of_stock]);
-
   const handleFilterChange = (newState: FilterState) => {
     if (JSON.stringify(newState) !== JSON.stringify(filters)) {
       setIsLoading(true);
@@ -204,7 +198,6 @@ export function ProductListingPage({
       specifications_values_ids: joinFilterValues(filters.specificationValues) ?? undefined,
       min_price: filters.priceRange?.min,
       max_price: filters.priceRange?.max === Infinity ? undefined : filters.priceRange?.max,
-      is_out_of_stock: false,
       average_rating_min: filters.rating ?? undefined,
       sort_by: sortKey === 'popular' ? undefined : SORT_MAP[sortKey],
       per_page: initialFilters.per_page ?? 25,
@@ -225,7 +218,6 @@ export function ProductListingPage({
       specifications_values_ids: initialFilters.specifications_values_ids,
       min_price: initialFilters.min_price,
       max_price: initialFilters.max_price,
-      is_out_of_stock: initialFilters.is_out_of_stock ?? false,
       average_rating_min: initialFilters.average_rating_min,
       sort_by: initialFilters.sort_by,
       per_page: initialFilters.per_page ?? 25,
@@ -241,6 +233,7 @@ export function ProductListingPage({
     const {
       data: infiniteData,
       isLoading: isSearchLoading,
+      isFetching: isSearchFetching,
       isFetchingNextPage: searchIsFetchingNextPage,
       hasNextPage: searchHasNextPage,
       fetchNextPage: searchFetchNextPage,
@@ -267,8 +260,6 @@ export function ProductListingPage({
           : undefined
     });
 
-    const isLoading = (isSearchLoading && useSearch && !preloadedProducts && !initialSearchData) || (!useSearch && !preloadedProducts);
-
     const actualFetchNextPage = onLoadMore || searchFetchNextPage;
     const actualHasNextPage = hasMore !== undefined ? hasMore : searchHasNextPage;
     const actualIsFetchingNextPage = isLoadingMore !== undefined ? isLoadingMore : searchIsFetchingNextPage;
@@ -278,6 +269,10 @@ export function ProductListingPage({
       if (!useSearch && preloadedProducts) return preloadedProducts;
       return infiniteData?.pages.flatMap((p) => p.hits || []) ?? [];
     }, [infiniteData, useSearch, preloadedProducts]);
+
+    const isLoading =
+      (useSearch && productList.length === 0 && (isSearchLoading || isSearchFetching) && !preloadedProducts) ||
+      (!useSearch && !preloadedProducts);
 
     const totalProducts = useMemo(() => {
       if (!useSearch) return productsMeta?.total || productList.length;
@@ -317,6 +312,7 @@ export function ProductListingPage({
       priceRange={filters.priceRange || undefined}
       rating={filters.rating || undefined}
       onFilterChange={handleFilterChange}
+      facetLabelFallbacks={facetLabelFallbacks}
       className="w-full"
     />
   );

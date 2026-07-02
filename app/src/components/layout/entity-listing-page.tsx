@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EntityCarousel, type EntityCarouselItem } from "@/components/home/entity-carousel";
 import { Star, MapPin, Phone, Mail } from "lucide-react";
 import type { SearchFilters, SearchResponse } from "@/lib/search/types";
+import { buildEntityPageHref } from "@/lib/search/entity-routes";
 
 interface EntityListingPageProps {
   type: 'brand' | 'category' | 'vendor' | 'products';
@@ -59,7 +60,7 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
   const subCategoryItems: EntityCarouselItem[] = useMemo(() => {
     return subcategories.map((sub: any) => ({
       id: sub.id,
-      href: `/categories/${sub.slug}`,
+      href: buildEntityPageHref("category", sub.slug || sub.id),
       name: sub.name,
       image: sub.image,
       isCategory: true,
@@ -182,12 +183,37 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
   ) : undefined;
 
   const initialFilters = initialSearchFilters ?? (isBrand 
-    ? { brand_ids: String(id), is_out_of_stock: false } 
+    ? { q: '*', brand_ids: String(id) } 
     : isCategory 
-      ? { category_ids: String(id), is_out_of_stock: false } 
+      ? { q: '*', category_ids: String(id) } 
       : isVendor
-        ? { vendor_ids: String(id), is_out_of_stock: false }
-        : { q: '*', is_out_of_stock: false });
+        ? { q: '*', vendor_ids: String(id) }
+        : { q: '*' });
+
+  const facetLabelFallbacks = useMemo(() => {
+    const fallbacks: Record<string, string> = {};
+    if (!data?.id) return fallbacks;
+
+    const entityId = String(data.id);
+    if (isCategory) {
+      const name = transformedCategory?.name || data.name_en || data.name_ar || entityId;
+      for (const fieldName of ['category_ids', 'categories_ids', 'category_id']) {
+        fallbacks[`${fieldName}:${entityId}`] = name;
+      }
+    } else if (isBrand) {
+      const name = (isAr ? data.name_ar : data.name_en) || data.name_en || data.name_ar || entityId;
+      for (const fieldName of ['brand_ids', 'brand_id']) {
+        fallbacks[`${fieldName}:${entityId}`] = name;
+      }
+    } else if (isVendor) {
+      const name = (isAr ? data.name_ar : data.name_en) || data.name_en || data.name_ar || entityId;
+      for (const fieldName of ['vendor_ids', 'vendor_id']) {
+        fallbacks[`${fieldName}:${entityId}`] = name;
+      }
+    }
+
+    return fallbacks;
+  }, [data, isAr, isBrand, isCategory, isVendor, transformedCategory?.name]);
 
   const breadcrumbs = [
     { label: t("common.home"), href: "/" },
@@ -224,6 +250,7 @@ export function EntityListingPage({ type, slug = "", data, initialSearchFilters,
         title={isProductsPage ? undefined : t("common.products")}
         availableCategories={isCategory ? subcategories : undefined}
         initialSearchData={initialSearchData}
+        facetLabelFallbacks={facetLabelFallbacks}
         headerContent={headerContent}
       />
       {isVendor && (

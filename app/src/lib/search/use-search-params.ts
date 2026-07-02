@@ -18,14 +18,9 @@ export function useSearchFilters() {
   const [specificationValueIds, setSpecificationValueIds] = useQueryState('specifications_values_ids', parseAsString);
   const [minPrice,    setMinPrice]    = useQueryState('min_price', parseAsFloat);
   const [maxPrice,    setMaxPrice]    = useQueryState('max_price', parseAsFloat);
-  const [isOutOfStockValue, setIsOutOfStockValue] = useQueryState('is_out_of_stock', parseAsString);
   const [averageRatingMin, setAverageRatingMin] = useQueryState('average_rating_min', parseAsFloat);
   const [sortBy,      setSortBy]      = useQueryState('sort_by', parseAsString);
   const [page,        setPage]        = useQueryState('page', parseAsInteger.withDefault(1));
-
-  const setIsOutOfStock = (value: boolean | null) => {
-    return setIsOutOfStockValue(value == null ? null : String(value));
-  };
 
   function resetFilters() {
     void setCategoryIds(null);
@@ -35,7 +30,6 @@ export function useSearchFilters() {
     void setSpecificationValueIds(null);
     void setMinPrice(null);
     void setMaxPrice(null);
-    void setIsOutOfStockValue(null);
     void setAverageRatingMin(null);
     void setSortBy(null);
     void setPage(1);
@@ -55,13 +49,6 @@ export function useSearchFilters() {
     }
   }
 
-  const parsedIsOutOfStock =
-    isOutOfStockValue === 'true'
-      ? true
-      : isOutOfStockValue === 'false'
-        ? false
-        : undefined;
-
   return {
     filters: {
       q,
@@ -72,7 +59,6 @@ export function useSearchFilters() {
       specifications_values_ids: specificationValueIds ?? undefined,
       min_price:   minPrice ?? undefined,
       max_price:   maxPrice ?? undefined,
-      is_out_of_stock: parsedIsOutOfStock,
       average_rating_min: averageRatingMin ?? undefined,
       sort_by:     sortBy as SortOption | undefined,
       page,
@@ -85,7 +71,6 @@ export function useSearchFilters() {
     setSpecificationValueIds,
     setMinPrice,
     setMaxPrice,
-    setIsOutOfStock,
     setAverageRatingMin,
     setSortBy,
     setPage,

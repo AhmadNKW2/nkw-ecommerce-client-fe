@@ -9,6 +9,7 @@ import { BELOW_50_JOD_MAX_PRICE } from "@/lib/constants";
 import { useTranslations, useLocale } from "next-intl";
 import { useHome } from "@/hooks/useHome";
 import type { Category, HomeCategory } from "@/types/api.types";
+import { buildEntityPageHref } from "@/lib/search/entity-routes";
 
 type MegaMenuLink = {
   label: string;
@@ -40,6 +41,7 @@ export function NavigationBar() {
 
   const navigationLinks = useMemo<NavigationLink[]>(() => {
     type CategoryMenuItem = {
+      id?: number;
       name_ar?: string;
       name_en?: string;
       slug: string;
@@ -59,18 +61,18 @@ export function NavigationBar() {
     const getChildLinks = (children: CategoryMenuItem[] = []) => (
       children
         .filter(
-          (child) => Boolean(child.slug) && (child.level === undefined || child.level === 1)
+          (child) => Boolean(child.id) && Boolean(child.slug) && (child.level === undefined || child.level === 1)
         )
         .slice(0, maxMegaMenuChildren)
         .map((child) => ({
           label: getCategoryLabel(child),
-          href: `/categories/${child.slug}`,
+          href: buildEntityPageHref("category", { id: child.id!, slug: child.slug }),
         }))
     );
 
     const categoryLinks = rootCategories
       .map((category: HomeCategory | Category) => {
-        const categoryHref = `/categories/${category.slug}`;
+        const categoryHref = buildEntityPageHref("category", { id: category.id, slug: category.slug });
         const label = getCategoryLabel(category);
         const childLinks = getChildLinks(category.children || []);
 
@@ -90,7 +92,7 @@ export function NavigationBar() {
 
     const categoriesMenu = rootCategories
       .map((category: HomeCategory | Category) => {
-        const categoryHref = `/categories/${category.slug}`;
+        const categoryHref = buildEntityPageHref("category", { id: category.id, slug: category.slug });
         const label = getCategoryLabel(category);
         const childLinks = getChildLinks(category.children || []);
 

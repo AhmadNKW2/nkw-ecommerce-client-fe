@@ -1,50 +1,42 @@
-import { EntitySlugPageClient } from "@/components/layout/entity-slug-page-client";
+import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import type { Locale } from "@/i18n/message-catalog";
-import { RouteIntlProvider } from "@/i18n/route-intl-provider";
-import { LISTING_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
-import { searchParamsToSearchFilters } from "@/lib/search/filter-utils";
-import { serverSearch } from "@/lib/search/api";
-import type { SearchFilters } from "@/lib/search/types";
 import { vendorService } from "@/services/vendor.service";
+import { serverSearch } from "@/lib/search/api";
+import { EntitySlugPageClient } from "@/components/layout/entity-slug-page-client";
+import type { Locale } from "@/lib/transformers";
+import { RouteIntlProvider } from "@/i18n/route-intl-provider";
+import { SEARCH_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function VendorPage({ params, searchParams }: PageProps) {
+export default async function VendorPage({ params }: PageProps) {
   const locale = (await getLocale()) as Locale;
   const { slug } = await params;
-  const filters = searchParamsToSearchFilters(await searchParams);
-  const initialData = await vendorService.getBySlug(slug).catch(() => undefined);
-  const initialSearchFilters: SearchFilters | undefined = initialData
-    ? {
-        ...(filters.q?.trim() ? { q: filters.q } : {}),
-        category_ids: filters.category_ids,
-        brand_ids: filters.brand_ids,
-        vendor_ids: String(initialData.id),
-        attributes_values_ids: filters.attributes_values_ids,
-        specifications_values_ids: filters.specifications_values_ids,
-        min_price: filters.min_price,
-        max_price: filters.max_price,
-        is_out_of_stock: false,
-        average_rating_min: filters.average_rating_min,
-        sort_by: filters.sort_by,
-        page: filters.page ?? 1,
-        per_page: 25,
-      }
-    : undefined;
-  const initialSearchData = initialSearchFilters
-    ? await serverSearch(initialSearchFilters, locale).catch(() => null)
-    : null;
+  const vendorData = await vendorService.getBySlug(slug).catch(() => null);
+
+  if (!vendorData) {
+    notFound();
+  }
+
+  const initialSearchFilters = {
+    q: "*",
+    vendor_ids: String(vendorData.id),
+    page: 1,
+    per_page: 25,
+  };
+
+  const initialSearchData = await serverSearch(initialSearchFilters, locale).catch(() => null);
 
   return (
-    <RouteIntlProvider locale={locale} namespaces={LISTING_MESSAGE_NAMESPACES}>
+    <RouteIntlProvider locale={locale} namespaces={SEARCH_MESSAGE_NAMESPACES}>
       <EntitySlugPageClient
         type="vendor"
         slug={slug}
-        initialData={initialData}
+        initialData={vendorData}
         initialSearchFilters={initialSearchFilters}
         initialSearchData={initialSearchData}
       />

@@ -4,15 +4,8 @@ import { vendorService } from "@/services/vendor.service";
 
 export default async function VendorsPage() {
   const t = await getTranslations("nav");
-  const vendorsData = await vendorService.getAll({
-    limit: 100,
-    status: "active",
-    visible: true,
-    sortBy: "sort_order",
-    sortOrder: "ASC",
-  }).catch(() => null);
-
-  const vendors = Array.isArray(vendorsData) ? vendorsData : vendorsData?.data || [];
+  const response = await vendorService.getAll({ limit: 1000 }).catch(() => null);
+  const vendors = response?.data ?? [];
 
   return (
     <EntityGridPage

@@ -4,37 +4,39 @@ import { getLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/message-catalog";
 import { RouteIntlProvider } from "@/i18n/route-intl-provider";
 import { HOME_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
-import { PRODUCT_QUERY_KEYS } from "@/hooks/useProducts";
+import { SEARCH_QUERY_KEYS } from "@/lib/search/search-query-keys";
 import { getQueryClient } from "@/lib/query-client";
-import { productService } from "@/services/product.service";
+import { serverSearch } from "@/lib/search/api";
+import type { SearchFilters } from "@/lib/search/types";
+
+const productsPerPage = 40;
+
+const featuredSearchFilters: Omit<SearchFilters, "page"> = {
+  q: "*",
+  per_page: productsPerPage,
+};
+
+const newArrivalsSearchFilters: Omit<SearchFilters, "page"> = {
+  q: "*",
+  sort_by: "created_at:desc",
+  per_page: productsPerPage,
+};
 
 export default async function HomePage() {
   const locale = (await getLocale()) as Locale;
   const queryClient = getQueryClient();
-  const featuredFilters = {
-    limit: 40,
-    status: "active",
-    visible: true,
-    sortBy: "average_rating",
-    sortOrder: "DESC",
-  } as const;
-  const newFilters = {
-    limit: 40,
-    status: "active",
-    visible: true,
-    sortBy: "created_at",
-    sortOrder: "DESC",
-  } as const;
 
   await Promise.allSettled([
     queryClient.prefetchInfiniteQuery({
-      queryKey: PRODUCT_QUERY_KEYS.infinite(featuredFilters),
-      queryFn: ({ pageParam = 1 }) => productService.getAll({ ...featuredFilters, page: pageParam }),
+      queryKey: SEARCH_QUERY_KEYS.infinite(featuredSearchFilters, locale),
+      queryFn: ({ pageParam = 1 }) =>
+        serverSearch({ ...featuredSearchFilters, page: pageParam }, locale),
       initialPageParam: 1,
     }),
     queryClient.prefetchInfiniteQuery({
-      queryKey: PRODUCT_QUERY_KEYS.infinite(newFilters),
-      queryFn: ({ pageParam = 1 }) => productService.getAll({ ...newFilters, page: pageParam }),
+      queryKey: SEARCH_QUERY_KEYS.infinite(newArrivalsSearchFilters, locale),
+      queryFn: ({ pageParam = 1 }) =>
+        serverSearch({ ...newArrivalsSearchFilters, page: pageParam }, locale),
       initialPageParam: 1,
     }),
   ]);
@@ -49,4 +51,3 @@ export default async function HomePage() {
     </RouteIntlProvider>
   );
 }
-

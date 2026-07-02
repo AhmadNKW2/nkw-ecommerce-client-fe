@@ -10,7 +10,6 @@ export type SearchFilterState = {
   specifications_values_ids?: string;
   min_price?: number;
   max_price?: number;
-  is_out_of_stock?: boolean;
   average_rating_min?: number;
   sort_by?: SortOption;
   page?: number;
@@ -26,18 +25,6 @@ function firstString(value: string | string[] | undefined): string | undefined {
   return value;
 }
 
-function stringArray(value: string | string[] | undefined): string[] | undefined {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value : undefined;
-  }
-
-  if (typeof value === "string" && value.trim() !== "") {
-    return [value];
-  }
-
-  return undefined;
-}
-
 function finiteNumber(value: string | string[] | undefined): number | undefined {
   const rawValue = firstString(value);
 
@@ -47,15 +34,6 @@ function finiteNumber(value: string | string[] | undefined): number | undefined 
 
   const numericValue = Number(rawValue);
   return Number.isFinite(numericValue) ? numericValue : undefined;
-}
-
-function booleanValue(value: string | string[] | undefined): boolean | undefined {
-  const rawValue = firstString(value)?.trim().toLowerCase();
-
-  if (rawValue === "true") return true;
-  if (rawValue === "false") return false;
-
-  return undefined;
 }
 
 export function splitFilterValues(value?: string): string[] {
@@ -88,7 +66,6 @@ export function searchParamsToSearchFilters(params: SearchParamsInput): SearchFi
     specifications_values_ids: firstString(params.specifications_values_ids),
     min_price: finiteNumber(params.min_price),
     max_price: finiteNumber(params.max_price),
-    is_out_of_stock: booleanValue(params.is_out_of_stock),
     average_rating_min: finiteNumber(params.average_rating_min),
     sort_by: firstString(params.sort_by) as SortOption | undefined,
     page: finiteNumber(params.page) ?? 1,

@@ -4,18 +4,13 @@ import { brandService } from "@/services/brand.service";
 
 export default async function BrandsPage() {
   const t = await getTranslations("nav");
-  const brandsData = await brandService.getAll({
-    limit: 100,
-    status: "active",
-    visible: true,
-    sortBy: "sort_order",
-    sortOrder: "ASC",
-  }).catch(() => null);
+  const response = await brandService.getAll({ limit: 1000 }).catch(() => null);
+  const brands = response?.data ?? [];
 
   return (
     <EntityGridPage
       type="brand"
-      data={brandsData?.data || []}
+      data={brands}
       isLoading={false}
       title={t("brands")}
     />

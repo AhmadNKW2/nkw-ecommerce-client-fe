@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { apiClient } from '@/lib/api-client';
 import type { FeatureToggles, SeoSettings, SitePopupSettings } from '@/types/api.types';
 
@@ -17,3 +18,17 @@ export const settingsService = {
     return settingsService.getFeatureToggles();
   },
 };
+
+const getSeoSettingsServerCached = unstable_cache(
+  async () => settingsService.getSeoSettings(),
+  ['seo-settings'],
+  { revalidate: false },
+);
+
+export async function getSeoSettingsCached(): Promise<SeoSettings | null> {
+  try {
+    return await getSeoSettingsServerCached();
+  } catch {
+    return null;
+  }
+}

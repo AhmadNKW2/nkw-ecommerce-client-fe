@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { notFound, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { buildEntityPageHref } from "@/lib/search/entity-routes";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Check,
@@ -57,9 +58,9 @@ function ProductHeader({ product, selectedOptionsSummary, t }: { product: any; s
     <>
       {product.brand ? (
         <div className="flex items-center gap-2 mb-2">
-          {product.brand.slug ? (
+          {product.brand?.id ? (
             <Link
-              href={`/brands/${product.brand.slug}`}
+              href={buildEntityPageHref("brand", product.brand)}
               className="flex items-center gap-1 text-sm text-secondary font-medium ltr:hover:translate-x-1.5 rtl:hover:-translate-x-1.5 transition-all"
             >
               {product.brand.name}
@@ -893,8 +894,12 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
     t,
   };
 
-  const categoryHref = product.category.slug ? `/categories/${product.category.slug}` : undefined;
-  const vendorHref = product.vendor?.slug ? `/vendors/${product.vendor.slug}` : undefined;
+  const categoryHref = product.category
+    ? buildEntityPageHref("category", product.category)
+    : undefined;
+  const vendorHref = product.vendor
+    ? buildEntityPageHref("vendor", product.vendor)
+    : undefined;
 
   return (
     <>
@@ -1161,7 +1166,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             products={relatedProducts}
             title={t("product.relatedProducts")}
             subtitle={t("product.relatedProductsSubtitle")}
-            viewAllHref={`/categories/${product.category.slug}`}
+            viewAllHref={product.category ? buildEntityPageHref("category", product.category) : undefined}
             initialVisibleCount={10}
             showLoadMore={false}
             showNavArrows={false}

@@ -36,7 +36,6 @@ export default async function SearchPage({ searchParams }: PageProps) {
     specifications_values_ids: params.specifications_values_ids,
     min_price: parseOptionalNumber(params.min_price),
     max_price: parseOptionalNumber(params.max_price),
-    is_out_of_stock: false,
     average_rating_min: parseOptionalNumber(params.average_rating_min),
     sort_by: params.sort_by as SearchFilters['sort_by'] | undefined,
     page: parseOptionalNumber(params.page) ?? 1,

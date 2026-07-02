@@ -19,6 +19,7 @@ export interface FacetCountValue {
   value: string;
   count: number;
   label?: string;
+  slug?: string;
   group_key?: string;
   group_label?: string;
 }

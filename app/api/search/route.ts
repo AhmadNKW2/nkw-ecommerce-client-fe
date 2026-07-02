@@ -10,13 +10,6 @@ function parseOptionalNumber(value: string | null): number | undefined {
   return Number.isFinite(numericValue) ? numericValue : undefined;
 }
 
-function parseOptionalBoolean(value: string | null): boolean | undefined {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-
-  return undefined;
-}
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const debug = searchParams.get('debug') === '1';
@@ -31,7 +24,6 @@ export async function GET(request: NextRequest) {
     specifications_values_ids: searchParams.get('specifications_values_ids') ?? undefined,
     min_price: parseOptionalNumber(searchParams.get('min_price')),
     max_price: parseOptionalNumber(searchParams.get('max_price')),
-    is_out_of_stock: parseOptionalBoolean(searchParams.get('is_out_of_stock')),
     average_rating_min: parseOptionalNumber(searchParams.get('average_rating_min')),
     sort_by: (searchParams.get('sort_by') as SearchFilters['sort_by']) ?? undefined,
     page: parseOptionalNumber(searchParams.get('page')),

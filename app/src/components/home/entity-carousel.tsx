@@ -117,7 +117,7 @@ export function EntityCarousel(props: EntityCarouselProps) {
               className="group/item flex flex-col items-center shrink-0"
             >
               <div className={cn(
-                "relative rounded-full overflow-hidden group-hover/item:shadow-s1 transition-all duration-300 group-hover/item:scale-103",
+                "relative rounded-2xl shadow-s1 overflow-hidden group-hover/item:shadow-s1 transition-all duration-300 group-hover/item:scale-103",
                 imageSizeClasses
               )}>
                 {item.image ? (

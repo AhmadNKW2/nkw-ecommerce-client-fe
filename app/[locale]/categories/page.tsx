@@ -1,19 +1,22 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { EntityGridPage } from "@/components/layout/entity-grid-page";
-import { transformCategories, type Locale } from "@/lib/transformers";
 import { categoryService } from "@/services/category.service";
+import { transformCategory, type Locale } from "@/lib/transformers";
 
 export default async function CategoriesPage() {
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("categories");
-  const data = await categoryService.getRootCategories({
-    status: "active",
-    limit: 50,
-    sortBy: "sortOrder",
-    sortOrder: "ASC",
-  }).catch(() => null);
-
-  const categories = data?.data ? transformCategories(data.data, locale) : [];
+  const response = await categoryService.getRootCategories({ limit: 500 }).catch(() => null);
+  const categories = (response?.data ?? []).map((category) => {
+    const transformed = transformCategory(category, locale);
+    return {
+      id: Number(transformed.id),
+      name: transformed.name,
+      slug: transformed.slug,
+      image: transformed.image,
+      productCount: transformed.productCount,
+    };
+  });
 
   return (
     <EntityGridPage

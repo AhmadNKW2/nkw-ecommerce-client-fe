@@ -29,7 +29,7 @@ import {
   type FooterPageSection,
 } from "./footer-content-page";
 import { TrackOrderLookupCard } from "./track-order-lookup-card";
-import { settingsService } from "@/services/settings.service";
+import { getSeoSettingsCached } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
 
 export type FooterPageKey =
@@ -74,7 +74,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
   const locale = await getLocale();
   const t = await getTranslations("footerPages");
   const commonT = await getTranslations("common");
-  const seoSettings = await settingsService.getSeoSettings().catch(() => null);
+  const seoSettings = await getSeoSettingsCached();
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
   const freeDeliveryEnabled = seoSettings?.free_delivery_enabled !== false;
   const freeDeliveryAmount =

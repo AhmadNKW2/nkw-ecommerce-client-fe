@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
 import { LanguageSwitcher } from "./language-switcher";
 import { useHome } from "@/hooks/useHome";
+import { buildEntityPageHref } from "@/lib/search/entity-routes";
 import { transformHomeCategory, type Locale } from "@/lib/transformers";
 
 interface MobileNavProps {
@@ -139,7 +140,7 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
                       return (
                         <Link
                           key={category.id}
-                          href={`/categories/${category.slug}`}
+                          href={buildEntityPageHref("category", { id: category.id, slug: category.slug })}
                           onClick={onClose}
                           className="flex flex-col items-center text-center"
                         >

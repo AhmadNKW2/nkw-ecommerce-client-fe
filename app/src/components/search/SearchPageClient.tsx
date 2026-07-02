@@ -48,7 +48,6 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     setMinPrice,
     setMaxPrice,
     setAverageRatingMin,
-    setIsOutOfStock,
     changeFilter,
   } = useSearchFilters();
 
@@ -115,12 +114,6 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     setFilterState(syncedFilterState);
   }, [syncedFilterState]);
 
-  useEffect(() => {
-    if (filters.is_out_of_stock != null) {
-      void setIsOutOfStock(null);
-    }
-  }, [filters.is_out_of_stock, setIsOutOfStock]);
-
   const handleFilterChange = (newState: FilterState) => {
     if (JSON.stringify(newState) !== JSON.stringify(filterState)) {
       setIsLoading(true);
@@ -158,7 +151,6 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     specifications_values_ids: filters.specifications_values_ids,
     min_price: filters.min_price,
     max_price: filters.max_price,
-    is_out_of_stock: false,
     average_rating_min: filters.average_rating_min,
     sort_by: sortKey === 'popular' ? undefined : SORT_MAP[sortKey],
     per_page: initialFilters.per_page ?? 20,
@@ -173,7 +165,6 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     specifications_values_ids: initialFilters.specifications_values_ids,
     min_price: initialFilters.min_price,
     max_price: initialFilters.max_price,
-    is_out_of_stock: initialFilters.is_out_of_stock ?? false,
     average_rating_min: initialFilters.average_rating_min,
     sort_by: initialFilters.sort_by,
     per_page: initialFilters.per_page ?? 20,

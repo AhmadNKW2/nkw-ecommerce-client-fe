@@ -29,6 +29,7 @@ interface ProductFiltersProps {
   priceRange?: { min: number; max: number };
   rating?: number;
   onFilterChange: (filters: FilterState) => void;
+  facetLabelFallbacks?: Record<string, string>;
   className?: string;
 }
 
@@ -168,6 +169,7 @@ export function ProductFilters({
   priceRange,
   rating,
   onFilterChange,
+  facetLabelFallbacks,
   className,
 }: ProductFiltersProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
@@ -350,20 +352,27 @@ export function ProductFilters({
 
   const resolveFacetLabel = (fieldNames: string[], value: string) => {
     for (const fieldName of fieldNames) {
+      const fallbackLabel = facetLabelFallbacks?.[`${fieldName}:${value}`];
+      if (fallbackLabel) return fallbackLabel;
+
       const label = facetLabelLookup.get(`${fieldName}:${value}`);
-      if (label) return label;
+      if (label && label !== value) return label;
     }
 
     return value;
   };
 
-  const resolveGroupedLabel = (groups: GroupedFacetMap, value: string) => {
+  const resolveGroupedLabel = (
+    groups: GroupedFacetMap,
+    fieldNames: string[],
+    value: string,
+  ) => {
     for (const group of Object.values(groups)) {
       const match = group.items.find((item) => item.value === value);
       if (match) return match.label;
     }
 
-    return value;
+    return resolveFacetLabel(fieldNames, value);
   };
 
   return (
@@ -424,7 +433,7 @@ export function ProductFilters({
               className="flex items-center gap-1 cursor-pointer"
               onClick={() => handleAttributeValueChange(attributeValueId)}
             >
-              {resolveGroupedLabel(attributeGroups, attributeValueId)}
+              {resolveGroupedLabel(attributeGroups, ATTRIBUTE_FACET_FIELDS, attributeValueId)}
               <X className="w-3 h-3" />
             </Badge>
           ))}
@@ -435,7 +444,7 @@ export function ProductFilters({
               className="flex items-center gap-1 cursor-pointer"
               onClick={() => handleSpecificationValueChange(specificationValueId)}
             >
-              {resolveGroupedLabel(specificationGroups, specificationValueId)}
+              {resolveGroupedLabel(specificationGroups, SPECIFICATION_FACET_FIELDS, specificationValueId)}
               <X className="w-3 h-3" />
             </Badge>
           ))}

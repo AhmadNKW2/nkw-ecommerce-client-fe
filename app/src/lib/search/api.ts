@@ -11,9 +11,23 @@ import type {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const EXTERNAL_SEARCH_API_URL =
   process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL || '';
+const SEARCH_PROVIDER = (
+  process.env.NEXT_PUBLIC_SEARCH_PROVIDER || 'auto'
+).toLowerCase();
 const LOCAL_SEARCH_API_PATH = '/api/search';
 const LOCAL_AUTOCOMPLETE_API_PATH = '/api/search/autocomplete';
 const DEFAULT_PER_PAGE = 20;
+
+function shouldTryExternalProvider(): boolean {
+  if (SEARCH_PROVIDER === 'backend') {
+    return false;
+  }
+  return Boolean(EXTERNAL_SEARCH_API_URL);
+}
+
+function shouldForceBackendProvider(): boolean {
+  return SEARCH_PROVIDER === 'backend';
+}
 
 async function shouldShowSalePricing(): Promise<boolean> {
   if (!API_BASE) {
@@ -194,12 +208,15 @@ type PublicAttributeNode = {
   values?: PublicAttributeValueNode[] | null;
 };
 
+type PublicSpecificationNode = PublicAttributeNode;
+
 type FacetCatalogs = {
   categories: Map<string, SearchFacetMeta>;
   categoryDescendants: Map<string, string[]>;
   brands: Map<string, SearchFacetMeta>;
   vendors: Map<string, SearchFacetMeta>;
   attributeValues: Map<string, SearchFacetMeta>;
+  specificationValues: Map<string, SearchFacetMeta>;
 };
 
 type FacetFieldBuildOptions = {
@@ -236,14 +253,15 @@ const EMPTY_FACET_CATALOGS: FacetCatalogs = {
   brands: new Map(),
   vendors: new Map(),
   attributeValues: new Map(),
+  specificationValues: new Map(),
 };
 
-const facetCatalogCache = new Map<SearchLocale, {
+const facetCatalogCache = new Map<string, {
   expiresAt: number;
   value: FacetCatalogs;
 }>();
 
-const facetCatalogPromises = new Map<SearchLocale, Promise<FacetCatalogs>>();
+const facetCatalogPromises = new Map<string, Promise<FacetCatalogs>>();
 
 function buildSearchParams(filters: SearchFilters, locale?: string, options?: { includeLocale?: boolean }): string {
   const params = new URLSearchParams();
@@ -258,7 +276,6 @@ function buildSearchParams(filters: SearchFilters, locale?: string, options?: { 
 
   if (filters.min_price != null)    params.set('min_price', String(filters.min_price));
   if (filters.max_price != null)    params.set('max_price', String(filters.max_price));
-  if (filters.is_out_of_stock != null) params.set('is_out_of_stock', String(filters.is_out_of_stock));
   if (filters.average_rating_min != null) params.set('average_rating_min', String(filters.average_rating_min));
   if (filters.sort_by && filters.sort_by !== 'popularity_score:desc') {
     params.set('sort_by', filters.sort_by);
@@ -467,26 +484,45 @@ async function fetchCatalogEntries<T>(name: string, url: string | null): Promise
   }
 }
 
-async function loadFacetCatalogs(locale: SearchLocale): Promise<FacetCatalogs> {
+function collectSpecificationValueNodes(
+  nodes: PublicSpecificationNode[],
+  locale: SearchLocale,
+): Map<string, SearchFacetMeta> {
+  return collectAttributeValueNodes(nodes, locale);
+}
+
+async function loadFacetCatalogs(
+  locale: SearchLocale,
+  options: { includeEntityCatalogs?: boolean } = {},
+): Promise<FacetCatalogs> {
+  const includeEntityCatalogs = options.includeEntityCatalogs ?? false;
   const now = Date.now();
-  const cachedCatalog = facetCatalogCache.get(locale);
+  const cacheKey = includeEntityCatalogs ? locale : `${locale}:attrs-specs`;
+  const cachedCatalog = facetCatalogCache.get(cacheKey);
 
   if (cachedCatalog && cachedCatalog.expiresAt > now) {
     return cachedCatalog.value;
   }
 
-  const existingPromise = facetCatalogPromises.get(locale);
+  const existingPromise = facetCatalogPromises.get(cacheKey);
 
   if (existingPromise) {
     return existingPromise;
   }
 
   const nextPromise = (async () => {
-    const [categories, brands, vendors, attributes] = await Promise.all([
-      fetchCatalogEntries<PublicCategoryNode>('SearchFacetCategoriesCatalog', createCatalogUrl('/categories', { limit: 500 })),
-      fetchCatalogEntries<PublicEntitySummary>('SearchFacetBrandsCatalog', createCatalogUrl('/brands', { limit: 500 })),
-      fetchCatalogEntries<PublicEntitySummary>('SearchFacetVendorsCatalog', createCatalogUrl('/vendors', { limit: 500 })),
+    const [categories, brands, vendors, attributes, specifications] = await Promise.all([
+      includeEntityCatalogs
+        ? fetchCatalogEntries<PublicCategoryNode>('SearchFacetCategoriesCatalog', createCatalogUrl('/categories', { limit: 500 }))
+        : Promise.resolve([] as PublicCategoryNode[]),
+      includeEntityCatalogs
+        ? fetchCatalogEntries<PublicEntitySummary>('SearchFacetBrandsCatalog', createCatalogUrl('/brands', { limit: 500 }))
+        : Promise.resolve([] as PublicEntitySummary[]),
+      includeEntityCatalogs
+        ? fetchCatalogEntries<PublicEntitySummary>('SearchFacetVendorsCatalog', createCatalogUrl('/vendors', { limit: 500 }))
+        : Promise.resolve([] as PublicEntitySummary[]),
       fetchCatalogEntries<PublicAttributeNode>('SearchFacetAttributesCatalog', createCatalogUrl('/attributes')),
+      fetchCatalogEntries<PublicSpecificationNode>('SearchFacetSpecificationsCatalog', createCatalogUrl('/specifications')),
     ]);
 
     const catalogs: FacetCatalogs = {
@@ -495,9 +531,10 @@ async function loadFacetCatalogs(locale: SearchLocale): Promise<FacetCatalogs> {
       brands: collectEntityNodes(brands, locale),
       vendors: collectEntityNodes(vendors, locale),
       attributeValues: collectAttributeValueNodes(attributes, locale),
+      specificationValues: collectSpecificationValueNodes(specifications, locale),
     };
 
-    facetCatalogCache.set(locale, {
+    facetCatalogCache.set(cacheKey, {
       expiresAt: Date.now() + FACET_CATALOG_TTL_MS,
       value: catalogs,
     });
@@ -505,14 +542,14 @@ async function loadFacetCatalogs(locale: SearchLocale): Promise<FacetCatalogs> {
     return catalogs;
   })();
 
-  facetCatalogPromises.set(locale, nextPromise);
+  facetCatalogPromises.set(cacheKey, nextPromise);
 
   try {
     return await nextPromise;
   } catch {
     return EMPTY_FACET_CATALOGS;
   } finally {
-    facetCatalogPromises.delete(locale);
+    facetCatalogPromises.delete(cacheKey);
   }
 }
 
@@ -1430,6 +1467,120 @@ function normalizeLegacySearchResponse(rawData: unknown): SearchResponse {
     throw new Error('Invalid legacy search response');
   }
 
+  // Backend /search shape from ordonsooq-be:
+  // { data: Product[], meta: { total, page, limit, totalPages }, facets?, search_time_ms? }
+  const backendPayload = payload as {
+    data?: unknown[];
+    meta?: {
+      total?: number;
+      page?: number;
+      limit?: number;
+      totalPages?: number;
+    };
+    facets?: FacetCount[];
+    search_time_ms?: number;
+  };
+
+  const toLegacySearchHit = (entry: unknown): SearchHit | null => {
+    if (!isRecord(entry)) return null;
+
+    const id = entry.id != null ? String(entry.id) : '';
+    if (!id) return null;
+
+    if (
+      typeof entry.name_en === 'string' &&
+      typeof entry.name_ar === 'string' &&
+      typeof entry.price === 'number' &&
+      typeof entry.is_available === 'boolean'
+    ) {
+      return {
+        id,
+        slug: typeof entry.slug === 'string' ? entry.slug : undefined,
+        name_en: entry.name_en,
+        name_ar: entry.name_ar,
+        brand: typeof entry.brand === 'string' ? entry.brand : '',
+        category: typeof entry.category === 'string' ? entry.category : '',
+        price: entry.price,
+        sale_price: typeof entry.sale_price === 'number' ? entry.sale_price : undefined,
+        is_available: entry.is_available,
+        images: Array.isArray(entry.images)
+          ? entry.images.filter((item): item is string => typeof item === 'string' && item.length > 0)
+          : [],
+        rating: typeof entry.rating === 'number' ? entry.rating : 0,
+        stock: typeof entry.stock === 'number' ? entry.stock : undefined,
+        createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : undefined,
+        popularity_score: typeof entry.popularity_score === 'number' ? entry.popularity_score : 0,
+      };
+    }
+
+    const quantity = toFiniteNumber(entry.quantity) ?? 0;
+    const isOutOfStock = typeof entry.is_out_of_stock === 'boolean'
+      ? entry.is_out_of_stock
+      : quantity <= 0;
+    const brand = isRecord(entry.brand)
+      ? getLocalizedText('en', entry.brand.name_en, entry.brand.name_ar, '')
+      : '';
+
+    const primaryCategory = Array.isArray(entry.categories) && entry.categories.length > 0 && isRecord(entry.categories[0])
+      ? entry.categories[0]
+      : undefined;
+    const category = primaryCategory
+      ? getLocalizedText('en', primaryCategory.name_en, primaryCategory.name_ar, '')
+      : '';
+
+    const media = Array.isArray(entry.media)
+      ? (entry.media.filter((item): item is Record<string, unknown> => isRecord(item)) as Array<Record<string, unknown>>)
+      : [];
+    const images = media
+      .sort((left, right) => {
+        const primaryDelta = Number(Boolean(right.is_primary)) - Number(Boolean(left.is_primary));
+        if (primaryDelta !== 0) return primaryDelta;
+        const leftOrder = toFiniteNumber(left.sort_order) ?? Number.MAX_SAFE_INTEGER;
+        const rightOrder = toFiniteNumber(right.sort_order) ?? Number.MAX_SAFE_INTEGER;
+        return leftOrder - rightOrder;
+      })
+      .map((item) => (typeof item.url === 'string' ? item.url.trim() : ''))
+      .filter(Boolean);
+
+    const price = toFiniteNumber(entry.price) ?? 0;
+    const salePrice = toFiniteNumber(entry.sale_price);
+
+    return {
+      id,
+      slug: typeof entry.slug === 'string' ? entry.slug : undefined,
+      name_en: typeof entry.name_en === 'string' ? entry.name_en : id,
+      name_ar: typeof entry.name_ar === 'string'
+        ? entry.name_ar
+        : (typeof entry.name_en === 'string' ? entry.name_en : id),
+      brand,
+      category,
+      price,
+      sale_price: salePrice != null && salePrice > 0 && salePrice < price ? salePrice : undefined,
+      is_available: !isOutOfStock,
+      images,
+      rating: toFiniteNumber(entry.average_rating) ?? 0,
+      stock: quantity,
+      createdAt: typeof entry.created_at === 'string' ? entry.created_at : undefined,
+      popularity_score: toFiniteNumber(entry.popularity_score) ?? 0,
+    };
+  };
+
+  if (Array.isArray(backendPayload.data) && backendPayload.meta) {
+    const hits = backendPayload.data
+      .map((item) => toLegacySearchHit(item))
+      .filter((item): item is SearchHit => Boolean(item));
+
+    return {
+      hits,
+      total: backendPayload.meta.total ?? 0,
+      page: backendPayload.meta.page ?? 1,
+      per_page: backendPayload.meta.limit ?? DEFAULT_PER_PAGE,
+      total_pages: backendPayload.meta.totalPages ?? 0,
+      facets: backendPayload.facets,
+      search_time_ms: backendPayload.search_time_ms,
+    };
+  }
+
   return {
     ...payload,
     total_pages: payload.total_pages ?? Math.ceil((payload.total ?? 0) / (payload.per_page || DEFAULT_PER_PAGE)),
@@ -1536,7 +1687,7 @@ function buildExternalSearchRequest(filters: SearchFilters, catalogs?: Pick<Face
     };
   }
 
-  requestFilters.is_out_of_stock = filters.is_out_of_stock ?? false;
+  requestFilters.is_out_of_stock = false;
 
   if (filters.average_rating_min != null) {
     requestFilters.average_rating = {
@@ -1567,7 +1718,9 @@ async function requestExternalSearch(
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
   const normalizedLocale = normalizeSearchLocale(locale);
   const startedAt = Date.now();
-  const catalogsPromise = loadFacetCatalogs(normalizedLocale);
+  const catalogsPromise = loadFacetCatalogs(normalizedLocale, {
+    includeEntityCatalogs: true,
+  });
   const showSalePricingPromise = shouldShowSalePricing();
   const catalogs = await catalogsPromise;
   const showSalePricing = await showSalePricingPromise;
@@ -1600,7 +1753,7 @@ async function requestExternalSearch(
 }
 
 function shouldUseExternalSearch(filters: SearchFilters): boolean {
-  return Boolean(EXTERNAL_SEARCH_API_URL) && (
+  return shouldTryExternalProvider() && (
     typeof filters.q === 'string'
     || Boolean(
       filters.category_ids
@@ -1616,11 +1769,135 @@ function shouldUseExternalSearch(filters: SearchFilters): boolean {
   );
 }
 
+function resolveLegacyFacetFallbackLookup(
+  fieldName: string,
+  catalogs: FacetCatalogs,
+): Map<string, SearchFacetMeta> | undefined {
+  switch (fieldName) {
+    case 'brand_ids':
+    case 'brand_id':
+      return catalogs.brands;
+    case 'vendor_ids':
+    case 'vendor_id':
+      return catalogs.vendors;
+    case 'categories_ids':
+    case 'category_ids':
+    case 'category_id':
+      return catalogs.categories;
+    case 'attributes_values_ids':
+      return catalogs.attributeValues;
+    case 'specifications_values_ids':
+      return catalogs.specificationValues;
+    default:
+      return undefined;
+  }
+}
+
+function resolveLegacyFacetSelection(
+  filters: SearchFilters,
+  fieldName: string,
+): string | undefined {
+  switch (fieldName) {
+    case 'brand_ids':
+    case 'brand_id':
+      return filters.brand_ids;
+    case 'vendor_ids':
+    case 'vendor_id':
+      return filters.vendor_ids;
+    case 'categories_ids':
+    case 'category_ids':
+    case 'category_id':
+      return filters.category_ids;
+    case 'attributes_values_ids':
+      return filters.attributes_values_ids;
+    case 'specifications_values_ids':
+      return filters.specifications_values_ids;
+    default:
+      return undefined;
+  }
+}
+
+const ENTITY_FACET_FIELDS = new Set([
+  'brand_ids',
+  'brand_id',
+  'vendor_ids',
+  'vendor_id',
+  'categories_ids',
+  'category_ids',
+  'category_id',
+]);
+
+function facetCountsToLookup(facet: FacetCount): Map<string, SearchFacetMeta> {
+  return facet.counts.reduce((lookup, item) => {
+    const label = item.label?.trim();
+    const isUnresolvedNumericLabel =
+      Boolean(label) && label === item.value && /^\d+$/.test(item.value);
+
+    if (label && !isUnresolvedNumericLabel) {
+      lookup.set(item.value, {
+        id: item.value,
+        label,
+        groupKey: item.group_key,
+        groupLabel: item.group_label,
+      });
+    }
+    return lookup;
+  }, new Map<string, SearchFacetMeta>());
+}
+
+function enrichLegacySearchFacets(
+  response: SearchResponse,
+  catalogs: FacetCatalogs,
+  filters: SearchFilters,
+): SearchResponse {
+  const facets = (response.facets ?? [])
+    .map((facet) => {
+      const countMap = new Map<string, number>();
+
+      facet.counts.forEach((item) => {
+        if (item.value) {
+          countMap.set(item.value, item.count);
+        }
+      });
+
+      const primaryLookup = facetCountsToLookup(facet);
+      const selectedIds = splitFilterValues(resolveLegacyFacetSelection(filters, facet.field_name));
+      const fallbackLookup = resolveLegacyFacetFallbackLookup(facet.field_name, catalogs);
+      const effectiveLookup = ENTITY_FACET_FIELDS.has(facet.field_name)
+        ? mergeFacetLookups(primaryLookup, fallbackLookup)
+        : primaryLookup;
+
+      return buildFacetFromCountMap(
+        facet.field_name,
+        countMap,
+        effectiveLookup,
+        selectedIds,
+        {
+          fallbackLookup: ENTITY_FACET_FIELDS.has(facet.field_name)
+            ? undefined
+            : fallbackLookup,
+          hideUnresolvedNumericValues:
+            facet.field_name === 'specifications_values_ids',
+        },
+      );
+    })
+    .filter((facet): facet is FacetCount => Boolean(facet));
+
+  return {
+    ...response,
+    facets,
+  };
+}
+
 async function legacyServerSearch(
   filters: SearchFilters,
   signal?: AbortSignal,
   locale?: string
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
+  const normalizedLocale = normalizeSearchLocale(locale);
+  const catalogsPromise = loadFacetCatalogs(normalizedLocale, {
+    includeEntityCatalogs: true,
+  });
   const qs = buildSearchParams(filters, locale, { includeLocale: true });
   const response = await debugFetch('LegacySearch', `${API_BASE}/search?${qs}`, {
     cache: 'no-store',
@@ -1629,8 +1906,13 @@ async function legacyServerSearch(
 
   if (!response.ok) throw new Error(`Search failed: ${response.status}`);
 
+  const catalogs = await catalogsPromise;
   const result: SearchRequestDebugResult<SearchResponse> = {
-    data: normalizeLegacySearchResponse(response.data),
+    data: enrichLegacySearchFacets(
+      normalizeLegacySearchResponse(response.data),
+      catalogs,
+      filters,
+    ),
     rawData: response.data,
     source: 'legacy',
     status: response.status,
@@ -1699,6 +1981,10 @@ export async function serverAutocompleteWithSource(
     };
   }
 
+  if (shouldForceBackendProvider()) {
+    return legacyServerAutocomplete(normalizedQ, perPage, signal);
+  }
+
   try {
     const upstream = await fetchExternalSearchPayloadWithSignal({
       query: normalizeQuery(normalizedQ),
@@ -1737,6 +2023,10 @@ export async function serverSearchWithSource(
   signal?: AbortSignal,
   locale?: string
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
+  if (shouldForceBackendProvider()) {
+    return legacyServerSearch(filters, signal, locale);
+  }
+
   if (!shouldUseExternalSearch(filters)) {
     return legacyServerSearch(filters, signal, locale);
   }
@@ -1751,7 +2041,7 @@ export async function serverSearchWithSource(
 // ─── Client-side fetch (uses apiClient for consistency) ─────────────────────
 
 export async function clientSearch(filters: SearchFilters, locale?: string): Promise<SearchResponse> {
-  const qs = buildSearchParams(filters);
+  const qs = buildSearchParams(filters, locale, { includeLocale: true });
   const response = await debugFetch<SearchResponse>('LocalSearchRoute', `${LOCAL_SEARCH_API_PATH}?${qs}`, {
     cache: 'no-store',
     credentials: 'include',
@@ -1762,7 +2052,13 @@ export async function clientSearch(filters: SearchFilters, locale?: string): Pro
     return (await legacyServerSearch(filters, undefined, locale)).data;
   }
 
-  return response.data;
+  const catalogs = await loadFacetCatalogs(normalizeSearchLocale(locale));
+
+  return enrichLegacySearchFacets(
+    normalizeLegacySearchResponse(response.data),
+    catalogs,
+    filters,
+  );
 }
 
 export async function clientAutocomplete(

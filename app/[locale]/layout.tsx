@@ -14,7 +14,7 @@ import { routing } from "@/i18n/routing";
 import { ROOT_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
 import { homeKeys } from "@/hooks/useHome";
 import { homeService } from "@/services/home.service";
-import { settingsService } from "@/services/settings.service";
+import { getSeoSettingsCached } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { Analytics } from "@vercel/analytics/next";
 import { DataFastAnalytics } from "@/components/analytics/datafast-analytics";
@@ -71,7 +71,7 @@ function normalizeTwitterHandle(twitterHandle?: string | null) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const seoSettings = await settingsService.getSeoSettings().catch(() => null);
+  const seoSettings = await getSeoSettingsCached();
 
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
   const defaultTitle = resolveLocalizedValue(
