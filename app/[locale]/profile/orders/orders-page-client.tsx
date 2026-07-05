@@ -25,9 +25,8 @@ export function OrdersPageClient() {
       case "delivered":
         return "bg-success/10 text-success border-success/20";
       case "cancelled":
+      case "refunded":
         return "bg-danger/10 text-danger border-danger/20";
-      case "processing":
-        return "bg-secondary/10 text-secondary border-secondary/20";
       default:
         return "bg-gray-100 text-gray-600 border-gray-200";
     }

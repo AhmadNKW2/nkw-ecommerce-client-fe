@@ -31,12 +31,20 @@ function isAbortError(error: unknown): boolean {
 }
 
 export function useAutocomplete(minChars = 3, debounceMs = 450) {
-  const [query, setQuery]             = useState('');
+  const [query, setQueryState]        = useState('');
   const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
   const [isLoading, setIsLoading]     = useState(false);
   const [isOpen, setIsOpen]           = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Prevents a pending/in-flight lookup from reopening the dropdown after the
+  // user has explicitly closed it (e.g. by pressing Enter or picking a result).
+  const suppressReopenRef = useRef(false);
+
+  const setQuery = useCallback((value: string) => {
+    suppressReopenRef.current = false;
+    setQueryState(value);
+  }, []);
 
   useEffect(() => {
     const normalizedQuery = query.trim();
@@ -60,7 +68,7 @@ export function useAutocomplete(minChars = 3, debounceMs = 450) {
     if (cachedSuggestions) {
       setIsLoading(false);
       setSuggestions(cachedSuggestions);
-      setIsOpen(cachedSuggestions.length > 0);
+      setIsOpen(!suppressReopenRef.current && cachedSuggestions.length > 0);
       return;
     }
 
@@ -73,7 +81,7 @@ export function useAutocomplete(minChars = 3, debounceMs = 450) {
         const data = await clientAutocomplete(normalizedQuery, 8, controller.signal);
         setAutocompleteCache(cacheKey, data.suggestions);
         setSuggestions(data.suggestions);
-        setIsOpen(data.suggestions.length > 0);
+        setIsOpen(!suppressReopenRef.current && data.suggestions.length > 0);
       } catch (error) {
         if (isAbortError(error)) return;
 
@@ -97,6 +105,9 @@ export function useAutocomplete(minChars = 3, debounceMs = 450) {
   }, [query, minChars, debounceMs]);
 
   const close = useCallback(() => {
+    suppressReopenRef.current = true;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    abortRef.current?.abort();
     setIsOpen(false);
   }, []);
 

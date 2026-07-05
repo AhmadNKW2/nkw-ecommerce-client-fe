@@ -91,9 +91,6 @@ export const RATING_OPTIONS = [
 // Order Status
 export const ORDER_STATUS_LABELS: Record<string, { label: string; color: string }> = {
   pending: { label: "options.orderStatus.pending", color: "bg-yellow-100 text-primary" },
-  confirmed: { label: "options.orderStatus.confirmed", color: "bg-blue-100 text-primary" },
-  processing: { label: "options.orderStatus.processing", color: "bg-purple-100 text-primary" },
-  shipped: { label: "options.orderStatus.shipped", color: "bg-indigo-100 text-primary" },
   delivered: { label: "options.orderStatus.delivered", color: "bg-green-100 text-primary" },
   cancelled: { label: "options.orderStatus.cancelled", color: "bg-red-100 text-secondary" },
   refunded: { label: "options.orderStatus.refunded", color: "bg-gray-100 text-primary" },

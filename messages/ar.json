@@ -22,9 +22,6 @@
     },
     "orderStatus": {
       "pending": "قيد الانتظار",
-      "confirmed": "مؤكد",
-      "processing": "جاري المعالجة",
-      "shipped": "تم الشحن",
       "delivered": "تم التوصيل",
       "cancelled": "ملغي",
       "refunded": "تم الاسترجاع"
