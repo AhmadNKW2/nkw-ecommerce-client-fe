@@ -88,11 +88,11 @@ export function useAutocomplete(minChars = 3, debounceMs = 450) {
         setSuggestions([]);
         setIsOpen(false);
       } finally {
+        // Only the currently tracked request may clear loading.
+        // This prevents an older aborted request from hiding the loader
+        // while a newer request is still in flight.
         if (abortRef.current === controller) {
           abortRef.current = null;
-        }
-
-        if (!controller.signal.aborted) {
           setIsLoading(false);
         }
       }
