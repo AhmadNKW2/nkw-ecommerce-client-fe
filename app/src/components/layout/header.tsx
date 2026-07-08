@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import { CartSidebar } from "@/components/cart";
 import { IconButton } from "@/components/ui";
 import { SearchBox } from "@/components/search/SearchBox";
@@ -70,7 +70,9 @@ export function Header() {
 
             {/* Search Box with Autocomplete */}
             <div className="hidden lg:block flex-1 max-w-2xl mx-auto">
-              <SearchBox />
+              <Suspense fallback={null}>
+                <SearchBox />
+              </Suspense>
             </div>
 
             {/* Actions - Wishlist, Profile, Cart */}
@@ -83,7 +85,9 @@ export function Header() {
 
       <div className="bg-primary lg:hidden pb-3">
         <div className="container mx-auto px-4 md:px-5">
-          <SearchBox />
+          <Suspense fallback={null}>
+            <SearchBox />
+          </Suspense>
         </div>
       </div>
 
