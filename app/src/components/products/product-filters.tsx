@@ -172,7 +172,7 @@ export function ProductFilters({
   facetLabelFallbacks,
   className,
 }: ProductFiltersProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>([]);
+  const [expandedSections, setExpandedSections] = useState<string[]>(["price"]);
 
   const initialFilterState = useMemo<FilterState>(() => ({
     categories: selectedCategories,
@@ -261,6 +261,34 @@ export function ProductFilters({
     const newFilters = { ...filters, priceRange: range };
     setFilters(newFilters);
     onFilterChange(newFilters);
+  };
+
+  const applyPriceRange = () => {
+    const minStr = localMinPrice.trim();
+    const maxStr = localMaxPrice.trim();
+
+    if (!minStr && !maxStr) {
+      handlePriceChange(null);
+      return;
+    }
+
+    const parsedMin = minStr ? Number(minStr) : 0;
+    const parsedMax = maxStr ? Number(maxStr) : Infinity;
+
+    if (!Number.isFinite(parsedMin) || (!Number.isFinite(parsedMax) && parsedMax !== Infinity)) {
+      return;
+    }
+
+    const normalizedMin = Math.max(0, Math.floor(parsedMin));
+    const normalizedMax =
+      parsedMax === Infinity ? Infinity : Math.max(0, Math.floor(parsedMax));
+
+    if (normalizedMax !== Infinity && normalizedMin > normalizedMax) {
+      handlePriceChange({ min: normalizedMax, max: normalizedMin });
+      return;
+    }
+
+    handlePriceChange({ min: normalizedMin, max: normalizedMax });
   };
 
   const handleRatingChange = (newRating: number | null) => {
@@ -519,6 +547,11 @@ export function ProductFilters({
               placeholder={t('common.min') || 'Min'}
               value={localMinPrice}
               onChange={(e) => setLocalMinPrice(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  applyPriceRange();
+                }
+              }}
               className="w-full text-sm h-9"
             />
             <span className="text-gray-400">-</span>
@@ -528,6 +561,11 @@ export function ProductFilters({
               placeholder={t('common.max') || 'Max'}
               value={localMaxPrice}
               onChange={(e) => setLocalMaxPrice(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  applyPriceRange();
+                }
+              }}
               className="w-full text-sm h-9"
             />
           </div>
@@ -535,22 +573,7 @@ export function ProductFilters({
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => {
-              const minStr = localMinPrice;
-              const maxStr = localMaxPrice;
-
-              if (!minStr && !maxStr) {
-                handlePriceChange(null);
-                return;
-              }
-
-              const min = minStr ? parseInt(minStr) : 0;
-              const max = maxStr ? parseInt(maxStr) : Infinity;
-
-              if (!isNaN(min) && !isNaN(max)) {
-                handlePriceChange({ min, max });
-              }
-            }}
+            onClick={applyPriceRange}
           >
             {t('common.apply') || 'Apply'}
           </Button>

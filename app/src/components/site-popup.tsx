@@ -96,8 +96,8 @@ export function SitePopup() {
       width={0}
       height={0}
       sizes="(max-width: 640px) 88vw, 480px"
-      className="mx-auto block h-auto max-h-[70vh] w-auto max-w-full rounded-2xl object-contain"
-      style={{ width: "auto", height: "auto", maxWidth: "100%" }}
+      className="block h-auto max-h-[70vh] w-full object-contain"
+      style={{ width: "100%", height: "auto" }}
       priority
     />
   );
@@ -124,7 +124,7 @@ export function SitePopup() {
             role="dialog"
             aria-modal="true"
             aria-label="Site promotion"
-            className="relative z-[101] w-full max-w-xl"
+            className="relative z-[101] mx-auto w-fit max-w-[88vw]"
             initial={
               prefersReducedMotion
                 ? { opacity: 0 }
@@ -164,13 +164,13 @@ export function SitePopup() {
                 href={popupSettings.link_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/20"
+                className="block w-fit max-w-[88vw] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/20"
                 onClick={dismissPopup}
               >
                 {imageContent}
               </a>
             ) : (
-              <div className="overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/20">
+              <div className="w-fit max-w-[88vw] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/20">
                 {imageContent}
               </div>
             )}

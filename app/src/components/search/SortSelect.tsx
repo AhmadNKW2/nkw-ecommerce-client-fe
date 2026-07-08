@@ -8,7 +8,6 @@ const SORT_OPTIONS: { value: SortOption; labelKey: string }[] = [
   { value: 'created_at:desc',       labelKey: 'sortNewest' },
   { value: 'price:asc',             labelKey: 'sortPriceLow' },
   { value: 'price:desc',            labelKey: 'sortPriceHigh' },
-  { value: 'rating:desc',           labelKey: 'sortTopRated' },
 ];
 
 interface Props {

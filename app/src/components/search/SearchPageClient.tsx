@@ -21,7 +21,6 @@ const SORT_MAP: Record<string, SortOption> = {
   'newest':     'created_at:desc',
   'price-asc':  'price:asc',
   'price-desc': 'price:desc',
-  'rating':     'rating:desc',
 };
 
 function toSortKey(sortBy?: SortOption): string {
@@ -97,6 +96,8 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     priceRange:
       filters.min_price != null || filters.max_price != null
         ? { min: filters.min_price ?? 0, max: filters.max_price ?? Infinity }
+        : initialFilters.min_price != null || initialFilters.max_price != null
+          ? { min: initialFilters.min_price ?? 0, max: initialFilters.max_price ?? Infinity }
         : null,
     rating: filters.average_rating_min ?? null,
   }), [
@@ -108,6 +109,8 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     filters.min_price,
     filters.specifications_values_ids,
     filters.vendor_ids,
+    initialFilters.max_price,
+    initialFilters.min_price,
   ]);
 
   useEffect(() => {
@@ -217,7 +220,6 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     { value: 'price-asc',  label: t('sortPriceAsc')  },
     { value: 'price-desc', label: t('sortPriceDesc') },
     { value: 'newest',     label: t('sortNewest')    },
-    { value: 'rating',     label: t('sortRating')    },
   ];
 
   const facetRenderKey = useMemo(

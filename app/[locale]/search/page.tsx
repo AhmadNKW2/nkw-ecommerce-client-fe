@@ -6,6 +6,10 @@ import type { Locale } from '@/i18n/message-catalog';
 import { RouteIntlProvider } from '@/i18n/route-intl-provider';
 import { SEARCH_MESSAGE_NAMESPACES } from '@/i18n/scoped-messages';
 import type { SearchFilters } from '@/lib/search/types';
+import { parsePriceFromQuery } from '@/lib/search/parse-price-from-query';
+
+const UI_PRICE_MIN_DEFAULT = 0;
+const UI_PRICE_MAX_DEFAULT = 10_000;
 
 function parseOptionalNumber(value?: string): number | undefined {
   if (!value) return undefined;
@@ -41,6 +45,25 @@ export default async function SearchPage({ searchParams }: PageProps) {
     page: parseOptionalNumber(params.page) ?? 1,
     per_page: parseOptionalNumber(params.per_page) ?? 20,
   };
+
+  if (filters.q && filters.q !== '*' && filters.min_price == null && filters.max_price == null) {
+    const parsedPrice = parsePriceFromQuery(filters.q);
+    if (parsedPrice.minPrice !== undefined) {
+      filters.min_price = parsedPrice.minPrice;
+    }
+    if (parsedPrice.maxPrice !== undefined) {
+      filters.max_price = parsedPrice.maxPrice;
+    }
+
+    // UI defaults for one-sided natural-language price filters:
+    // - "more than X" => [0, X] visual range should be [X, 10000]
+    // - "less than X" => [X] visual range should be [0, X]
+    if (filters.min_price != null && filters.max_price == null) {
+      filters.max_price = UI_PRICE_MAX_DEFAULT;
+    } else if (filters.max_price != null && filters.min_price == null) {
+      filters.min_price = UI_PRICE_MIN_DEFAULT;
+    }
+  }
 
   // Initial data fetched on the server — no loading spinner on first render
   const initialData = await serverSearch(filters, locale).catch((error) => {

@@ -106,8 +106,6 @@ export function useAutocomplete(minChars = 3, debounceMs = 450) {
 
   const close = useCallback(() => {
     suppressReopenRef.current = true;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    abortRef.current?.abort();
     setIsOpen(false);
   }, []);
 
