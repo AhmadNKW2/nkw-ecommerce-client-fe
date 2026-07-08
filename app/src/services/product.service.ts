@@ -145,6 +145,13 @@ export const productService = {
   },
 
   /**
+   * Get a replacement slug for an old product slug
+   */
+  getSlugRedirect: (slug: string) => {
+    return apiClient.get<{ new_slug: string }>(`/products/slug-redirect/${slug}`);
+  },
+
+  /**
    * Get a single product by ID with full details
    */
   getById: (id: number) => {

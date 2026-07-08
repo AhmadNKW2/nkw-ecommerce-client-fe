@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { ProductPageClient } from "./product-page-client";
 import type { Locale } from "@/i18n/message-catalog";
@@ -13,7 +13,16 @@ type PageProps = {
 export default async function ProductPage({ params }: PageProps) {
   const locale = (await getLocale()) as Locale;
   const { slug } = await params;
-  const productData = await productService.getBySlug(slug).catch(() => null);
+  let productData = await productService.getBySlug(slug).catch(() => null);
+
+  if (!productData) {
+    const slugRedirectData = await productService.getSlugRedirect(slug).catch(() => null);
+    const newSlug = slugRedirectData?.new_slug?.trim();
+
+    if (newSlug && newSlug !== slug) {
+      redirect(`/${locale}/products/${newSlug}`);
+    }
+  }
 
   if (!productData) {
     notFound();
