@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
+import { areSearchFiltersEquivalent, joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
 import { useSearchFilters } from '@/lib/search/use-search-params';
 import { useInfiniteSearchProducts } from '@/lib/search/use-search';
 import { ProductFilters, FloatingFilterSort, DesktopFiltersSidebar } from '@/components/products';
@@ -175,7 +175,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
 
   const shouldUseInitialData = useMemo(() => {
     if (!initialData) return false;
-    return JSON.stringify(searchFilters) === JSON.stringify(initialSearchFilters);
+    return areSearchFiltersEquivalent(searchFilters, initialSearchFilters);
   }, [initialData, initialSearchFilters, searchFilters]);
 
   const initialInfiniteData = useMemo(() => {
@@ -201,10 +201,17 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
 
   const pages = infiniteData?.pages ?? [];
   const results = pages[0] ?? (shouldUseInitialData ? initialData : null);
-  const resultHits = useMemo(
-    () => pages.flatMap((page) => page.hits ?? []),
-    [pages]
-  );
+  const resultHits = useMemo(() => {
+    if (pages.length > 0) {
+      return pages.flatMap((page) => page.hits ?? []);
+    }
+
+    if (shouldUseInitialData && initialData?.hits?.length) {
+      return initialData.hits;
+    }
+
+    return [];
+  }, [pages, shouldUseInitialData, initialData]);
 
   const activeFiltersCount =
     filterState.categories.length +
