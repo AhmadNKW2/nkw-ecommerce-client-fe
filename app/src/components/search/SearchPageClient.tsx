@@ -183,7 +183,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
 
     return {
       pages: [initialData],
-      pageParams: [initialData.page ?? 1],
+      pageParams: [initialData.page ?? 1], 
     };
   }, [initialData, shouldUseInitialData]);
 
