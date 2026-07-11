@@ -29,6 +29,14 @@ export interface ProductAttribute {
   listSeparately?: boolean;
 }
 
+export interface ProductDownload {
+  id: string;
+  name: string;
+  url: string;
+  mimeType?: string;
+  size?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -41,6 +49,7 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   images: string[];
+  downloads?: ProductDownload[];
   category: Category;
   subcategory?: Category;
   brand?: Brand;

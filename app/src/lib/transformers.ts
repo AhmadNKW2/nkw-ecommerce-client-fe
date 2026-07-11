@@ -462,6 +462,16 @@ export function transformProduct(apiProduct: ApiProduct | ProductDetail, locale:
     price: actualPrice,
     compareAtPrice: compareAtPrice,
     images: images,
+    downloads: (product.attachments || [])
+      .slice()
+      .sort((left, right) => (left.sort_order ?? 0) - (right.sort_order ?? 0))
+      .map((attachment) => ({
+        id: String(attachment.id),
+        name: attachment.original_name || `File ${attachment.id}`,
+        url: attachment.url,
+        mimeType: attachment.mime_type || undefined,
+        size: attachment.size != null ? Number(attachment.size) : undefined,
+      })),
     category: {
       id: String(product.categories?.[0]?.id ?? ''),
       name: getLocalizedText(product.categories?.[0]?.name_en, product.categories?.[0]?.name_ar, locale),

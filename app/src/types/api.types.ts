@@ -127,6 +127,16 @@ export type ProductMediaGroup = {
   media: ProductMediaItem[];
 };
 
+export type ProductAttachmentItem = {
+  id: number;
+  url: string;
+  type: string;
+  original_name: string | null;
+  mime_type: string | null;
+  size: number | null;
+  sort_order: number;
+};
+
 export type ProductPriceGroup = {
   price: string;
   sale_price: string | null;
@@ -201,6 +211,7 @@ export type Product = {
   attributes?: Record<string, ProductAttributeGroup>;
   specifications?: Record<string, ProductAttributeGroup>;
   media?: ProductMedia[];
+  attachments?: ProductAttachmentItem[];
   media_groups?: Record<string, ProductMediaGroup>;
   price_groups?: Record<string, ProductPriceGroup>;
   weight_groups?: Record<string, ProductWeightGroup>;

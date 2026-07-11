@@ -32,6 +32,7 @@ import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { transformProduct, type Locale } from "@/lib/transformers";
 import { calculateDiscount, cn, formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/products/product-gallery";
+import { ProductDownloads } from "@/components/products/product-downloads";
 import { ProductOptionChip } from "@/components/products/product-option-chip";
 import { ProductOptions } from "@/components/products/product-options";
 import { ProductsSection } from "@/components/home/featured-products";
@@ -1091,6 +1092,14 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             ) : null}
           </Card>
         </section>
+      ) : null}
+
+      {product.downloads && product.downloads.length > 0 ? (
+        <ProductDownloads
+          downloads={product.downloads}
+          title={t("product.downloads")}
+          downloadLabel={t("product.downloadFile")}
+        />
       ) : null}
 
       {(() => {
