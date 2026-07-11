@@ -6,13 +6,7 @@ export const SITE_CONFIG = {
   description: "A modern online shopping destination with quality products, fair prices, and reliable delivery.",
   url: getSiteUrl(),
   ogImage: "/og-image.jpg",
-  links: {
-    twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "",
-    facebook: process.env.NEXT_PUBLIC_FACEBOOK_URL || "",
-    instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
-  },
   contact: {
-    email: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@example.com",
     phone: "+962 791001410",
     address: {
       en: "Jordan, Amman, Alwaha Circle, Wasfi Al-Tal St., Almehanya Towers, 1st floor, office 101",

@@ -12,8 +12,9 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { SITE_CONFIG, FOOTER_DISABLED_LINK_LABELS, FOOTER_LINKS } from "@/lib/constants";
+import { resolveSocialLinks, resolveSupportEmail } from "@/lib/site-contact";
 import { Logo } from "./header-components";
-import { IconButton, IconName } from "../ui/icon-button";
+import { IconButton } from "../ui/icon-button";
 import { useLocale, useTranslations } from "next-intl";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
@@ -46,10 +47,10 @@ const FOOTER_COLUMNS = [
   { title: "footer.links.company", links: FOOTER_LINKS.company },
 ] as const;
 
-const SOCIAL_LINKS: { label: string; href: string; icon: IconName }[] = [
-  { label: "Facebook", href: SITE_CONFIG.links.facebook, icon: "facebook" },
-  { label: "Twitter", href: SITE_CONFIG.links.twitter, icon: "twitter" },
-  { label: "Instagram", href: SITE_CONFIG.links.instagram, icon: "instagram" },
+const SOCIAL_ICON_OPTIONS = [
+  { label: "Facebook", key: "facebook" as const, icon: "facebook" as const },
+  { label: "Twitter", key: "twitter" as const, icon: "twitter" as const },
+  { label: "Instagram", key: "instagram" as const, icon: "instagram" as const },
 ];
 
 const PAYMENT_IMAGES = [
@@ -66,6 +67,8 @@ export function Footer() {
   const { data: seoSettings } = useSeoSettings();
   const containerClass = "container mx-auto py-5 px-4 md:px-12";
   const siteName = resolveLocalizedSiteName(locale, seoSettings);
+  const supportEmail = resolveSupportEmail(seoSettings);
+  const socialLinks = resolveSocialLinks(seoSettings);
   const features = seoSettings?.free_delivery_enabled === false
     ? FEATURES.filter((feature) => feature.title !== "features.freeShipping")
     : FEATURES;
@@ -105,11 +108,11 @@ export function Footer() {
 
             <div className="flex flex-col gap-3">
               <a
-                href={`mailto:${SITE_CONFIG.contact.email}`}
+                href={`mailto:${supportEmail}`}
                 className="flex items-center gap-3 text-third2 hover:text-secondary transition-colors"
               >
                 <Mail className="w-5 h-5" />
-                {SITE_CONFIG.contact.email}
+                {supportEmail}
               </a>
               <a
                 href={`tel:${SITE_CONFIG.contact.phone}`}
@@ -125,7 +128,13 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-3 mt-6">
-              {SOCIAL_LINKS.filter((social) => !!social.href).map(({ label, href, icon }) => (
+              {SOCIAL_ICON_OPTIONS.map(({ label, key, icon }) => {
+                const href = socialLinks[key];
+                if (!href) {
+                  return null;
+                }
+
+                return (
                 <a
                   key={label}
                   href={href}
@@ -135,7 +144,8 @@ export function Footer() {
                 >
                   <IconButton variant="social" size="default" shape="circle" icon={icon} />
                 </a>
-              ))}
+                );
+              })}
             </div>
           </div>
 

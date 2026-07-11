@@ -8,7 +8,9 @@ import type {
   SortOption,
 } from './types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+import { getApiBaseUrl } from '@/lib/api-base-url';
+
+const API_BASE = getApiBaseUrl();
 const EXTERNAL_SEARCH_API_URL =
   process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL || '';
 const SEARCH_PROVIDER = (

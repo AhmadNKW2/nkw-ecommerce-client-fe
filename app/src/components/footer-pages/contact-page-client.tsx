@@ -4,6 +4,8 @@ import { Clock3, Mail, MapPin, Phone } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { SITE_CONFIG } from "@/lib/constants";
+import { resolveSupportEmail } from "@/lib/site-contact";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { cn } from "@/lib/utils";
 import { ContactFormPlaceholder } from "./contact-form-placeholder";
 
@@ -12,6 +14,8 @@ export function ContactPageClient() {
   const commonT = useTranslations("common");
   const locale = useLocale();
   const isArabic = locale === "ar";
+  const { data: seoSettings } = useSeoSettings();
+  const supportEmail = resolveSupportEmail(seoSettings);
   const address = isArabic ? SITE_CONFIG.contact.address.ar : SITE_CONFIG.contact.address.en;
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.contact.address.en)}`;
 
@@ -26,8 +30,8 @@ export function ContactPageClient() {
     {
       icon: Mail,
       label: t("email"),
-      value: SITE_CONFIG.contact.email,
-      href: `mailto:${SITE_CONFIG.contact.email}`,
+      value: supportEmail,
+      href: `mailto:${supportEmail}`,
     },
     {
       icon: MapPin,
@@ -112,7 +116,7 @@ export function ContactPageClient() {
           successDescription={t("form.successDescription")}
           resetLabel={t("form.resetLabel")}
           supportActionLabel={t("form.emailSupportAction")}
-          supportHref={`mailto:${SITE_CONFIG.contact.email}`}
+          supportHref={`mailto:${supportEmail}`}
         />
       </div>
     </ListingLayout>

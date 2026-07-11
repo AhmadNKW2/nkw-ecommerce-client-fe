@@ -72,6 +72,27 @@ export function searchParamsToSearchFilters(params: SearchParamsInput): SearchFi
   };
 }
 
+/** Compare search filter snapshots from SSR props vs client URL state. */
+export function areSearchFiltersEquivalent(
+  left: Omit<SearchFilterState, "page">,
+  right: Omit<SearchFilterState, "page">,
+): boolean {
+  const keys: Array<keyof Omit<SearchFilterState, "page">> = [
+    "q",
+    "category_ids",
+    "brand_ids",
+    "vendor_ids",
+    "attributes_values_ids",
+    "specifications_values_ids",
+    "min_price",
+    "max_price",
+    "average_rating_min",
+    "sort_by",
+  ];
+
+  return keys.every((key) => (left[key] ?? undefined) === (right[key] ?? undefined));
+}
+
 export function searchFiltersToApiFilters(filters: SearchFilterState, limit = 24): ProductFilters {
   const sortParts = filters.sort_by ? filters.sort_by.split(":") : ["average_rating", "desc"];
   let sortBy = sortParts[0];
