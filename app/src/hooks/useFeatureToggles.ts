@@ -37,6 +37,7 @@ export function resolveFeatureToggles(
     // Linked products depend on vendors — hide when vendors are off.
     linkedProductsEnabled:
       (data?.vendors_enabled ?? true) && (data?.linked_products_enabled ?? true),
+    productFilesEnabled: data?.product_files_enabled ?? true,
     easyPurchaseEnabled: data?.easy_purchase_enabled ?? false,
     cartSidebarButtonEnabled: data?.cart_sidebar_button_enabled ?? true,
   };

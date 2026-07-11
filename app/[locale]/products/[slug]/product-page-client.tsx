@@ -611,6 +611,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
     specificationsEnabled,
     weightAndDimensionsEnabled,
     linkedProductsEnabled,
+    productFilesEnabled,
   } = resolveProductFieldToggles(productFieldToggles);
 
   const requestedVariantId = useMemo(() => {
@@ -1094,7 +1095,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </section>
       ) : null}
 
-      {product.downloads && product.downloads.length > 0 ? (
+      {productFilesEnabled && product.downloads && product.downloads.length > 0 ? (
         <ProductDownloads
           downloads={product.downloads}
           title={t("product.downloads")}

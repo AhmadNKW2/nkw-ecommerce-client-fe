@@ -2,6 +2,7 @@
 
 import { Download, FileText } from "lucide-react";
 import { Card } from "@/components/ui";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 import type { ProductDownload } from "@/types";
 
 interface ProductDownloadsProps {
@@ -23,6 +24,11 @@ const getFileExtension = (name: string) => {
   return parts[parts.length - 1].toUpperCase();
 };
 
+const buildDownloadUrl = (fileId: string) => {
+  const apiBaseUrl = getApiBaseUrl();
+  return `${apiBaseUrl}/media/attachments/${fileId}/download`;
+};
+
 export function ProductDownloads({
   downloads,
   title,
@@ -32,19 +38,21 @@ export function ProductDownloads({
     return null;
   }
 
+  const handleDownload = (file: ProductDownload) => {
+    window.location.assign(buildDownloadUrl(file.id));
+  };
+
   return (
     <section>
       <h2 className="text-2xl font-bold text-primary mb-2">{title}</h2>
       <Card className="p-4 md:p-6">
         <div className="grid grid-cols-1 gap-3">
           {downloads.map((file) => (
-            <a
+            <button
               key={file.id}
-              href={file.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              className="group flex items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-4 transition-all hover:border-primary/20 hover:bg-white hover:shadow-sm"
+              type="button"
+              onClick={() => handleDownload(file)}
+              className="group flex w-full items-center justify-between gap-4 rounded-xl border border-gray-100 bg-gray-50 px-4 py-4 text-left transition-all hover:border-primary/20 hover:bg-white hover:shadow-sm"
             >
               <div className="flex min-w-0 items-center gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -64,7 +72,7 @@ export function ProductDownloads({
                 <Download className="h-4 w-4" />
                 {downloadLabel}
               </span>
-            </a>
+            </button>
           ))}
         </div>
       </Card>

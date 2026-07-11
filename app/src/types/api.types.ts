@@ -504,6 +504,7 @@ export type FeatureToggles = {
   import_ai_products_enabled: boolean;
   linked_products_enabled: boolean;
   reference_links_enabled: boolean;
+  product_files_enabled: boolean;
   easy_purchase_enabled: boolean;
   cart_sidebar_button_enabled: boolean;
   // Appearance-only toggles — admin dashboard only; the client ignores these.
