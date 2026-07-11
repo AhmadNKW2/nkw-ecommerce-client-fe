@@ -18,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { SITE_CONFIG } from "@/lib/constants";
+import { resolveSupportEmail } from "@/lib/site-contact";
+import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { cn } from "@/lib/utils";
 import { sellWithUsSchema, type SellWithUsFormData } from "@/lib/sell-with-us";
 import {
@@ -163,6 +165,8 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
   const locale = useLocale();
   const tCommon = useTranslations("common");
   const { data: featureToggles } = useFeatureToggles();
+  const { data: seoSettings } = useSeoSettings();
+  const supportEmail = resolveSupportEmail(seoSettings);
   const { partnersEnabled } = resolveFeatureToggles(featureToggles);
   const copy = locale === "ar" ? sellWithUsCopy.ar : sellWithUsCopy.en;
 
@@ -375,7 +379,7 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
                       {copy.contactEmailLabel}
                     </p>
                     <p className="mt-2 text-base font-bold text-primary wrap-break-word">
-                      {SITE_CONFIG.contact.email}
+                      {supportEmail}
                     </p>
                   </div>
                 </div>

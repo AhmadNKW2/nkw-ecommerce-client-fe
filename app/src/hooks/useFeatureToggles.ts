@@ -34,7 +34,9 @@ export function resolveFeatureToggles(
     cashbackEnabled: data?.cashback_enabled ?? true,
     bannersEnabled: data?.banners_enabled ?? true,
     importAiProductsEnabled: data?.import_ai_products_enabled ?? true,
-    linkedProductsEnabled: data?.linked_products_enabled ?? true,
+    // Linked products depend on vendors — hide when vendors are off.
+    linkedProductsEnabled:
+      (data?.vendors_enabled ?? true) && (data?.linked_products_enabled ?? true),
     easyPurchaseEnabled: data?.easy_purchase_enabled ?? false,
     cartSidebarButtonEnabled: data?.cart_sidebar_button_enabled ?? true,
   };

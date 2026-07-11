@@ -1,5 +1,5 @@
 export async function fetchEasyPurchaseEnabled(): Promise<boolean> {
-  const rawApiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!rawApiUrl) {
     return false;
   }

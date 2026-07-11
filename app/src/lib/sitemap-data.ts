@@ -3,8 +3,9 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { routing } from "@/i18n/routing";
 import type { PaginatedResponse } from "@/types/api.types";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || "").replace(/\/$/, "");
+import { getApiBaseUrl } from "@/lib/api-base-url";
+
+const API_BASE = getApiBaseUrl();
 const PAGE_SIZE = 100;
 
 export const PUBLIC_STATIC_PATHS = [
