@@ -20,13 +20,17 @@ if (r2PublicUrl) {
 }
 
 const nextConfig: NextConfig = {
-  ...(isDevelopment
-    ? {}
-    : {
-      experimental: {
-        optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'framer-motion'],
-      },
-    }),
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'framer-motion'],
+    ...(isDevelopment ? {} : { optimizeCss: true }),
+  },
+  compiler: {
+    removeConsole: isDevelopment
+      ? false
+      : {
+          exclude: ['error', 'warn'],
+        },
+  },
   async redirects() {
     return [
       {
@@ -52,7 +56,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Soften caching for machine files; homepage remains dynamic via cookies.
         source: '/llms.txt',
         headers: [
           {
@@ -64,11 +67,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    // Serve sized variants via /_next/image (also HTTP/2 on the site origin).
-    // Previously unoptimized:true forced full 1200px R2 assets into ~105px cards.
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [64, 96, 128, 192, 256, 384],
+    imageSizes: [64, 96, 128, 184, 192, 220, 240, 256, 384],
     remotePatterns: [
       {
         protocol: 'http',

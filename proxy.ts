@@ -134,7 +134,12 @@ export default async function middleware(request: NextRequest) {
   }
 
   const localizedRequest = withCanonicalPathHeader(request);
-  return handleI18nRouting(localizedRequest);
+  const response = handleI18nRouting(localizedRequest);
+
+  // Drop locale cookie so document responses are less likely to be Cache-Control: no-store.
+  response.cookies.delete("NEXT_LOCALE");
+
+  return response;
 }
 
 export const config = {

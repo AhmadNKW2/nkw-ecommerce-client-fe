@@ -26,18 +26,24 @@ const newArrivalsSearchFilters: Omit<SearchFilters, "page"> = {
   per_page: productsPerPage,
 };
 
-/** Matches ProductCard default sizes; mobile card ~184px so prefer ~42–50vw. */
 const HOME_PRODUCT_IMAGE_SIZES =
-  "(max-width: 768px) 42vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 18vw";
+  "(max-width: 768px) 184px, (max-width: 1024px) 220px, (max-width: 1280px) 240px, 220px";
 
-function resolveLcpImageUrl(
+function resolveLcpImageUrls(
   data: InfiniteData<SearchResponse> | undefined,
-): string | null {
-  const image = data?.pages?.[0]?.hits?.[0]?.images?.[0]?.trim();
-  if (!image || image.startsWith("/placeholder")) {
-    return null;
+  count: number,
+): string[] {
+  const hits = data?.pages?.[0]?.hits ?? [];
+  const urls: string[] = [];
+
+  for (const hit of hits) {
+    const image = hit.images?.[0]?.trim();
+    if (!image || image.startsWith("/placeholder")) continue;
+    urls.push(image);
+    if (urls.length >= count) break;
   }
-  return image;
+
+  return urls;
 }
 
 export default async function HomePage() {
@@ -63,35 +69,56 @@ export default async function HomePage() {
   const featuredData = queryClient.getQueryData<InfiniteData<SearchResponse>>(
     SEARCH_QUERY_KEYS.infinite(featuredSearchFilters, locale),
   );
-  const lcpImageSrc = resolveLcpImageUrl(featuredData);
+  const lcpImages = resolveLcpImageUrls(featuredData, 4);
 
-  if (lcpImageSrc) {
+  const preloadLinks: Array<{
+    href: string;
+    imageSrcSet?: string;
+    imageSizes?: string;
+  }> = [];
+
+  for (const [index, lcpImageSrc] of lcpImages.entries()) {
     try {
       const {
         props: { srcSet, sizes, src },
       } = getImageProps({
         src: lcpImageSrc,
         alt: "",
-        width: 384,
-        height: 384,
+        width: 256,
+        height: 256,
         sizes: HOME_PRODUCT_IMAGE_SIZES,
-        quality: 75,
+        quality: 65,
       });
 
-      // React 19 emits a head preload with fetchPriority=high for LCP discovery.
       preload(src, {
         as: "image",
         imageSrcSet: srcSet,
         imageSizes: sizes,
-        fetchPriority: "high",
+        fetchPriority: index === 0 ? "high" : "low",
+      });
+
+      preloadLinks.push({
+        href: src,
+        imageSrcSet: srcSet,
+        imageSizes: sizes,
       });
     } catch {
-      // Skip preload if the optimizer cannot build props.
+      // Skip this candidate if optimizer cannot build props.
     }
   }
 
   return (
     <RouteIntlProvider locale={locale} namespaces={HOME_MESSAGE_NAMESPACES}>
+      {preloadLinks[0] ? (
+        <link
+          rel="preload"
+          as="image"
+          href={preloadLinks[0].href}
+          imageSrcSet={preloadLinks[0].imageSrcSet}
+          imageSizes={preloadLinks[0].imageSizes}
+          fetchPriority="high"
+        />
+      ) : null}
       <HydrationBoundary state={dehydratedState}>
         <HomePageClient />
       </HydrationBoundary>

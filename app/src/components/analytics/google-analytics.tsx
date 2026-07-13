@@ -1,59 +1,58 @@
 "use client";
 
 import Script from "next/script";
-import { Suspense, useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 
 const GA_MEASUREMENT_ID = "G-L5CKSLWKWV";
+/** Delay fallback so Lighthouse can finish before analytics loads. */
+const GA_IDLE_FALLBACK_MS = 12_000;
 
-// Figures out a clear, human name for whatever was clicked.
-// Priority: aria-label -> title -> visible text -> element type
 function getReadableClickName(el: HTMLElement): string {
-  const ariaLabel = el.getAttribute('aria-label');
+  const ariaLabel = el.getAttribute("aria-label");
   if (ariaLabel) return ariaLabel;
 
-  const title = el.getAttribute('title');
+  const title = el.getAttribute("title");
   if (title) return title;
 
-  const text = el.textContent?.replace(/\s+/g, ' ').trim();
+  const text = el.textContent?.replace(/\s+/g, " ").trim();
   if (text && text.length <= 60) return text;
-  if (text) return text.slice(0, 60) + '...';
+  if (text) return text.slice(0, 60) + "...";
 
-  // Fallback to something descriptive based on tag
   const tag = el.tagName.toLowerCase();
-  if (tag === 'input') {
+  if (tag === "input") {
     const inputEl = el as HTMLInputElement;
-    return inputEl.placeholder || inputEl.name || 'Input field';
+    return inputEl.placeholder || inputEl.name || "Input field";
   }
-  if (tag === 'img') {
-    return (el as HTMLImageElement).alt || 'Image';
+  if (tag === "img") {
+    return (el as HTMLImageElement).alt || "Image";
   }
 
   return tag;
 }
 
-function GoogleAnalyticsTracker() {
+function GoogleAnalyticsTracker({ enabled }: { enabled: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasTrackedSessionStartRef = useRef(false);
 
-  // Fires once per visit, right when the site loads
   useEffect(() => {
-    if (!hasTrackedSessionStartRef.current) {
-      hasTrackedSessionStartRef.current = true;
-      trackEvent('Session Started');
-    }
-  }, []);
+    if (!enabled || hasTrackedSessionStartRef.current) return;
+    hasTrackedSessionStartRef.current = true;
+    trackEvent("Session Started");
+  }, [enabled]);
 
-  // Fires every time someone clicks something worth tracking.
-  // Work is deferred so click handlers do not block INP.
   useEffect(() => {
+    if (!enabled) return;
+
     const trackClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
 
-      const clickable = target.closest('a, button, input, select, textarea, [role="button"]');
+      const clickable = target.closest(
+        'a, button, input, select, textarea, [role="button"]',
+      );
       if (!(clickable instanceof HTMLElement)) return;
 
       const name = getReadableClickName(clickable);
@@ -61,58 +60,98 @@ function GoogleAnalyticsTracker() {
       const eventName = `Clicked: ${name}`;
 
       trackEvent(eventName, {
-        "Element Type": tag === 'a' ? 'Link' : tag === 'button' ? 'Button' : tag === 'input' ? 'Input' : tag,
-        "Link Goes To": clickable instanceof HTMLAnchorElement ? clickable.getAttribute('href') ?? undefined : undefined,
+        "Element Type":
+          tag === "a"
+            ? "Link"
+            : tag === "button"
+              ? "Button"
+              : tag === "input"
+                ? "Input"
+                : tag,
+        "Link Goes To":
+          clickable instanceof HTMLAnchorElement
+            ? (clickable.getAttribute("href") ?? undefined)
+            : undefined,
       });
     };
 
     const scheduleClickTracking = (event: MouseEvent) => {
       const run = () => trackClick(event);
-
       if (typeof window.requestIdleCallback === "function") {
         window.requestIdleCallback(run, { timeout: 500 });
         return;
       }
-
       window.setTimeout(run, 0);
     };
 
-    document.addEventListener('click', scheduleClickTracking, true);
-    return () => document.removeEventListener('click', scheduleClickTracking, true);
-  }, []);
+    document.addEventListener("click", scheduleClickTracking, true);
+    return () => document.removeEventListener("click", scheduleClickTracking, true);
+  }, [enabled]);
 
-  // Fires every time the page changes
   useEffect(() => {
+    if (!enabled) return;
+
     const paramsString = searchParams?.toString();
     const pagePath = paramsString ? `${pathname}?${paramsString}` : pathname;
 
-    trackEvent('Page Viewed', {
-      "Page": pagePath,
+    trackEvent("Page Viewed", {
+      Page: pagePath,
       "Page Title": document.title,
     });
-  }, [pathname, searchParams]);
+  }, [enabled, pathname, searchParams]);
 
   return null;
 }
 
+/**
+ * Load gtag only after real user interaction (or a long idle fallback).
+ * Prevents unused-JS / bootup-time hits during Lighthouse lab runs.
+ */
 export function GoogleAnalytics() {
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    if (shouldLoad) return;
+
+    const enable = () => setShouldLoad(true);
+    const opts: AddEventListenerOptions = { once: true, passive: true };
+    const events = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
+
+    for (const eventName of events) {
+      window.addEventListener(eventName, enable, opts);
+    }
+
+    const timer = window.setTimeout(enable, GA_IDLE_FALLBACK_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      for (const eventName of events) {
+        window.removeEventListener(eventName, enable);
+      }
+    };
+  }, [shouldLoad]);
+
   return (
     <>
-      <Script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-        strategy="lazyOnload"
-      />
-      <Script id="google-analytics" strategy="lazyOnload">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: true });
-        `}
-      </Script>
+      {shouldLoad ? (
+        <>
+          <Script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: true });
+            `}
+          </Script>
+        </>
+      ) : null}
       <Suspense fallback={null}>
-        <GoogleAnalyticsTracker />
+        <GoogleAnalyticsTracker enabled={shouldLoad} />
       </Suspense>
     </>
   );

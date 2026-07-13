@@ -4,7 +4,6 @@ import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { ViewAllLink } from "@/components/home/view-all-link";
@@ -178,12 +177,7 @@ export function HomeSection(props: HomeSectionProps) {
       ) : (
         <ResponsiveGrid>
           {visibleProducts.map((product, idx) => (
-            <motion.div
-              key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}
-              initial={idx < priorityCount ? false : { opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
-            >
+            <div key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}>
               <ProductCard 
                 product={product} 
                 cartButtonVariant="floating"
@@ -191,7 +185,7 @@ export function HomeSection(props: HomeSectionProps) {
                 cartButtonIcon="add-to-cart"
                 priority={idx < priorityCount}
               />
-            </motion.div>
+            </div>
           ))}
         </ResponsiveGrid>
       )}

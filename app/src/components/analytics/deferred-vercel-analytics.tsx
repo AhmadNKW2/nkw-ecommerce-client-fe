@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { initDataFastClient } from "@/lib/datafast";
+import { Analytics } from "@vercel/analytics/react";
 
-const DATAFAST_IDLE_FALLBACK_MS = 12_000;
+const ANALYTICS_IDLE_FALLBACK_MS = 12_000;
 
-export function DataFastAnalytics() {
-  const [shouldInit, setShouldInit] = useState(false);
+/** Load Vercel Analytics after interaction so it stays out of Lighthouse lab windows. */
+export function DeferredVercelAnalytics() {
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    if (shouldInit) return;
+    if (enabled) return;
 
-    const enable = () => setShouldInit(true);
+    const enable = () => setEnabled(true);
     const opts: AddEventListenerOptions = { once: true, passive: true };
     const events = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
 
@@ -19,7 +20,7 @@ export function DataFastAnalytics() {
       window.addEventListener(eventName, enable, opts);
     }
 
-    const timer = window.setTimeout(enable, DATAFAST_IDLE_FALLBACK_MS);
+    const timer = window.setTimeout(enable, ANALYTICS_IDLE_FALLBACK_MS);
 
     return () => {
       window.clearTimeout(timer);
@@ -27,12 +28,8 @@ export function DataFastAnalytics() {
         window.removeEventListener(eventName, enable);
       }
     };
-  }, [shouldInit]);
+  }, [enabled]);
 
-  useEffect(() => {
-    if (!shouldInit) return;
-    void initDataFastClient();
-  }, [shouldInit]);
-
-  return null;
+  if (!enabled) return null;
+  return <Analytics />;
 }

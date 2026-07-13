@@ -18,9 +18,9 @@ import { homeKeys } from "@/hooks/useHome";
 import { homeService } from "@/services/home.service";
 import { getSeoSettingsCached } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
-import { Analytics } from "@vercel/analytics/next";
 import { DataFastAnalytics } from "@/components/analytics/datafast-analytics";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { DeferredVercelAnalytics } from "@/components/analytics/deferred-vercel-analytics";
 import { SEO_SETTINGS_QUERY_KEY } from "@/hooks/useSeoSettings";
 import "./../globals.css";
 
@@ -183,7 +183,7 @@ export default async function RootLayout({ children, params }: Props) {
         </RouteIntlProvider>
         <GoogleAnalytics />
         <DataFastAnalytics />
-        <Analytics />
+        <DeferredVercelAnalytics />
       </body>
     </html>
   );

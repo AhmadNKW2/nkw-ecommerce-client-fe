@@ -11,5 +11,8 @@ export const routing = defineRouting({
   localePrefix: 'as-needed',
 
   // Disable automatic locale detection
-  localeDetection: false
+  localeDetection: false,
+
+  // Avoid Set-Cookie: NEXT_LOCALE so the homepage can enter bfcache more often.
+  localeCookie: false,
 });

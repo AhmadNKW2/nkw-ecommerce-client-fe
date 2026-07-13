@@ -32,8 +32,9 @@ interface ProductCardProps {
 }
 
 const PRODUCT_CARD_SIZES = {
-  default: "(max-width: 768px) 42vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 18vw",
-  compact: "(max-width: 768px) 33vw, 160px",
+  // Prefer ~192–256px assets for ~105–235px CSS cards (avoids 384px over-fetch).
+  default: "(max-width: 768px) 184px, (max-width: 1024px) 220px, (max-width: 1280px) 240px, 220px",
+  compact: "(max-width: 768px) 120px, 140px",
   horizontal: "128px",
 } as const;
 
@@ -225,6 +226,7 @@ export function ProductCard({
             fill
             sizes={PRODUCT_CARD_SIZES.horizontal}
             priority={priority}
+            quality={65}
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
@@ -273,6 +275,7 @@ export function ProductCard({
             fill
             sizes={PRODUCT_CARD_SIZES.compact}
             priority={priority}
+            quality={65}
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
@@ -304,6 +307,7 @@ export function ProductCard({
           fill
           sizes={PRODUCT_CARD_SIZES.default}
           priority={priority}
+          quality={65}
           className="object-contain group-hover:scale-102 transition-transform duration-500"
         />
 
