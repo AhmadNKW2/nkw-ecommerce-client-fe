@@ -93,12 +93,11 @@ export function SitePopup() {
     <Image
       src={popupSettings.image_url}
       alt="Promotion"
-      width={0}
-      height={0}
+      width={480}
+      height={480}
       sizes="(max-width: 640px) 88vw, 480px"
       className="block h-auto max-h-[70vh] w-full object-contain"
-      style={{ width: "100%", height: "auto" }}
-      priority
+      loading="lazy"
     />
   );
 

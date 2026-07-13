@@ -153,12 +153,20 @@ export default async function RootLayout({ children, params }: Props) {
     queryClient.setQueryData(SEO_SETTINGS_QUERY_KEY, seoForClient);
   }
 
-  // Search SSR should not wait on homepage data — header can load it client-side.
+  const pathnameWithoutLocale =
+    canonicalPath.replace(/^\/(en|ar)(?=\/|$)/, "") || "/";
+  const isHomeRoute = pathnameWithoutLocale === "/" || pathnameWithoutLocale === "";
+
+  // Nav data: never block homepage TTFB (field LCP budget is tight).
   if (!isSearchRoute) {
-    await queryClient.prefetchQuery({
+    const homePrefetch = queryClient.prefetchQuery({
       queryKey: homeKeys.data(),
       queryFn: () => homeService.getHomeData(),
     }).catch(() => undefined);
+
+    if (!isHomeRoute) {
+      await homePrefetch;
+    }
   }
 
   const isRTL = locale === 'ar';

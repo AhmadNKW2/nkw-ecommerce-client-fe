@@ -344,7 +344,7 @@ export function NavigationBar() {
   }, []);
 
   return (
-    <div className="hidden lg:block bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 relative">
+    <div className="hidden lg:block bg-gray-50/80 backdrop-blur-sm border-b border-gray-200/50 relative min-h-[3.75rem]">
       <div 
         ref={wrapperRef}
         className="container mx-auto px-4 md:px-5 relative"

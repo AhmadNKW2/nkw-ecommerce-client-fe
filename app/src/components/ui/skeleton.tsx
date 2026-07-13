@@ -17,12 +17,12 @@ function Skeleton({ className, ...props }: SkeletonProps) {
 
 function ProductCardSkeleton() {
   return (
-    <div className="rounded-r1 border border-gray-100 bg-white p-4">
-      <Skeleton className="aspect-square w-full rounded-lg" />
-      <div className="mt-4 flex flex-col gap-2">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-6 w-1/3 mt-2" />
+    <div className="rounded-r1 border border-gray-100 bg-white overflow-hidden h-full flex flex-col">
+      <Skeleton className="aspect-square w-full rounded-none" />
+      <div className="p-1 flex flex-col grow gap-2 min-h-[7.5rem]">
+        <Skeleton className="h-[3.75rem] md:h-[4.2rem] w-full" />
+        <Skeleton className="h-4 w-16 mx-auto" />
+        <Skeleton className="h-7 w-20 mx-auto mt-auto" />
       </div>
     </div>
   );

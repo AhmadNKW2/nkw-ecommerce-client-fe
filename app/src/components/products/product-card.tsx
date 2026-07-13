@@ -447,28 +447,30 @@ export function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="p-1 flex flex-col grow gap-2">
-        {/* Name */}
-        <h3 className="font-medium text-[13px] md:text-sm text-primary group-hover:text-primary transition-colors line-clamp-4 text-center">
+      <div className="p-1 flex flex-col grow gap-2 min-h-[7.5rem]">
+        {/* Name — fixed clamp height so rows don't shift between cards */}
+        <h3 className="font-medium text-[13px] md:text-sm text-primary group-hover:text-primary transition-colors line-clamp-3 text-center min-h-[3.75rem] md:min-h-[4.2rem]">
           {product.name}
           {variantAttributesSummary ? (
             <span className="font-normal text-third">{" "}({variantAttributesSummary})</span>
           ) : null}
         </h3>
 
-        {/* Rating */}
-        {product.rating > 0 && (
-          <div className="flex items-center justify-center gap-1 mt-1">
-            <Star className="w-3 h-3 fill-secondary text-secondary" />
-            <span className="text-xs text-third">{product.rating.toFixed(1)}</span>
-            {product.reviewCount > 0 && (
-              <span className="text-xs text-third">({product.reviewCount})</span>
-            )}
-          </div>
-        )}
+        {/* Rating — always reserve one row to avoid CLS when rating is missing */}
+        <div className="flex items-center justify-center gap-1 mt-1 min-h-4">
+          {product.rating > 0 ? (
+            <>
+              <Star className="w-3 h-3 fill-secondary text-secondary" />
+              <span className="text-xs text-third">{product.rating.toFixed(1)}</span>
+              {product.reviewCount > 0 && (
+                <span className="text-xs text-third">({product.reviewCount})</span>
+              )}
+            </>
+          ) : null}
+        </div>
 
         {/* Price - Always at bottom */}
-        <div className="flex items-center justify-center gap-2 mt-auto">
+        <div className="flex items-center justify-center gap-2 mt-auto min-h-7">
           <span className="text-lg font-bold text-secondary">
             {formatPrice(product.price, undefined, locale)}
           </span>

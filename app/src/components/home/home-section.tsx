@@ -92,17 +92,17 @@ export function HomeSection(props: HomeSectionProps) {
   );
 
   // When `hasMore` is provided externally (API pagination mode), show ALL fetched
-  // products without client-side slicing. Otherwise fall back to internal slicing.
+  // products without client-side slicing or column-rounding (avoids hydration CLS).
   const visibleProducts = useMemo(() => {
     if (showNavArrows) return products;
 
-    let rawProducts = products;
-    if (hasMore === undefined) {
-      rawProducts = products.slice(0, Math.max(0, visibleCount));
+    if (hasMore !== undefined) {
+      return products;
     }
 
-    // Ensures the number of displayed products is always a multiple of the current columns
-    // "so if its 5 so if the number of showed products is 26 it must be 25 because 25 is the nearest number %5 ==0"
+    const rawProducts = products.slice(0, Math.max(0, visibleCount));
+
+    // Client-side slicing mode only: keep rows even with current column count.
     const maxVisible = Math.floor(rawProducts.length / cols) * cols;
     return rawProducts.slice(0, Math.max(cols, maxVisible));
   }, [products, showNavArrows, visibleCount, hasMore, cols]);

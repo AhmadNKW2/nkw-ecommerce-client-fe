@@ -109,7 +109,7 @@ export function Header() {
             </div>
 
             <div className="hidden lg:block flex-1 max-w-2xl mx-auto">
-              <Suspense fallback={null}>
+              <Suspense fallback={<div className="h-11 w-full" aria-hidden="true" />}>
                 <SearchBox />
               </Suspense>
             </div>
@@ -123,7 +123,7 @@ export function Header() {
 
       <div className="bg-primary lg:hidden pb-3">
         <div className="container mx-auto px-4 md:px-5">
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="h-11 w-full" aria-hidden="true" />}>
             <SearchBox />
           </Suspense>
         </div>

@@ -36,7 +36,7 @@ export function HomePageClient() {
 
   const {
     data: featuredInfiniteData,
-    isPending: featuredLoading,
+    isPending: featuredPending,
     isFetchingNextPage: featuredFetchingNext,
     hasNextPage: featuredHasNextPage,
     fetchNextPage: featuredFetchNextPage,
@@ -47,9 +47,10 @@ export function HomePageClient() {
     [featuredInfiniteData],
   );
 
+  // New arrivals can hydrate after first paint — do not block LCP/TTFB path.
   const {
     data: newInfiniteData,
-    isPending: newLoading,
+    isPending: newPending,
     isFetchingNextPage: newFetchingNext,
     hasNextPage: newHasNextPage,
     fetchNextPage: newFetchNextPage,
@@ -63,11 +64,15 @@ export function HomePageClient() {
   const { products: featuredProducts } = useListingVariantProducts(featuredData, locale);
   const { products: newProducts } = useListingVariantProducts(newData, locale);
 
+  // Avoid skeleton→grid CLS when dehydrated search data is already present.
+  const showFeaturedSkeleton = featuredPending && featuredProducts.length === 0;
+  const showNewSkeleton = newPending && newProducts.length === 0;
+
   return (
     <>
       <section>
-        {featuredLoading ? (
-          <ProductGridSkeleton count={4} />
+        {showFeaturedSkeleton ? (
+          <ProductGridSkeleton count={10} />
         ) : (
           <ProductsSection
             products={featuredProducts}
@@ -77,14 +82,14 @@ export function HomePageClient() {
             onLoadMore={() => featuredFetchNextPage()}
             isLoading={featuredFetchingNext}
             showHeader={false}
-            priorityCount={8}
+            priorityCount={2}
           />
         )}
       </section>
 
       <section>
-        {newLoading ? (
-          <ProductGridSkeleton count={4} />
+        {showNewSkeleton ? (
+          <ProductGridSkeleton count={10} />
         ) : (
           <ProductsSection
             products={newProducts}
@@ -94,6 +99,7 @@ export function HomePageClient() {
             hasMore={newHasNextPage ?? false}
             onLoadMore={() => newFetchNextPage()}
             isLoading={newFetchingNext}
+            priorityCount={0}
           />
         )}
       </section>

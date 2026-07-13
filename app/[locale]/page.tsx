@@ -29,55 +29,49 @@ const newArrivalsSearchFilters: Omit<SearchFilters, "page"> = {
 const HOME_PRODUCT_IMAGE_SIZES =
   "(max-width: 768px) 184px, (max-width: 1024px) 220px, (max-width: 1280px) 240px, 220px";
 
-function resolveLcpImageUrls(
+function resolveLcpImageUrl(
   data: InfiniteData<SearchResponse> | undefined,
-  count: number,
-): string[] {
+): string | null {
   const hits = data?.pages?.[0]?.hits ?? [];
-  const urls: string[] = [];
-
   for (const hit of hits) {
     const image = hit.images?.[0]?.trim();
-    if (!image || image.startsWith("/placeholder")) continue;
-    urls.push(image);
-    if (urls.length >= count) break;
+    if (image && !image.startsWith("/placeholder")) {
+      return image;
+    }
   }
-
-  return urls;
+  return null;
 }
 
 export default async function HomePage() {
   const locale = (await getLocale()) as Locale;
   const queryClient = getQueryClient();
 
-  await Promise.allSettled([
-    queryClient.prefetchInfiniteQuery({
-      queryKey: SEARCH_QUERY_KEYS.infinite(featuredSearchFilters, locale),
-      queryFn: ({ pageParam = 1 }) =>
-        serverSearch({ ...featuredSearchFilters, page: pageParam }, locale),
-      initialPageParam: 1,
-    }),
-    queryClient.prefetchInfiniteQuery({
-      queryKey: SEARCH_QUERY_KEYS.infinite(newArrivalsSearchFilters, locale),
-      queryFn: ({ pageParam = 1 }) =>
-        serverSearch({ ...newArrivalsSearchFilters, page: pageParam }, locale),
-      initialPageParam: 1,
-    }),
-  ]);
+  // Only await featured products for first paint / LCP. New arrivals hydrate after.
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: SEARCH_QUERY_KEYS.infinite(featuredSearchFilters, locale),
+    queryFn: ({ pageParam = 1 }) =>
+      serverSearch({ ...featuredSearchFilters, page: pageParam }, locale),
+    initialPageParam: 1,
+  }).catch(() => undefined);
+
+  // Warm new-arrivals without blocking TTFB.
+  void queryClient.prefetchInfiniteQuery({
+    queryKey: SEARCH_QUERY_KEYS.infinite(newArrivalsSearchFilters, locale),
+    queryFn: ({ pageParam = 1 }) =>
+      serverSearch({ ...newArrivalsSearchFilters, page: pageParam }, locale),
+    initialPageParam: 1,
+  });
 
   const dehydratedState = dehydrate(queryClient);
   const featuredData = queryClient.getQueryData<InfiniteData<SearchResponse>>(
     SEARCH_QUERY_KEYS.infinite(featuredSearchFilters, locale),
   );
-  const lcpImages = resolveLcpImageUrls(featuredData, 4);
+  const lcpImageSrc = resolveLcpImageUrl(featuredData);
 
-  const preloadLinks: Array<{
-    href: string;
-    imageSrcSet?: string;
-    imageSizes?: string;
-  }> = [];
+  let preloadLink: { href: string; imageSrcSet?: string; imageSizes?: string } | null =
+    null;
 
-  for (const [index, lcpImageSrc] of lcpImages.entries()) {
+  if (lcpImageSrc) {
     try {
       const {
         props: { srcSet, sizes, src },
@@ -94,28 +88,24 @@ export default async function HomePage() {
         as: "image",
         imageSrcSet: srcSet,
         imageSizes: sizes,
-        fetchPriority: index === 0 ? "high" : "low",
+        fetchPriority: "high",
       });
 
-      preloadLinks.push({
-        href: src,
-        imageSrcSet: srcSet,
-        imageSizes: sizes,
-      });
+      preloadLink = { href: src, imageSrcSet: srcSet, imageSizes: sizes };
     } catch {
-      // Skip this candidate if optimizer cannot build props.
+      preloadLink = null;
     }
   }
 
   return (
     <RouteIntlProvider locale={locale} namespaces={HOME_MESSAGE_NAMESPACES}>
-      {preloadLinks[0] ? (
+      {preloadLink ? (
         <link
           rel="preload"
           as="image"
-          href={preloadLinks[0].href}
-          imageSrcSet={preloadLinks[0].imageSrcSet}
-          imageSizes={preloadLinks[0].imageSizes}
+          href={preloadLink.href}
+          imageSrcSet={preloadLink.imageSrcSet}
+          imageSizes={preloadLink.imageSizes}
           fetchPriority="high"
         />
       ) : null}
