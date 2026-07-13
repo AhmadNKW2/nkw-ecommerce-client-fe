@@ -9,7 +9,7 @@ import { ProductFilters, FloatingFilterSort, DesktopFiltersSidebar } from '@/com
 import type { FilterState } from '@/components/products/product-filters';
 import { SearchResults } from './SearchResults';
 import { Button, Card, Sheet, Select } from '@/components/ui';
-import { useLoading } from '@/components/ui/global-loader';
+import { useLoadingActionsOnly } from '@/components/ui/global-loader';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
@@ -38,7 +38,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
   const t = useTranslations('product');
   const tSearch = useTranslations('search');
   const tCommon = useTranslations('common');
-  const { setIsLoading } = useLoading();
+  const { setIsLoading } = useLoadingActionsOnly();
   
   const {
     filters,

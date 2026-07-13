@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useLoading } from "@/components/ui/global-loader";
+import { useLoadingActionsOnly } from "@/components/ui/global-loader";
 
 interface PageWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface PageWrapperProps extends React.HTMLAttributes<HTMLDivElement> {
 function PageRenderObserver() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { markPageRendered } = useLoading();
+  const { markPageRendered } = useLoadingActionsOnly();
   const routeKey = React.useMemo(() => {
     const paramsString = searchParams?.toString() || "";
     return paramsString ? `${pathname}?${paramsString}` : pathname;

@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
 import { apiClient, ApiError } from "@/lib/api-client";
 import { setCookie, deleteCookie } from "@/lib/utils";
-import { useLoading } from "@/components/ui/global-loader";
+import { useLoadingActionsOnly } from "@/components/ui/global-loader";
 
 const AUTH_KEYS = {
   user: ["auth", "user"],
@@ -16,7 +16,7 @@ const AUTH_KEYS = {
 export function useAuth() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { setIsLoading } = useLoading();
+  const { setIsLoading } = useLoadingActionsOnly();
 
   useEffect(() => {
     const handler = () => {

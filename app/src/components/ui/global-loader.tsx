@@ -8,34 +8,82 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useIsFetching } from "@tanstack/react-query";
 
-interface LoadingContextType {
-  isLoading: boolean;
+interface LoadingActions {
   setIsLoading: (loading: boolean) => void;
   startLoading: () => void;
   markPageRendered: (routeKey: string) => void;
 }
 
-const LoadingContext = createContext<LoadingContextType>({
+interface LoadingContextType extends LoadingActions {
+  isLoading: boolean;
+}
+
+const loadingStore = {
   isLoading: false,
-  setIsLoading: () => {},
+  listeners: new Set<() => void>(),
+};
+
+function subscribeToLoading(listener: () => void) {
+  loadingStore.listeners.add(listener);
+  return () => {
+    loadingStore.listeners.delete(listener);
+  };
+}
+
+function getLoadingSnapshot() {
+  return loadingStore.isLoading;
+}
+
+function setGlobalLoading(loading: boolean) {
+  if (loadingStore.isLoading === loading) {
+    return;
+  }
+
+  loadingStore.isLoading = loading;
+  loadingStore.listeners.forEach((listener) => listener());
+}
+
+const LoadingContext = createContext<LoadingActions>({
+  setIsLoading: setGlobalLoading,
   startLoading: () => {},
   markPageRendered: () => {},
 });
 
-export const useLoading = () => useContext(LoadingContext);
+function useLoadingActions() {
+  return useContext(LoadingContext);
+}
+
+function useLoadingState() {
+  return useSyncExternalStore(subscribeToLoading, getLoadingSnapshot, () => false);
+}
+
+export function useLoadingActionsOnly() {
+  return useLoadingActions();
+}
+
+export function useLoading(): LoadingContextType {
+  const actions = useLoadingActions();
+  const isLoading = useLoadingState();
+
+  return {
+    ...actions,
+    isLoading,
+  };
+}
 
 interface GlobalLoaderProps {
   children: React.ReactNode;
 }
 
 function RouteObserver() {
-  const { isLoading, setIsLoading } = useLoading();
+  const { setIsLoading } = useLoadingActions();
+  const isLoading = useLoadingState();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isFetching = useIsFetching();
@@ -126,7 +174,9 @@ function RouteObserver() {
   return null;
 }
 
-function LoaderVisuals({ isLoading }: { isLoading: boolean }) {
+function LoaderVisuals() {
+  const isLoading = useLoadingState();
+
   return (
     <AnimatePresence>
       {isLoading ? (
@@ -151,48 +201,28 @@ function LoaderVisuals({ isLoading }: { isLoading: boolean }) {
   );
 }
 
-export function GlobalLoaderProvider({ children }: GlobalLoaderProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("global-loader:start"));
-    }
-  }, []);
-
-  const markPageRendered = useCallback((routeKey: string) => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent("global-loader:page-rendered", { detail: routeKey }));
-    }
-  }, []);
-
-  const contextValue = useMemo(
-    () => ({
-      isLoading,
-      setIsLoading,
-      startLoading,
-      markPageRendered,
-    }),
-    [isLoading, startLoading, markPageRendered],
-  );
+function LoadingTimeout() {
+  const isLoading = useLoadingState();
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | undefined;
-
-    if (isLoading) {
-      timeoutId = setTimeout(() => {
-        setIsLoading(false);
-      }, 6000);
+    if (!isLoading) {
+      return;
     }
 
+    const timeoutId = window.setTimeout(() => {
+      setGlobalLoading(false);
+    }, 6000);
+
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      window.clearTimeout(timeoutId);
     };
   }, [isLoading]);
+
+  return null;
+}
+
+function AnchorClickListener() {
+  const { startLoading } = useLoadingActions();
 
   useEffect(() => {
     const handleAnchorClick = (event: MouseEvent) => {
@@ -231,13 +261,42 @@ export function GlobalLoaderProvider({ children }: GlobalLoaderProps) {
     };
   }, [startLoading]);
 
+  return null;
+}
+
+export function GlobalLoaderProvider({ children }: GlobalLoaderProps) {
+  const startLoading = useCallback(() => {
+    setGlobalLoading(true);
+
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("global-loader:start"));
+    }
+  }, []);
+
+  const markPageRendered = useCallback((routeKey: string) => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("global-loader:page-rendered", { detail: routeKey }));
+    }
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      setIsLoading: setGlobalLoading,
+      startLoading,
+      markPageRendered,
+    }),
+    [startLoading, markPageRendered],
+  );
+
   return (
     <LoadingContext.Provider value={contextValue}>
       {children}
+      <AnchorClickListener />
+      <LoadingTimeout />
       <Suspense fallback={null}>
         <RouteObserver />
       </Suspense>
-      <LoaderVisuals isLoading={isLoading} />
+      <LoaderVisuals />
     </LoadingContext.Provider>
   );
 }

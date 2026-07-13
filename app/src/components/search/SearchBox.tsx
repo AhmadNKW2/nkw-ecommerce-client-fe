@@ -42,17 +42,24 @@ export function SearchBox() {
     }
   }, [query, searchParams, setQuery]);
 
-  // Close dropdown when clicking outside
+  const shouldListenForOutsideClick = isInputFocused && (suggestions.length > 0 || isLoading);
+
+  // Close dropdown when clicking outside — only while the menu is active.
   useEffect(() => {
+    if (!shouldListenForOutsideClick) {
+      return;
+    }
+
     function handleClick(e: MouseEvent) {
       if (!containerRef.current?.contains(e.target as Node)) {
         close();
         setIsInputFocused(false);
       }
     }
+
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, [close]);
+  }, [close, shouldListenForOutsideClick]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
 import { useSearchFilters } from '@/lib/search/use-search-params';
 import { Card, Checkbox } from '@/components/ui';
-import { useLoading } from '@/components/ui/global-loader';
+import { useLoadingActionsOnly } from '@/components/ui/global-loader';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { FacetCount } from '@/lib/search/types';
@@ -17,7 +17,7 @@ interface Props {
 export function SearchFilters({ facets }: Props) {
   const t = useTranslations('search');
   const tCommon = useTranslations('common');
-  const { setIsLoading } = useLoading();
+  const { setIsLoading } = useLoadingActionsOnly();
   const { filters, changeFilter, setMinPrice, setMaxPrice, resetFilters } = useSearchFilters();
 
   const [expandedSections, setExpandedSections] = useState<string[]>([

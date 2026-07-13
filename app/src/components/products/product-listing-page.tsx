@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 import { FilterState, ProductFilters, FloatingFilterSort, MobileContactActions, DesktopFiltersSidebar } from "@/components/products";
 import { ProductGrid } from "@/components/products/product-grid";
 import { Button, Card, ResponsiveGrid, Sheet, Select } from "@/components/ui";
-import { useLoading } from "@/components/ui/global-loader";
+import { useLoadingActionsOnly } from "@/components/ui/global-loader";
 import { useListingVariantProducts } from "@/hooks/useListingVariantProducts";
 import { joinFilterValues, splitFilterValues } from "@/lib/search/filter-utils";
 import { useInfiniteSearchProducts } from "@/lib/search/use-search";
@@ -92,7 +92,7 @@ export function ProductListingPage({
   const locale = useLocale() as string;
   const t = useTranslations('product');
   const tCommon = useTranslations('common');
-  const { setIsLoading } = useLoading();
+  const { setIsLoading } = useLoadingActionsOnly();
   
   const {
     filters: urlFilters,

@@ -46,20 +46,18 @@ function GoogleAnalyticsTracker() {
     }
   }, []);
 
-  // Fires every time someone clicks something worth tracking
+  // Fires every time someone clicks something worth tracking.
+  // Work is deferred so click handlers do not block INP.
   useEffect(() => {
-    const handleClick = (event: MouseEvent) => {
+    const trackClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
 
-      // Only track clicks on things that are actually clickable
       const clickable = target.closest('a, button, input, select, textarea, [role="button"]');
       if (!(clickable instanceof HTMLElement)) return;
 
       const name = getReadableClickName(clickable);
       const tag = clickable.tagName.toLowerCase();
-
-      // Build a clean, readable event name like "Clicked: Add to Cart"
       const eventName = `Clicked: ${name}`;
 
       trackEvent(eventName, {
@@ -68,8 +66,19 @@ function GoogleAnalyticsTracker() {
       });
     };
 
-    document.addEventListener('click', handleClick, true);
-    return () => document.removeEventListener('click', handleClick, true);
+    const scheduleClickTracking = (event: MouseEvent) => {
+      const run = () => trackClick(event);
+
+      if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(run, { timeout: 500 });
+        return;
+      }
+
+      window.setTimeout(run, 0);
+    };
+
+    document.addEventListener('click', scheduleClickTracking, true);
+    return () => document.removeEventListener('click', scheduleClickTracking, true);
   }, []);
 
   // Fires every time the page changes
