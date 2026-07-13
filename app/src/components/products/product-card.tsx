@@ -32,7 +32,7 @@ interface ProductCardProps {
 }
 
 const PRODUCT_CARD_SIZES = {
-  default: "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw",
+  default: "(max-width: 768px) 42vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 18vw",
   compact: "(max-width: 768px) 33vw, 160px",
   horizontal: "128px",
 } as const;

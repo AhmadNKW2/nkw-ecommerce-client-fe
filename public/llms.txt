@@ -1,0 +1,19 @@
+# OrdonSooq
+
+OrdonSooq (أوردن سوق) is an online marketplace in Jordan for electronics, computers, laptops, and tech accessories.
+
+## Key pages
+
+- [Home](https://www.ordonsooq.com/): Featured products and new arrivals
+- [Search](https://www.ordonsooq.com/search): Product search and filters
+- [Categories](https://www.ordonsooq.com/categories): Browse by category
+- [Brands](https://www.ordonsooq.com/brands): Shop by brand
+- [Stores](https://www.ordonsooq.com/vendors): Vendor storefronts
+- [Contact](https://www.ordonsooq.com/contact): Customer support
+- [Privacy](https://www.ordonsooq.com/privacy): Privacy policy
+- [Terms](https://www.ordonsooq.com/terms): Terms of service
+
+## Optional
+
+- [Sitemap](https://www.ordonsooq.com/sitemap.xml): Machine-readable site map
+- [Robots](https://www.ordonsooq.com/robots.txt): Crawler rules

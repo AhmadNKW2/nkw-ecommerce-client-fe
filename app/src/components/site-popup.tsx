@@ -45,7 +45,7 @@ export function SitePopup() {
 
     const openTimer = window.setTimeout(() => {
       setIsVisible(true);
-    }, 600);
+    }, 2500);
 
     return () => window.clearTimeout(openTimer);
   }, [popupSettings?.enabled, popupSettings?.image_url]);

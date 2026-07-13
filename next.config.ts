@@ -37,12 +37,38 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        // Soften caching for machine files; homepage remains dynamic via cookies.
+        source: '/llms.txt',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+    ];
+  },
   images: {
     // Serve sized variants via /_next/image (also HTTP/2 on the site origin).
     // Previously unoptimized:true forced full 1200px R2 assets into ~105px cards.
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [64, 96, 128, 256, 384],
+    imageSizes: [64, 96, 128, 192, 256, 384],
     remotePatterns: [
       {
         protocol: 'http',

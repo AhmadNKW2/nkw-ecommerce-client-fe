@@ -138,12 +138,8 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all pathnames except api, _next, and static files
+  // Match all pathnames except api, _next, static files, and machine-readable root files.
   matcher: [
-    // Match all pathnames except those starting with:
-    // - api (API routes)
-    // - _next (Next.js internals)
-    // - .*\\..* (files with extensions like .js, .css, .png)
-    '/((?!api|_next|.*\\..*).*)'
+    '/((?!api|_next|.*\\..*|llms\\.txt|robots\\.txt|sitemap\\.xml).*)'
   ]
 };

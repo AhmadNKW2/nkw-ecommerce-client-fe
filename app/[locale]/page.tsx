@@ -1,5 +1,6 @@
 import { HydrationBoundary, dehydrate, type InfiniteData } from "@tanstack/react-query";
 import { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import { HomePageClient } from "@/components/home/home-page-client";
 import { getLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/message-catalog";
@@ -25,8 +26,9 @@ const newArrivalsSearchFilters: Omit<SearchFilters, "page"> = {
   per_page: productsPerPage,
 };
 
+/** Matches ProductCard default sizes; mobile card ~184px so prefer ~42–50vw. */
 const HOME_PRODUCT_IMAGE_SIZES =
-  "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw";
+  "(max-width: 768px) 42vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 18vw";
 
 function resolveLcpImageUrl(
   data: InfiniteData<SearchResponse> | undefined,
@@ -63,9 +65,6 @@ export default async function HomePage() {
   );
   const lcpImageSrc = resolveLcpImageUrl(featuredData);
 
-  let lcpPreload: { imageSrcSet?: string; imageSizes?: string; href?: string } | null =
-    null;
-
   if (lcpImageSrc) {
     try {
       const {
@@ -73,36 +72,26 @@ export default async function HomePage() {
       } = getImageProps({
         src: lcpImageSrc,
         alt: "",
-        width: 640,
-        height: 640,
+        width: 384,
+        height: 384,
         sizes: HOME_PRODUCT_IMAGE_SIZES,
-        // Match ProductCard default quality / priority path for the first grid card.
         quality: 75,
       });
 
-      lcpPreload = {
+      // React 19 emits a head preload with fetchPriority=high for LCP discovery.
+      preload(src, {
+        as: "image",
         imageSrcSet: srcSet,
         imageSizes: sizes,
-        href: src,
-      };
+        fetchPriority: "high",
+      });
     } catch {
-      // If the optimizer cannot build props (bad URL), skip preload.
-      lcpPreload = null;
+      // Skip preload if the optimizer cannot build props.
     }
   }
 
   return (
     <RouteIntlProvider locale={locale} namespaces={HOME_MESSAGE_NAMESPACES}>
-      {lcpPreload ? (
-        <link
-          rel="preload"
-          as="image"
-          href={lcpPreload.href}
-          imageSrcSet={lcpPreload.imageSrcSet}
-          imageSizes={lcpPreload.imageSizes}
-          fetchPriority="high"
-        />
-      ) : null}
       <HydrationBoundary state={dehydratedState}>
         <HomePageClient />
       </HydrationBoundary>

@@ -8,9 +8,18 @@ export function TopBar() {
   const t = useTranslations('topBar');
   const { data: seoSettings, isPending } = useSeoSettings();
 
-  // Avoid rendering a misleading free-delivery announcement before settings load.
+  // Keep reserved height while settings hydrate so the sticky header does not shift (CLS).
   if (isPending) {
-    return null;
+    return (
+      <div
+        className="bg-secondary text-white py-2 text-center text-sm min-h-9"
+        aria-hidden="true"
+      >
+        <p className="invisible">
+          {t('announcement', { amount: FREE_SHIPPING_MIN_ORDER_AMOUNT })}
+        </p>
+      </div>
+    );
   }
 
   if (seoSettings?.free_delivery_enabled === false) {
@@ -20,7 +29,7 @@ export function TopBar() {
   const amount = seoSettings?.free_delivery_amount ?? FREE_SHIPPING_MIN_ORDER_AMOUNT;
   
   return (
-    <div className="bg-secondary text-white py-2 text-center text-sm">
+    <div className="bg-secondary text-white py-2 text-center text-sm min-h-9">
       <p>{t('announcement', { amount })}</p>
     </div>
   );

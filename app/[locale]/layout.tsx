@@ -21,19 +21,22 @@ import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { Analytics } from "@vercel/analytics/next";
 import { DataFastAnalytics } from "@/components/analytics/datafast-analytics";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { SEO_SETTINGS_QUERY_KEY } from "@/hooks/useSeoSettings";
 import "./../globals.css";
 
 const figtree = Figtree({
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
   variable: "--font-figtree",
+  adjustFontFallback: true,
 });
 
 const almarai = Almarai({
   subsets: ["arabic"],
   weight: ["300", "400", "700", "800"],
-  display: "swap",
+  display: "optional",
   variable: "--font-almarai",
+  adjustFontFallback: true,
 });
 
 export function generateStaticParams() {
@@ -145,6 +148,11 @@ export default async function RootLayout({ children, params }: Props) {
   const canonicalPath = headersList.get("x-canonical-path") ?? "";
   const isSearchRoute = /(?:^|\/)search(?:\/|$|\?)/.test(canonicalPath);
 
+  const seoForClient = await getSeoSettingsCached();
+  if (seoForClient) {
+    queryClient.setQueryData(SEO_SETTINGS_QUERY_KEY, seoForClient);
+  }
+
   // Search SSR should not wait on homepage data — header can load it client-side.
   if (!isSearchRoute) {
     await queryClient.prefetchQuery({
@@ -159,10 +167,6 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} dir={isRTL ? 'rtl' : 'ltr'} className={`${figtree.variable} ${almarai.variable}`}>
-      <head>
-        <GoogleAnalytics />
-        <DataFastAnalytics />
-      </head>
       <body className={`${isRTL ? almarai.className : figtree.className} antialiased min-h-screen flex flex-col bg-gray-50/50`}>
         <RouteIntlProvider locale={resolvedLocale} namespaces={ROOT_MESSAGE_NAMESPACES}>
           <Providers>
@@ -177,6 +181,8 @@ export default async function RootLayout({ children, params }: Props) {
             </HydrationBoundary>
           </Providers>
         </RouteIntlProvider>
+        <GoogleAnalytics />
+        <DataFastAnalytics />
         <Analytics />
       </body>
     </html>
