@@ -866,6 +866,12 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
 
       <div className="lg:hidden flex flex-col gap-4">
         <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            {product.isNew ? <Badge variant="new">{t("product.new")}</Badge> : null}
+            {discount > 0 ? <Badge variant="sale">{t("product.off", { percent: discount })}</Badge> : null}
+            {currentStock <= 5 && currentStock > 0 ? <Badge variant="warning">{t("product.onlyLeft", { count: currentStock })}</Badge> : null}
+            {currentStock === 0 ? <Badge variant="destructive">{t("product.outOfStock")}</Badge> : null}
+          </div>
           <ProductHeader product={product} selectedOptionsSummary={selectedOptionsSummary} t={t} />
         </div>
 
@@ -930,6 +936,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             {product.isNew ? <Badge variant="new">{t("product.new")}</Badge> : null}
             {discount > 0 ? <Badge variant="sale">{t("product.off", { percent: discount })}</Badge> : null}
             {currentStock <= 5 && currentStock > 0 ? <Badge variant="warning">{t("product.onlyLeft", { count: currentStock })}</Badge> : null}
+            {currentStock === 0 ? <Badge variant="destructive">{t("product.outOfStock")}</Badge> : null}
           </div>
 
           <div className="[&_h1]:text-3xl">

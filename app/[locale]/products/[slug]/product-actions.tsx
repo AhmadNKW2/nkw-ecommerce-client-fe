@@ -54,7 +54,7 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
         variant="pill"
         className="w-full h-11 font-bold shadow-s1 bg-secondary hover:bg-secondary/90 text-white"
         onClick={handleCheckout}
-        disabled={product.stock === 0}
+        disabled={maxStock === 0}
       >
         {t("product.buyNow")}
       </Button>
