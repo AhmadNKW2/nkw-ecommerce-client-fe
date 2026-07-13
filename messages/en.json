@@ -450,6 +450,7 @@
     "verifiedReviews": "{count} Verified Reviews",
     "soldBy": "Sold by",
     "kingdomDelivery": "Delivery all over the Kingdom",
+    "kingdomDeliveryFee": "For only {fee}",
     "viewOffer": "View offer",
     "tags": "Tags",
     "freeShipping": "Free Shipping",

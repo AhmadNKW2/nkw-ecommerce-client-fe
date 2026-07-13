@@ -27,6 +27,7 @@ import {
 } from "@/hooks/useProductFieldToggles";
 import { apiClient } from "@/lib/api-client";
 import { CURRENCY_CONFIG } from "@/lib/constants";
+import { resolveDeliveryFee } from "@/lib/shipping";
 import { transformProduct, type Locale } from "@/lib/transformers";
 import { calculateDiscount, cn, formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/products/product-gallery";
@@ -508,7 +509,19 @@ function LinkedProductChoices({ title, groupName, choices }: { title: string; gr
   );
 }
 
-function ProductKingdomDelivery({ t, className }: { t: any; className?: string }) {
+function ProductKingdomDelivery({
+  t,
+  deliveryFee,
+  locale,
+  className,
+}: {
+  t: any;
+  deliveryFee: number;
+  locale: Locale;
+  className?: string;
+}) {
+  const formattedFee = formatPrice(deliveryFee, CURRENCY_CONFIG.code, locale);
+
   return (
     <div
       className={cn(
@@ -519,7 +532,10 @@ function ProductKingdomDelivery({ t, className }: { t: any; className?: string }
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
         <Truck className="size-4" />
       </div>
-      <p className="text-sm font-medium leading-snug text-primary">{t("product.kingdomDelivery")}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-medium leading-snug text-primary">{t("product.kingdomDelivery")}</p>
+        <p className="text-xs leading-snug text-third">{t("product.kingdomDeliveryFee", { fee: formattedFee })}</p>
+      </div>
     </div>
   );
 }
@@ -531,6 +547,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
+  const deliveryFee = resolveDeliveryFee(seoSettings);
 
   // Product field toggles — hide disabled fields on the storefront. Fail open
   // to all-enabled (every field visible) while loading or on error.
@@ -879,7 +896,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          <ProductKingdomDelivery t={t} />
+          <ProductKingdomDelivery t={t} deliveryFee={deliveryFee} locale={locale} />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
       </div>
@@ -940,7 +957,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          <ProductKingdomDelivery t={t} />
+          <ProductKingdomDelivery t={t} deliveryFee={deliveryFee} locale={locale} />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (
             <Card className="p-4">

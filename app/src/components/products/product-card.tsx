@@ -10,7 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { AddToCartButton } from "./add-to-cart-button";
 import { FloatingCartButton } from "./floating-cart-button";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
 import { productService } from "@/services/product.service";
@@ -127,7 +127,7 @@ export function ProductCard({
   );
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  const handleCardClick = async () => {
+  const handleProductLinkClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     trackEvent("product_card_click", {
       product_id: product.id,
       product_name: product.name,
@@ -136,9 +136,10 @@ export function ProductCard({
     });
 
     if (resolvedSlug) {
-      router.push(productHref);
       return;
     }
+
+    event.preventDefault();
 
     if (isResolvingSlug) {
       return;
@@ -162,6 +163,15 @@ export function ProductCard({
       setIsResolvingSlug(false);
     }
   };
+
+  const productLink = (
+    <Link
+      href={productHref}
+      onClick={handleProductLinkClick}
+      className="absolute inset-0 z-10"
+      aria-label={product.name}
+    />
+  );
 
   const handleCartButtonStatusChange = (status: "idle" | "loading" | "success") => {
     setCartButtonStatus(status);
@@ -196,9 +206,9 @@ export function ProductCard({
   if (variant === "horizontal") {
     return (
       <div
-        onClick={handleCardClick}
-        className="group flex gap-5 p-4 bg-white rounded-r1 border border-gray-100 shadow-s1 hover:shadow-s1 transition-all duration-300 cursor-pointer"
+        className="group relative flex gap-5 p-4 bg-white rounded-r1 border border-gray-100 shadow-s1 hover:shadow-s1 transition-all duration-300"
       >
+        {productLink}
         <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">
           <Image
             src={product.images?.[0] || "/placeholder.svg"}
@@ -242,9 +252,9 @@ export function ProductCard({
   if (variant === "compact") {
     return (
       <div
-        onClick={handleCardClick}
-        className="group p-2 bg-white rounded-lg border border-gray-100 hover:shadow-s1 transition-all duration-300 cursor-pointer"
+        className="group relative p-2 bg-white rounded-lg border border-gray-100 hover:shadow-s1 transition-all duration-300"
       >
+        {productLink}
         <div className="relative aspect-square overflow-hidden rounded-lg">
           <Image
             src={product.images?.[0] || "/placeholder.svg"}
@@ -270,9 +280,9 @@ export function ProductCard({
 
   return (
     <div
-      onClick={handleCardClick}
-      className="group relative bg-white rounded-r1 border border-gray-100 shadow-s1 overflow-hidden hover:shadow-s1 transition-all duration-300 hover:-translate-y-1 cursor-pointer h-full flex flex-col"
+      className="group relative bg-white rounded-r1 border border-gray-100 shadow-s1 overflow-hidden hover:shadow-s1 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col"
     >
+      {productLink}
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-gray-50 shrink-0">
         <Image
@@ -296,7 +306,7 @@ export function ProductCard({
         {showActions && (
           <div
             className={cn(
-              "absolute top-3 right-3 transition-opacity duration-300",
+              "absolute top-3 right-3 z-20 transition-opacity duration-300",
               // Mobile: always visible. Desktop: hidden until hover (unless already in wishlist)
               inWishlist ? "opacity-100" : "lg:opacity-0 lg:group-hover:opacity-100"
             )}
@@ -316,7 +326,7 @@ export function ProductCard({
 
         {/* Cart Badge (Unhovered) — desktop only */}
         {showActions && quantity > 0 && cartButtonVariant === "normal" && (
-          <div className="hidden lg:block absolute bottom-3 right-3 z-10 transition-opacity duration-300 opacity-100 group-hover:opacity-0 pointer-events-none">
+          <div className="hidden lg:block absolute bottom-3 right-3 z-20 transition-opacity duration-300 opacity-100 group-hover:opacity-0 pointer-events-none">
             <div className="flex items-center gap-1 bg-secondary/90 backdrop-blur-sm text-white px-2 py-1 rounded-full shadow-lg text-xs font-bold">
               <ShoppingCart size={14} />
               <span>{quantity}</span>
@@ -334,16 +344,15 @@ export function ProductCard({
             onClick={(e) => e.stopPropagation()}
           >
             {hasVariants ? (
-              <button
-                type="button"
-                aria-label={t('product.chooseOptions')}
-                onClick={() => {
+              <Link
+                href={productHref}
+                onClick={(e) => {
+                  e.stopPropagation();
                   trackEvent("choose_options_click", {
                     product_id: product.id,
                     product_name: product.name,
                     source: "product_card_fab",
                   });
-                  router.push(productHref);
                 }}
                 className={cn(
                   "h-9 w-9 rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform",
@@ -351,13 +360,14 @@ export function ProductCard({
                     ? "bg-white text-secondary hover:bg-gray-50 border border-secondary" 
                     : "bg-secondary text-white"
                 )}
+                aria-label={t('product.chooseOptions')}
               >
                 {cartButtonIcon === "add-to-cart" ? (
                   <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024' className="w-5 h-5" fill='currentColor' overflow='hidden'><path d='M409.7 752.4c31.8 0 57.6 25.8 57.5 57.6 0 31.8-25.8 57.6-57.5 57.6-31.8 0-57.6-25.8-57.6-57.6s25.8-57.6 57.6-57.6zm327.5 0c31.8 0 57.6 25.8 57.6 57.6s-25.8 57.6-57.6 57.6-57.6-25.8-57.5-57.6c0-31.8 25.8-57.6 57.5-57.6zm-541-563.2c21.6 0 40.7 4.8 60.2 16.6 20.9 12.6 37 31.5 47.1 55.9l3.6 9.7 1.5 6.2 18.5 113.1 31.4 199.2c2.9 17.9 17.5 31.7 35.1 33.7l4.9.3h347.2c18.3 0 34.2-12.3 39.1-30.1l1.1-5.2 48.6-260.5c4.5-24.3 27.9-40.4 52.3-35.8 22.3 4.2 37.9 24.3 36.5 47.1l-.7 5.1L874.2 604c-9.7 60.2-59.9 105.6-120.8 109.2l-7.7.3H398.5c-63.8 0-118.1-46.2-128.5-109.4l-36.3-230.3-12.4-76.3-1-2.5c-2.1-4.9-4.7-8.4-7.5-10.6l-2.7-1.9c-3.3-2-6.8-3.1-10.1-3.5l-3.8-.2h-85.3c-24.7 0-44.8-20.1-44.8-44.8 0-22.7 16.9-41.7 39.6-44.5l5.2-.3h85.3zm382.2-1.2c22.7 0 41.7 16.9 44.5 39.6l.3 5.2v66.1h66.2c23.1 0 42.1 17.5 44.5 39.9l.3 4.9c0 22.7-16.9 41.7-39.6 44.5l-5.2.3h-66.2v66.1c0 23.1-17.5 42.1-39.9 44.6l-4.9.2c-22.7 0-41.7-16.9-44.4-39.5l-.4-5.3v-66.1h-66.1c-23.1 0-42.1-17.5-44.5-39.9l-.3-4.9c0-22.7 16.9-41.7 39.6-44.5l5.2-.3h66.1v-66.1c0-23.1 17.5-42.1 40-44.6l4.8-.2z'/></svg>
                 ) : (
                   <ShoppingCart size={16} />
                 )}
-              </button>
+              </Link>
             ) : (
               <FloatingCartButton 
                 product={product} 
@@ -383,22 +393,22 @@ export function ProductCard({
             onClick={(e) => e.stopPropagation()}
           >
             {hasVariants ? (
-              <button
-                type="button"
-                className="w-full h-11 rounded-full bg-white/80 text-primary hover:bg-white hover:scale-103 transition-all text-sm font-bold shadow-s1 flex items-center justify-center gap-2"
-                onClick={() => {
+              <Link
+                href={productHref}
+                onClick={(e) => {
+                  e.stopPropagation();
                   trackEvent("choose_options_click", {
                     product_id: product.id,
                     product_name: product.name,
                     source: "product_card_panel",
                   });
-                  router.push(productHref);
                 }}
+                className="w-full h-11 rounded-full bg-white/80 text-primary hover:bg-white hover:scale-103 transition-all text-sm font-bold shadow-s1 flex items-center justify-center gap-2"
                 aria-label={t('product.chooseOptions')}
               >
                 <ShoppingCart size={18} />
                 <span>{t('product.chooseOptions')}</span>
-              </button>
+              </Link>
             ) : (
               <AddToCartButton
                 product={{

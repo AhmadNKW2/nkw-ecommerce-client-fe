@@ -416,6 +416,7 @@
     "sale": "تخفيض",
     "soldBy": "يباع بواسطة",
     "kingdomDelivery": "توصيل لجميع أنحاء المملكة",
+    "kingdomDeliveryFee": "مقابل {fee} فقط",
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",
     "save": "وفّر {amount}",
