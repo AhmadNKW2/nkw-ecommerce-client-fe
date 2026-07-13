@@ -873,24 +873,50 @@ function buildLocalFacetsFromItems(
   return facets;
 }
 
+function shouldIncludeOutOfStockProducts(filters: SearchFilters): boolean {
+  return filters.is_out_of_stock === true;
+}
+
+function filterStorefrontStockItems(
+  items: NormalizedExternalSearchItem[],
+  filters: SearchFilters,
+): NormalizedExternalSearchItem[] {
+  if (shouldIncludeOutOfStockProducts(filters)) {
+    return items;
+  }
+
+  // Listings/search never surface out-of-stock products. Direct product URLs
+  // still load them via the backend product-by-slug endpoint.
+  return items.filter((item) => !item.isOutOfStock && item.hit.is_available);
+}
+
+function filterStorefrontStockHits(hits: SearchHit[], filters: SearchFilters): SearchHit[] {
+  if (shouldIncludeOutOfStockProducts(filters)) {
+    return hits;
+  }
+
+  return hits.filter((hit) => hit.is_available);
+}
+
 function createLocalSearchResponseFromItems(
   items: NormalizedExternalSearchItem[],
   requestFilters: SearchFilters,
   selectionFilters: SearchFilters,
   catalogs: FacetCatalogs
 ): SearchResponse {
+  const inStockItems = filterStorefrontStockItems(items, requestFilters);
   const page = requestFilters.page && requestFilters.page > 0 ? requestFilters.page : 1;
   const perPage = requestFilters.per_page && requestFilters.per_page > 0 ? requestFilters.per_page : DEFAULT_PER_PAGE;
   const startIndex = (page - 1) * perPage;
-  const total = items.length;
+  const total = inStockItems.length;
 
   return {
-    hits: items.slice(startIndex, startIndex + perPage).map((item) => item.hit),
+    hits: inStockItems.slice(startIndex, startIndex + perPage).map((item) => item.hit),
     total,
     page,
     per_page: perPage,
     total_pages: total > 0 ? Math.ceil(total / perPage) : 0,
-    facets: buildLocalFacetsFromItems(items, selectionFilters, catalogs),
+    facets: buildLocalFacetsFromItems(inStockItems, selectionFilters, catalogs),
   };
 }
 
@@ -1400,16 +1426,23 @@ function createExternalSearchResponse(
   catalogs: FacetCatalogs,
   showSalePricing: boolean,
 ): SearchResponse {
-  const normalizedItems = normalizeExternalSearchItems(
-    payload,
-    locale,
-    showSalePricing,
+  const normalizedItems = filterStorefrontStockItems(
+    normalizeExternalSearchItems(
+      payload,
+      locale,
+      showSalePricing,
+    ),
+    filters,
   );
 
   const page = payload.pagination?.page ?? (filters.page && filters.page > 0 ? filters.page : 1);
   const perPage = payload.pagination?.page_size ?? (filters.per_page && filters.per_page > 0 ? filters.per_page : DEFAULT_PER_PAGE);
-  const total = payload.pagination?.total ?? normalizedItems.length;
-  const totalPages = payload.pagination?.total_pages ?? (total > 0 ? Math.ceil(total / perPage) : 0);
+  const total = shouldIncludeOutOfStockProducts(filters)
+    ? (payload.pagination?.total ?? normalizedItems.length)
+    : normalizedItems.length;
+  const totalPages = shouldIncludeOutOfStockProducts(filters)
+    ? (payload.pagination?.total_pages ?? (total > 0 ? Math.ceil(total / perPage) : 0))
+    : (total > 0 ? Math.ceil(total / perPage) : 0);
 
   return {
     hits: normalizedItems.map((item) => item.hit),
@@ -1436,7 +1469,10 @@ function normalizeExternalSearchAutocompleteResponse(
   perPage: number,
   locale: SearchLocale
 ): AutocompleteResponse {
-  const suggestions = normalizeExternalSearchItems(payload, locale)
+  const suggestions = filterStorefrontStockItems(
+    normalizeExternalSearchItems(payload, locale),
+    { is_out_of_stock: false },
+  )
     .slice(0, perPage)
     .map((item) => ({
       id: item.hit.id,
@@ -1568,25 +1604,37 @@ function normalizeLegacySearchResponse(rawData: unknown): SearchResponse {
   };
 
   if (Array.isArray(backendPayload.data) && backendPayload.meta) {
-    const hits = backendPayload.data
-      .map((item) => toLegacySearchHit(item))
-      .filter((item): item is SearchHit => Boolean(item));
+    const hits = filterStorefrontStockHits(
+      backendPayload.data
+        .map((item) => toLegacySearchHit(item))
+        .filter((item): item is SearchHit => Boolean(item)),
+      { is_out_of_stock: false },
+    );
 
     return {
       hits,
-      total: backendPayload.meta.total ?? 0,
+      total: backendPayload.meta.total ?? hits.length,
       page: backendPayload.meta.page ?? 1,
       per_page: backendPayload.meta.limit ?? DEFAULT_PER_PAGE,
-      total_pages: backendPayload.meta.totalPages ?? 0,
+      total_pages: backendPayload.meta.totalPages ?? (hits.length > 0
+        ? Math.ceil(hits.length / (backendPayload.meta.limit ?? DEFAULT_PER_PAGE))
+        : 0),
       facets: backendPayload.facets,
       search_time_ms: backendPayload.search_time_ms,
     };
   }
 
-  return {
+  const normalizedPayload = {
     ...payload,
     total_pages: payload.total_pages ?? Math.ceil((payload.total ?? 0) / (payload.per_page || DEFAULT_PER_PAGE)),
   } as SearchResponse;
+
+  normalizedPayload.hits = filterStorefrontStockHits(
+    Array.isArray(normalizedPayload.hits) ? normalizedPayload.hits : [],
+    { is_out_of_stock: false },
+  );
+
+  return normalizedPayload;
 }
 
 function normalizeLegacyAutocompleteResponse(rawData: unknown): AutocompleteResponse {

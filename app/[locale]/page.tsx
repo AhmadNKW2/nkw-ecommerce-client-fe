@@ -13,11 +13,13 @@ const productsPerPage = 40;
 
 const featuredSearchFilters: Omit<SearchFilters, "page"> = {
   q: "*",
+  is_out_of_stock: false,
   per_page: productsPerPage,
 };
 
 const newArrivalsSearchFilters: Omit<SearchFilters, "page"> = {
   q: "*",
+  is_out_of_stock: false,
   sort_by: "created_at:desc",
   per_page: productsPerPage,
 };

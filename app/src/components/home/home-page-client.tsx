@@ -18,6 +18,7 @@ export function HomePageClient() {
   const featuredSearchFilters = useMemo<Omit<SearchFilters, "page">>(
     () => ({
       q: "*",
+      is_out_of_stock: false,
       per_page: productsPerPage,
     }),
     [productsPerPage],
@@ -26,6 +27,7 @@ export function HomePageClient() {
   const newArrivalsSearchFilters = useMemo<Omit<SearchFilters, "page">>(
     () => ({
       q: "*",
+      is_out_of_stock: false,
       sort_by: "created_at:desc",
       per_page: productsPerPage,
     }),

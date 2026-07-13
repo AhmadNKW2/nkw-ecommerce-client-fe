@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     min_price: parseOptionalNumber(searchParams.get('min_price')),
     max_price: parseOptionalNumber(searchParams.get('max_price')),
     average_rating_min: parseOptionalNumber(searchParams.get('average_rating_min')),
+    // Storefront listings hide out-of-stock by default. Direct product URLs still work.
+    is_out_of_stock: false,
     sort_by: (searchParams.get('sort_by') as SearchFilters['sort_by']) ?? undefined,
     page: parseOptionalNumber(searchParams.get('page')),
     per_page: parseOptionalNumber(searchParams.get('per_page')),
