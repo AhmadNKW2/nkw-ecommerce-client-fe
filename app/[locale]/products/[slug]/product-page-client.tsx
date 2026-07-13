@@ -14,7 +14,6 @@ import {
   Send,
   Shield,
   Star,
-  Store,
   Truck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,7 +27,6 @@ import {
 } from "@/hooks/useProductFieldToggles";
 import { apiClient } from "@/lib/api-client";
 import { CURRENCY_CONFIG } from "@/lib/constants";
-import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { transformProduct, type Locale } from "@/lib/transformers";
 import { calculateDiscount, cn, formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/products/product-gallery";
@@ -526,73 +524,6 @@ function ProductKingdomDelivery({ t, className }: { t: any; className?: string }
   );
 }
 
-function ProductSellerCard({
-  product,
-  vendorHref,
-  siteName,
-  t,
-  className,
-}: {
-  product: any;
-  vendorHref?: string;
-  siteName: string;
-  t: any;
-  className?: string;
-}) {
-  return (
-    <Card className={cn("p-4", className)}>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          {product.vendor?.logo ? (
-            <Image
-              src={product.vendor.logo}
-              alt={product.vendor.name}
-              width={48}
-              height={48}
-              className="rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-              <Store className="w-6 h-6 text-third" />
-            </div>
-          )}
-          <div>
-            <p className="text-xs text-third">{t("product.soldBy")}</p>
-            {vendorHref ? (
-              <Link
-                href={vendorHref}
-                className="font-semibold text-primary hover:text-secondary ltr:hover:translate-x-1.5 rtl:hover:-translate-x-1.5 transition-all flex items-center gap-1"
-              >
-                {product.vendor?.name || siteName}
-                <ChevronRight className="w-4 h-4 rtl:rotate-180" />
-              </Link>
-            ) : (
-              <span className="font-semibold text-primary flex items-center gap-1">{product.vendor?.name || siteName}</span>
-            )}
-            {product.vendor ? (
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="w-3 h-3 text-secondary" />
-                <span className="text-xs text-third">
-                  {product.vendor.rating} {t("product.reviewCount", { count: product.vendor.reviewCount })}
-                </span>
-                {(() => {
-                  const positivePercent = Math.round((product.vendor.rating / 5) * 100);
-                  if (!(positivePercent > 75)) return null;
-                  return (
-                    <span className="text-green-600 font-medium text-xs ml-1">
-                      {t("product.positiveFeedback", { percent: positivePercent })}
-                    </span>
-                  );
-                })()}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export function ProductPageClient({ slug, initialProductData, initialRelatedData, initialLinkedProductData }: ProductPageClientProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations();
@@ -600,13 +531,11 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { toggleItem, isInWishlist, isItemLoading } = useWishlist();
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
-  const siteName = resolveLocalizedSiteName(locale, seoSettings);
 
   // Product field toggles — hide disabled fields on the storefront. Fail open
   // to all-enabled (every field visible) while loading or on error.
   const { data: productFieldToggles } = useProductFieldToggles();
   const {
-    vendorsEnabled,
     attributesEnabled,
     specificationsEnabled,
     weightAndDimensionsEnabled,
@@ -899,9 +828,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const categoryHref = product.category
     ? buildEntityPageHref("category", product.category)
     : undefined;
-  const vendorHref = product.vendor
-    ? buildEntityPageHref("vendor", product.vendor)
-    : undefined;
 
   return (
     <>
@@ -953,9 +879,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          {vendorsEnabled ? (
-            <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
-          ) : null}
           <ProductKingdomDelivery t={t} />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
@@ -1017,9 +940,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          {vendorsEnabled ? (
-            <ProductSellerCard product={product} vendorHref={vendorHref} siteName={siteName} t={t} />
-          ) : null}
           <ProductKingdomDelivery t={t} />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (

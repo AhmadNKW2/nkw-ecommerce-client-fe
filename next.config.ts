@@ -23,6 +23,16 @@ const nextConfig: NextConfig = {
         optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'framer-motion'],
       },
     }),
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'ordonsooq.com' }],
+        destination: 'https://www.ordonsooq.com/:path*',
+        statusCode: 301,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

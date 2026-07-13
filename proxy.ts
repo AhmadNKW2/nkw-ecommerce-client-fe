@@ -7,6 +7,32 @@ import { fetchEasyPurchaseEnabled } from './app/src/lib/feature-toggles-server';
 const handleI18nRouting = createMiddleware(routing);
 const API_REQUEST_LOG_INGEST_HEADER_NAME = 'x-storefront-api-log';
 const API_REQUEST_LOG_INGEST_HEADER_VALUE = '1';
+const APEX_HOST = 'ordonsooq.com';
+const CANONICAL_HOST = 'www.ordonsooq.com';
+const CANONICAL_PATH_HEADER = 'x-canonical-path';
+
+function redirectApexToWww(request: NextRequest): NextResponse | null {
+  const hostname = request.headers.get('host')?.split(':')[0];
+
+  if (hostname !== APEX_HOST) {
+    return null;
+  }
+
+  const url = request.nextUrl.clone();
+  url.protocol = 'https:';
+  url.host = CANONICAL_HOST;
+
+  return NextResponse.redirect(url, 301);
+}
+
+function withCanonicalPathHeader(request: NextRequest): NextRequest {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CANONICAL_PATH_HEADER, request.nextUrl.pathname);
+
+  return new NextRequest(request.url, {
+    headers: requestHeaders,
+  });
+}
 
 function isEnabledFlag(value?: string): boolean {
   if (!value) {
@@ -52,6 +78,12 @@ async function resetApiRequestLogsForDocumentRequest(request: NextRequest) {
 }
 
 export default async function middleware(request: NextRequest) {
+  const apexRedirect = redirectApexToWww(request);
+
+  if (apexRedirect) {
+    return apexRedirect;
+  }
+
   await resetApiRequestLogsForDocumentRequest(request);
 
   const { pathname } = request.nextUrl;
@@ -101,7 +133,8 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
-  return handleI18nRouting(request);
+  const localizedRequest = withCanonicalPathHeader(request);
+  return handleI18nRouting(localizedRequest);
 }
 
 export const config = {

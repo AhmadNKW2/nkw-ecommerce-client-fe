@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Figtree, Almarai } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
@@ -9,6 +10,7 @@ import type { Locale } from "@/i18n/message-catalog";
 import { RouteIntlProvider } from "@/i18n/route-intl-provider";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { SITE_CONFIG } from "@/lib/constants";
+import { buildCanonicalUrl } from "@/lib/canonical-url";
 import { getQueryClient } from "@/lib/query-client";
 import { routing } from "@/i18n/routing";
 import { ROOT_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
@@ -88,9 +90,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   const openGraphImage = seoSettings?.default_og_image || SITE_CONFIG.ogImage;
   const twitterHandle = normalizeTwitterHandle(seoSettings?.twitter_handle);
+  const headersList = await headers();
+  const canonicalPath = headersList.get("x-canonical-path");
+  const canonicalUrl = canonicalPath ? buildCanonicalUrl(canonicalPath) : SITE_CONFIG.url;
 
   return {
     metadataBase: new URL(SITE_CONFIG.url),
+    alternates: {
+      canonical: canonicalUrl,
+    },
     title: {
       default: defaultTitle,
       template: `%s | ${siteName}`,
