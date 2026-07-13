@@ -20,6 +20,7 @@ import {
 
 export function CartSidebar() {
   const tCart = useTranslations("cart");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const isArabic = locale === 'ar';
   const prefersReducedMotion = useReducedMotion();
@@ -149,9 +150,10 @@ export function CartSidebar() {
       {/* Sidebar (kept mounted for smoother open/close) */}
       <motion.div
         role="dialog"
-        aria-modal="true"
+        aria-modal={isOpen ? true : undefined}
         aria-label={tCart("title")}
         aria-hidden={!isOpen}
+        inert={!isOpen ? true : undefined}
         initial={false}
         animate={{ x: isOpen ? 0 : isArabic ? "-100%" : "100%" }}
         transition={
@@ -169,14 +171,16 @@ export function CartSidebar() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-gray-100">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-primary" />
+            <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
             <h2 className="text-lg font-bold text-gray-900">{tCart("title")} ({totalItems})</h2>
           </div>
           <button
+            type="button"
             onClick={closeCart}
+            aria-label={tCommon("close")}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 

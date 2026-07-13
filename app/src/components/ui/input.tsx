@@ -9,10 +9,12 @@ export interface InputProps
   icon?: LucideIcon;
   iconPosition?: "left" | "right";
   variant?: "default" | "search";
+  /** Accessible name for the search submit button (required for a11y when variant is search). */
+  searchSubmitLabel?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, label, icon: Icon, iconPosition = "left", variant = "default", id: propId, ...props }, ref) => {
+  ({ className, type, error, label, icon: Icon, iconPosition = "left", variant = "default", searchSubmitLabel, id: propId, ...props }, ref) => {
     const generatedId = React.useId();
     const id = propId ?? (label ? generatedId : undefined);
     
@@ -54,9 +56,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {variant === "search" && (
             <button
                 type="submit"
+                aria-label={searchSubmitLabel || "Search"}
                 className="absolute inset-y-0 ltr:right-0 rtl:left-0 flex w-12 md:w-12 items-center justify-center bg-fourth text-white ltr:rounded-r-full ltr:rounded-l-none rtl:rounded-l-full rtl:rounded-r-none hover:brightness-95 transition-[filter]"
               >
-                <Search className="w-4 h-4 md:w-5 md:h-5" />
+                <Search className="w-4 h-4 md:w-5 md:h-5" aria-hidden="true" />
             </button>
           )}
           {Icon && iconPosition === "right" && !variant && (

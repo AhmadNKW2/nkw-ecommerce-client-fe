@@ -106,6 +106,7 @@ export function SearchBox() {
           id="search-box-input"
           type="search"
           variant="search"
+          searchSubmitLabel={t('search')}
           placeholder={t('searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
