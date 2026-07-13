@@ -520,7 +520,11 @@ function ProductKingdomDelivery({
   locale: Locale;
   className?: string;
 }) {
-  const formattedFee = formatPrice(deliveryFee, CURRENCY_CONFIG.code, locale);
+  const formattedAmount = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(deliveryFee);
+  const currencyUnit = locale === "ar" ? CURRENCY_CONFIG.symbolAr : "JD";
 
   return (
     <div
@@ -532,10 +536,14 @@ function ProductKingdomDelivery({
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
         <Truck className="size-4" />
       </div>
-      <div className="min-w-0">
-        <p className="text-sm font-medium leading-snug text-primary">{t("product.kingdomDelivery")}</p>
-        <p className="text-xs leading-snug text-third">{t("product.kingdomDeliveryFee", { fee: formattedFee })}</p>
-      </div>
+      <p className="min-w-0 text-sm font-medium leading-snug">
+        <span className="text-primary">{t("product.kingdomDelivery")}</span>
+        <span className="mx-1 text-third">ب</span>
+        <span className="font-bold text-primary">
+          {formattedAmount} {currencyUnit}
+        </span>
+        {locale === "ar" ? <span className="text-third"> {t("product.kingdomDeliveryFeeSuffix")}</span> : null}
+      </p>
     </div>
   );
 }

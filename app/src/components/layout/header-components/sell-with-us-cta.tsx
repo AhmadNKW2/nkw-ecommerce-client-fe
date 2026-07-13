@@ -170,10 +170,6 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
   const { partnersEnabled } = resolveFeatureToggles(featureToggles);
   const copy = locale === "ar" ? sellWithUsCopy.ar : sellWithUsCopy.en;
 
-  if (!partnersEnabled) {
-    return null;
-  }
-
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -204,6 +200,10 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
       setSubmitError(copy.submitError);
     },
   });
+
+  if (!partnersEnabled) {
+    return null;
+  }
 
   const featureCards = [
     {
