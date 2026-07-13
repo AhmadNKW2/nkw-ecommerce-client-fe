@@ -538,11 +538,23 @@ function ProductKingdomDelivery({
       </div>
       <p className="min-w-0 text-sm font-medium leading-snug">
         <span className="text-primary">{t("product.kingdomDelivery")}</span>
-        <span className="mx-1 text-third">ب</span>
-        <span className="font-bold text-primary">
-          {formattedAmount} {currencyUnit}
-        </span>
-        {locale === "ar" ? <span className="text-third"> {t("product.kingdomDeliveryFeeSuffix")}</span> : null}
+        <span className="mx-1.5 text-third">—</span>
+        {locale === "ar" ? (
+          <>
+            <span className="text-third">{t("product.kingdomDeliveryFeePrefix")}</span>{" "}
+            <span className="font-semibold text-primary">
+              {formattedAmount} {currencyUnit}
+            </span>
+            <span className="text-third"> {t("product.kingdomDeliveryFeeSuffix")}</span>
+          </>
+        ) : (
+          <>
+            <span className="text-third">{t("product.kingdomDeliveryFeePrefix")}</span>{" "}
+            <span className="font-semibold text-primary">
+              {formattedAmount} {currencyUnit}
+            </span>
+          </>
+        )}
       </p>
     </div>
   );

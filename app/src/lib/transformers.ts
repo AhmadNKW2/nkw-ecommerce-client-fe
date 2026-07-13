@@ -19,9 +19,22 @@ function getLocalizedText(en: string | null | undefined, ar: string | null | und
   return en || ar || '';
 }
 
-/**
- * Extract image URL from primary_image (can be string or object)
- */
+function resolveTrackedStock(
+  quantity: number | null | undefined,
+  isOutOfStock: boolean | undefined,
+): number {
+  if (isOutOfStock === true) {
+    return 0;
+  }
+
+  if (quantity != null && quantity > 0) {
+    return quantity;
+  }
+
+  // quantity=0 with is_out_of_stock=false means available but inventory not tracked.
+  return isOutOfStock === false ? 999 : 0;
+}
+
 function extractPrimaryImageUrl(primaryImage: unknown): string | null {
   if (!primaryImage) return null;
   
@@ -284,24 +297,28 @@ export function transformProduct(apiProduct: ApiProduct | ProductDetail, locale:
   
   // 4. Stock
   // The API returns is_out_of_stock boolean instead of a quantity field.
-  // Use quantity when available, otherwise fall back to the is_out_of_stock flag.
+  // Out-of-stock always wins over quantity so the storefront can show the badge correctly.
   let stock = 0;
-  if (product.variants && product.variants.length > 0) {
-      const totalQuantity = product.variants.reduce((acc, v) => acc + (v.quantity || 0), 0);
-      if (totalQuantity > 0) {
-          stock = totalQuantity;
-      } else {
-          // Fall back to is_out_of_stock flag — any active variant in stock means available.
-          // Use sentinel 999 (not 1) so low-stock badges (threshold ≤5) are not triggered.
-          const anyInStock = product.variants.some(v => !v.is_out_of_stock && v.is_active !== false);
-          stock = anyInStock ? 999 : 0;
+  if (product.is_out_of_stock === true) {
+    stock = 0;
+  } else if (product.variants && product.variants.length > 0) {
+    const activeVariants = product.variants.filter((variant) => variant.is_active !== false);
+    const trackedQuantity = activeVariants.reduce((total, variant) => {
+      if (variant.is_out_of_stock) {
+        return total;
       }
+
+      return total + (variant.quantity || 0);
+    }, 0);
+
+    if (trackedQuantity > 0) {
+      stock = trackedQuantity;
+    } else {
+      const anyInStock = activeVariants.some((variant) => !variant.is_out_of_stock);
+      stock = anyInStock ? 999 : 0;
+    }
   } else {
-      // quantity=0 with is_out_of_stock=false means available but inventory not tracked.
-      // Use a high sentinel (999) so low-stock UI badges (threshold ≤5) are not triggered.
-      stock = (product.quantity != null && product.quantity > 0)
-        ? product.quantity
-        : (product.is_out_of_stock === false ? 999 : 0);
+    stock = resolveTrackedStock(product.quantity, product.is_out_of_stock);
   }
 
   // 5. Variants
@@ -349,12 +366,7 @@ export function transformProduct(apiProduct: ApiProduct | ProductDetail, locale:
          name: getLocalizedText(product.name_en, product.name_ar, locale),
          price: vPrice,
          compareAtPrice: vComparePrice,
-         // Use quantity when > 0; otherwise fall back to is_out_of_stock flag.
-         // quantity=0 with is_out_of_stock=false means available but inventory not tracked;
-         // use sentinel 999 so low-stock badges (threshold ≤5) are not triggered.
-         stock: (v.quantity != null && v.quantity > 0)
-           ? v.quantity
-           : (v.is_out_of_stock === false ? 999 : 0),
+         stock: product.is_out_of_stock === true ? 0 : resolveTrackedStock(v.quantity, v.is_out_of_stock),
          sku: product.sku + '-' + v.id,
          attributes: variantAttributes,
          image: vImage,
