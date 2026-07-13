@@ -165,8 +165,8 @@ export function MobileNav({ isOpen, onClose, topOffset = 0 }: MobileNavProps) {
                                   src={category.image!}
                                   alt={category.name}
                                   fill
-                                  sizes="72px"
-                                  priority={isOpen && index < 6}
+                                  sizes="48px"
+                                  priority={false}
                                   onLoad={() => markImageLoaded(imageKey)}
                                   className={cn(
                                     "object-cover transition-all duration-200 ease-out",

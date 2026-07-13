@@ -35,6 +35,8 @@ type ProductsVariantProps = BaseSectionProps & {
   initialVisibleCount?: number;
   /** Configuration for how many rows to add at once in client-side loading mode */
   loadMoreRows?: number;
+  /** First N cards get priority image loading (LCP). */
+  priorityCount?: number;
 };
 
 export type HomeSectionProps = ProductsVariantProps;
@@ -57,6 +59,7 @@ export function HomeSection(props: HomeSectionProps) {
     initialVisibleCount = 5,
     loadMoreRows = 2, // Easily edit the number of extra rows to load here
     showHeader = true,
+    priorityCount = 0,
   } = props;
 
   const {
@@ -167,6 +170,7 @@ export function HomeSection(props: HomeSectionProps) {
                 cartButtonVariant="floating"
                 cartButtonColor="white"
                 cartButtonIcon="add-to-cart"
+                priority={idx < priorityCount}
               />
             </div>
           ))}
@@ -176,7 +180,7 @@ export function HomeSection(props: HomeSectionProps) {
           {visibleProducts.map((product, idx) => (
             <motion.div
               key={`${product.id}-${product.defaultVariantId ?? "base"}-${idx}`}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              initial={idx < priorityCount ? false : { opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
@@ -185,6 +189,7 @@ export function HomeSection(props: HomeSectionProps) {
                 cartButtonVariant="floating"
                 cartButtonColor="white"
                 cartButtonIcon="add-to-cart"
+                priority={idx < priorityCount}
               />
             </motion.div>
           ))}

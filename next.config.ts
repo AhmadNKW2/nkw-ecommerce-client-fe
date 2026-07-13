@@ -6,10 +6,14 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || process.env.R2_PUBLIC_URL;
 
-let r2Hostname = '';
+const r2Hostnames = new Set<string>();
+
+// Always allow the known production R2 public host used by product/category media.
+r2Hostnames.add('pub-b8afad6fa843477fb61b00764b315e24.r2.dev');
+
 if (r2PublicUrl) {
   try {
-    r2Hostname = new URL(r2PublicUrl).hostname;
+    r2Hostnames.add(new URL(r2PublicUrl).hostname);
   } catch (error) {
     console.warn('Could not parse R2_PUBLIC_URL in next.config.ts:', error);
   }
@@ -34,6 +38,11 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // Serve sized variants via /_next/image (also HTTP/2 on the site origin).
+    // Previously unoptimized:true forced full 1200px R2 assets into ~105px cards.
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: 'http',
@@ -41,15 +50,11 @@ const nextConfig: NextConfig = {
         port: '3001',
         pathname: '/uploads/**',
       },
-      ...(r2Hostname
-        ? [
-          {
-            protocol: 'https' as const,
-            hostname: r2Hostname,
-            pathname: '/**',
-          },
-        ]
-        : []),
+      ...[...r2Hostnames].map((hostname) => ({
+        protocol: 'https' as const,
+        hostname,
+        pathname: '/**' as const,
+      })),
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
@@ -62,7 +67,6 @@ const nextConfig: NextConfig = {
       },
     ],
     dangerouslyAllowSVG: true,
-    unoptimized: true,
   },
 };
 

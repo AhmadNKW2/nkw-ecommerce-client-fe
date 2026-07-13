@@ -27,7 +27,15 @@ interface ProductCardProps {
   cartButtonVariant?: "normal" | "floating";
   cartButtonColor?: "blue" | "white";
   cartButtonIcon?: "shopping-cart" | "add-to-cart";
+  /** Mark above-the-fold images for LCP (eager + fetchpriority=high). */
+  priority?: boolean;
 }
+
+const PRODUCT_CARD_SIZES = {
+  default: "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw",
+  compact: "(max-width: 768px) 33vw, 160px",
+  horizontal: "128px",
+} as const;
 
 export function ProductCard({
   product,
@@ -35,7 +43,8 @@ export function ProductCard({
   showActions = true,
   cartButtonVariant = "normal",
   cartButtonColor = "blue",
-  cartButtonIcon = "shopping-cart"
+  cartButtonIcon = "shopping-cart",
+  priority = false,
 }: ProductCardProps) {
   const t = useTranslations();
   const locale = useLocale();
@@ -214,6 +223,8 @@ export function ProductCard({
             src={product.images?.[0] || "/placeholder.svg"}
             alt={product.name}
             fill
+            sizes={PRODUCT_CARD_SIZES.horizontal}
+            priority={priority}
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
@@ -260,6 +271,8 @@ export function ProductCard({
             src={product.images?.[0] || "/placeholder.svg"}
             alt={product.name}
             fill
+            sizes={PRODUCT_CARD_SIZES.compact}
+            priority={priority}
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
@@ -289,6 +302,8 @@ export function ProductCard({
           src={product.images?.[0] || "/placeholder.svg"}
           alt={product.name}
           fill
+          sizes={PRODUCT_CARD_SIZES.default}
+          priority={priority}
           className="object-contain group-hover:scale-102 transition-transform duration-500"
         />
 

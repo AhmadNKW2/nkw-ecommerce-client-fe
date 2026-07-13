@@ -77,6 +77,7 @@ export function HomePageClient() {
             onLoadMore={() => featuredFetchNextPage()}
             isLoading={featuredFetchingNext}
             showHeader={false}
+            priorityCount={4}
           />
         )}
       </section>
