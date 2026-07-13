@@ -32,7 +32,16 @@ export function useInfiniteSearchProducts(
 ) {
   return useInfiniteQuery({
     queryKey: SEARCH_QUERY_KEYS.infinite(filters, options?.locale),
-    queryFn: ({ pageParam = 1 }) => clientSearch({ ...filters, page: pageParam }, options?.locale),
+    queryFn: ({ pageParam = 1 }) =>
+      clientSearch(
+        {
+          ...filters,
+          page: pageParam,
+          // Page 1 needs facets for the sidebar; later pages reuse page-1 facets.
+          include_facets: pageParam === 1,
+        },
+        options?.locale,
+      ),
     initialPageParam: 1,
     initialData: options?.initialData as any,
     enabled: options?.enabled,

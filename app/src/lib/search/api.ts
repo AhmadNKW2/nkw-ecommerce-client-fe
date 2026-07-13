@@ -284,6 +284,8 @@ function buildSearchParams(filters: SearchFilters, locale?: string, options?: { 
   }
   if (filters.page)                 params.set('page', String(filters.page));
   if (filters.per_page)             params.set('per_page', String(filters.per_page));
+  if (filters.include_facets === false) params.set('include_facets', 'false');
+  if (filters.is_out_of_stock === false) params.set('is_out_of_stock', 'false');
   if (options?.includeLocale && locale) params.set('locale', locale);
 
   return params.toString();

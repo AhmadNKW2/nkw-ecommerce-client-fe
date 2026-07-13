@@ -30,6 +30,12 @@ export async function GET(request: NextRequest) {
     sort_by: (searchParams.get('sort_by') as SearchFilters['sort_by']) ?? undefined,
     page: parseOptionalNumber(searchParams.get('page')),
     per_page: parseOptionalNumber(searchParams.get('per_page')),
+    include_facets:
+      searchParams.get('include_facets') === 'false'
+        ? false
+        : searchParams.get('include_facets') === 'true'
+          ? true
+          : undefined,
   };
 
   try {

@@ -72,4 +72,6 @@ export interface SearchFilters {
   sort_by?: SortOption;
   page?: number;
   per_page?: number;
+  /** When false, Nest skips facet work so products return sooner. */
+  include_facets?: boolean;
 }

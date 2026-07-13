@@ -65,8 +65,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     }
   }
 
-  // Initial data fetched on the server — no loading spinner on first render
-  const initialData = await serverSearch(filters, locale).catch((error) => {
+  // Initial data fetched on the server — no loading spinner on first render.
+  // Skip facets on SSR so product cards return sooner; client loads facets next.
+  const initialData = await serverSearch(
+    { ...filters, include_facets: false },
+    locale,
+  ).catch((error) => {
     if (shouldDebug) {
       console.log('SSR SEARCH ERROR:', error);
     }

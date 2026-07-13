@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { areSearchFiltersEquivalent, joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
 import { useSearchFilters } from '@/lib/search/use-search-params';
 import { useInfiniteSearchProducts } from '@/lib/search/use-search';
+import { clientSearch } from '@/lib/search/api';
 import { ProductFilters, FloatingFilterSort, DesktopFiltersSidebar } from '@/components/products';
 import type { FilterState } from '@/components/products/product-filters';
 import { SearchResults } from './SearchResults';
@@ -13,7 +14,7 @@ import { useLoadingActionsOnly } from '@/components/ui/global-loader';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/analytics';
-import type { SearchResponse, SearchFilters, SortOption } from '@/lib/search/types';
+import type { FacetCount, SearchResponse, SearchFilters, SortOption } from '@/lib/search/types';
 
 // Map UI sort keys to search API sort values (mirrors ProductListingPage mapping)
 const SORT_MAP: Record<string, SortOption> = {
@@ -213,6 +214,42 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     return [];
   }, [pages, shouldUseInitialData, initialData]);
 
+  const [deferredFacets, setDeferredFacets] = useState<FacetCount[] | null>(null);
+
+  useEffect(() => {
+    setDeferredFacets(null);
+  }, [searchFilters]);
+
+  useEffect(() => {
+    const pageFacets = results?.facets;
+    if (pageFacets && pageFacets.length > 0) {
+      setDeferredFacets(pageFacets);
+      return;
+    }
+
+    if (!searchFilters.q?.trim() || !shouldUseInitialData) {
+      return;
+    }
+
+    let cancelled = false;
+    void clientSearch(
+      { ...searchFilters, page: 1, include_facets: true },
+      locale,
+    )
+      .then((response) => {
+        if (!cancelled && response.facets?.length) {
+          setDeferredFacets(response.facets);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale, results?.facets, searchFilters, shouldUseInitialData]);
+
+  const displayFacets = deferredFacets ?? results?.facets ?? [];
+
   const activeFiltersCount =
     filterState.categories.length +
     filterState.brands.length +
@@ -237,7 +274,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
   const filtersComponent = (
     <ProductFilters
       key={facetRenderKey}
-      facets={results?.facets ?? []}
+      facets={displayFacets}
       selectedCategories={filterState.categories}
       selectedBrands={filterState.brands}
       selectedVendors={filterState.vendors}
