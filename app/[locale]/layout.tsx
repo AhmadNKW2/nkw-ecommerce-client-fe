@@ -141,10 +141,17 @@ export default async function RootLayout({ children, params }: Props) {
 
   setRequestLocale(locale);
 
-  await queryClient.prefetchQuery({
-    queryKey: homeKeys.data(),
-    queryFn: () => homeService.getHomeData(),
-  }).catch(() => undefined);
+  const headersList = await headers();
+  const canonicalPath = headersList.get("x-canonical-path") ?? "";
+  const isSearchRoute = /(?:^|\/)search(?:\/|$|\?)/.test(canonicalPath);
+
+  // Search SSR should not wait on homepage data — header can load it client-side.
+  if (!isSearchRoute) {
+    await queryClient.prefetchQuery({
+      queryKey: homeKeys.data(),
+      queryFn: () => homeService.getHomeData(),
+    }).catch(() => undefined);
+  }
 
   const isRTL = locale === 'ar';
   const resolvedLocale = locale as Locale;

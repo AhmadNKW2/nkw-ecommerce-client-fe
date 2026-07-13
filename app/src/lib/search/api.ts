@@ -1939,15 +1939,24 @@ function enrichLegacySearchFacets(
   };
 }
 
+/** Nest already labels facets; skip catalog round-trips when nothing is missing. */
+function legacyFacetsNeedCatalogFallback(response: SearchResponse): boolean {
+  const facets = response.facets ?? [];
+  if (facets.length === 0) {
+    return false;
+  }
+
+  return facets.some((facet) =>
+    facet.counts.some((item) => item.value && !item.label?.trim()),
+  );
+}
+
 async function legacyServerSearch(
   filters: SearchFilters,
   signal?: AbortSignal,
   locale?: string
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
   const normalizedLocale = normalizeSearchLocale(locale);
-  const catalogsPromise = loadFacetCatalogs(normalizedLocale, {
-    includeEntityCatalogs: true,
-  });
   const qs = buildSearchParams(filters, locale, { includeLocale: true });
   const response = await debugFetch('LegacySearch', `${API_BASE}/search?${qs}`, {
     cache: 'no-store',
@@ -1956,13 +1965,14 @@ async function legacyServerSearch(
 
   if (!response.ok) throw new Error(`Search failed: ${response.status}`);
 
-  const catalogs = await catalogsPromise;
+  const normalized = normalizeLegacySearchResponse(response.data);
+  const catalogs = legacyFacetsNeedCatalogFallback(normalized)
+    ? await loadFacetCatalogs(normalizedLocale, {
+        includeEntityCatalogs: true,
+      })
+    : EMPTY_FACET_CATALOGS;
   const result: SearchRequestDebugResult<SearchResponse> = {
-    data: enrichLegacySearchFacets(
-      normalizeLegacySearchResponse(response.data),
-      catalogs,
-      filters,
-    ),
+    data: enrichLegacySearchFacets(normalized, catalogs, filters),
     rawData: response.data,
     source: 'legacy',
     status: response.status,
@@ -2092,9 +2102,6 @@ export async function serverSearchWithSource(
 
 export async function clientSearch(filters: SearchFilters, locale?: string): Promise<SearchResponse> {
   const qs = buildSearchParams(filters, locale, { includeLocale: true });
-  const catalogsPromise = loadFacetCatalogs(normalizeSearchLocale(locale), {
-    includeEntityCatalogs: true,
-  });
   const response = await debugFetch<SearchResponse>('LocalSearchRoute', `${LOCAL_SEARCH_API_PATH}?${qs}`, {
     cache: 'no-store',
     credentials: 'include',
@@ -2105,13 +2112,14 @@ export async function clientSearch(filters: SearchFilters, locale?: string): Pro
     return (await legacyServerSearch(filters, undefined, locale)).data;
   }
 
-  const catalogs = await catalogsPromise;
+  const normalized = normalizeLegacySearchResponse(response.data);
+  const catalogs = legacyFacetsNeedCatalogFallback(normalized)
+    ? await loadFacetCatalogs(normalizeSearchLocale(locale), {
+        includeEntityCatalogs: true,
+      })
+    : EMPTY_FACET_CATALOGS;
 
-  return enrichLegacySearchFacets(
-    normalizeLegacySearchResponse(response.data),
-    catalogs,
-    filters,
-  );
+  return enrichLegacySearchFacets(normalized, catalogs, filters);
 }
 
 export async function clientAutocomplete(
