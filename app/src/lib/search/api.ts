@@ -2044,6 +2044,9 @@ export async function serverSearchWithSource(
 
 export async function clientSearch(filters: SearchFilters, locale?: string): Promise<SearchResponse> {
   const qs = buildSearchParams(filters, locale, { includeLocale: true });
+  const catalogsPromise = loadFacetCatalogs(normalizeSearchLocale(locale), {
+    includeEntityCatalogs: true,
+  });
   const response = await debugFetch<SearchResponse>('LocalSearchRoute', `${LOCAL_SEARCH_API_PATH}?${qs}`, {
     cache: 'no-store',
     credentials: 'include',
@@ -2054,7 +2057,7 @@ export async function clientSearch(filters: SearchFilters, locale?: string): Pro
     return (await legacyServerSearch(filters, undefined, locale)).data;
   }
 
-  const catalogs = await loadFacetCatalogs(normalizeSearchLocale(locale));
+  const catalogs = await catalogsPromise;
 
   return enrichLegacySearchFacets(
     normalizeLegacySearchResponse(response.data),

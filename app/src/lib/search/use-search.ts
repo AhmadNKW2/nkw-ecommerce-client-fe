@@ -36,8 +36,9 @@ export function useInfiniteSearchProducts(
     initialPageParam: 1,
     initialData: options?.initialData as any,
     enabled: options?.enabled,
-    staleTime: 30_000,
+    staleTime: options?.initialData ? 60_000 : 30_000,
     refetchOnMount: options?.refetchOnMount ?? false,
+    refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
     getNextPageParam: (lastPage) => {
       const page = lastPage.page || 1;
