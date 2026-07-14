@@ -67,6 +67,11 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // TEMP: bypass /_next/image — Vercel free plan returns 402
+    // (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED), so product cards break.
+    // Images load directly from R2. Set NEXT_IMAGE_UNOPTIMIZED=0 after upgrading
+    // to re-enable optimization.
+    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED !== '0',
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [64, 96, 128, 184, 192, 220, 240, 256, 384],

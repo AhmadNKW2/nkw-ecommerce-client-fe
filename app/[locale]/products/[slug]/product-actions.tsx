@@ -35,10 +35,16 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
   // Format phone number for WhatsApp: remove non-digits, ensuring it starts with dial code
   const waNumber = SITE_CONFIG.contact.phone.replace(/\D/g, "");
   const inquirySku = selectedVariant?.sku || product.sku;
+  const productPath =
+    locale === "ar"
+      ? `/products/${product.slug}`
+      : `/en/products/${product.slug}`;
+  const variantQuery = selectedVariant?.id ? `?variant=${selectedVariant.id}` : "";
+  const productUrl = `${SITE_CONFIG.url.replace(/\/$/, "")}${productPath}${variantQuery}`;
   const waMessage = encodeURIComponent(
     locale === "ar"
-      ? `مرحبا، لدي استفسار عن المنتج: ${product.name}.\nSKU: ${inquirySku}`
-      : `Hello, I have an inquiry about the product: ${product.name}.\nSKU: ${inquirySku}`
+      ? `مرحبا، لدي استفسار عن المنتج: ${product.name}.\nSKU: ${inquirySku}\nالرابط: ${productUrl}`
+      : `Hello, I have an inquiry about the product: ${product.name}.\nSKU: ${inquirySku}\nLink: ${productUrl}`
   );
 
   return (
