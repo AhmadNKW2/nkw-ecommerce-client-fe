@@ -451,7 +451,7 @@ export function ProductCard({
         </h3>
 
         {/* Price - Always at bottom */}
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 mt-auto">
           <span className="text-lg font-bold text-secondary">
             {formatPrice(product.price, undefined, locale)}
           </span>
