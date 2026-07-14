@@ -442,10 +442,8 @@ export function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="p-1 flex flex-col grow gap-2 min-h-[7.5rem]">
-        {/* Name — fixed clamp height so rows don't shift between cards */}
-        {/* Name — height must match leading × 3 so line-clamp does not leak a half-cut line */}
-        <h3 className="font-medium text-[13px] md:text-sm leading-5 text-primary group-hover:text-primary transition-colors line-clamp-3 text-center h-[3.75rem]">
+      <div className="p-1 flex flex-col grow gap-2">
+        <h3 className="font-medium text-[13px] md:text-sm leading-5 text-primary group-hover:text-primary transition-colors text-center">
           {product.name}
           {variantAttributesSummary ? (
             <span className="font-normal text-third">{" "}({variantAttributesSummary})</span>
@@ -453,7 +451,7 @@ export function ProductCard({
         </h3>
 
         {/* Price - Always at bottom */}
-        <div className="flex items-center justify-center gap-2 mt-auto min-h-7">
+        <div className="flex items-center justify-center gap-2">
           <span className="text-lg font-bold text-secondary">
             {formatPrice(product.price, undefined, locale)}
           </span>
