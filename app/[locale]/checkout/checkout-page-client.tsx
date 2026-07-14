@@ -520,7 +520,8 @@ export function CheckoutPageClient() {
       const city = easyPurchaseEnabled
         ? JORDAN_CITIES[0]?.value || "Amman"
         : formData.city.trim();
-      const street = easyPurchaseEnabled ? "Cash on delivery" : formData.address.trim();
+      // Easy purchase only collects name + phone; street is required by the API.
+      const street = easyPurchaseEnabled ? "Not provided" : formData.address.trim();
       const payload = {
         items: items.map((item) => {
           let productId = typeof item.product_id === "number" ? item.product_id : parseInt(String(item.product_id), 10);

@@ -21,7 +21,6 @@ function ProductCardSkeleton() {
       <Skeleton className="aspect-square w-full rounded-none" />
       <div className="p-1 flex flex-col grow gap-2 min-h-[7.5rem]">
         <Skeleton className="h-[3.75rem] w-full" />
-        <Skeleton className="h-4 w-16 mx-auto" />
         <Skeleton className="h-7 w-20 mx-auto mt-auto" />
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { Star, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { Product } from "@/types";
 import { cn, formatPrice, calculateDiscount } from "@/lib/utils";
 import { Badge, IconButton } from "@/components/ui";
@@ -240,11 +240,6 @@ export function ProductCard({
           <p className="text-sm text-third line-clamp-2 mt-1">
             {product.description}
           </p>
-          <div className="flex items-center gap-1 mt-2">
-            <Star className="w-4 h-4 fill-secondary text-secondary" />
-            <span className="text-sm font-medium">{product.rating}</span>
-            <span className="text-sm text-third">({product.reviewCount})</span>
-          </div>
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-2">
               <span className="text-lg font-bold text-primary">
@@ -456,19 +451,6 @@ export function ProductCard({
             <span className="font-normal text-third">{" "}({variantAttributesSummary})</span>
           ) : null}
         </h3>
-
-        {/* Rating — always reserve one row to avoid CLS when rating is missing */}
-        <div className="flex items-center justify-center gap-1 mt-1 min-h-4">
-          {product.rating > 0 ? (
-            <>
-              <Star className="w-3 h-3 fill-secondary text-secondary" />
-              <span className="text-xs text-third">{product.rating.toFixed(1)}</span>
-              {product.reviewCount > 0 && (
-                <span className="text-xs text-third">({product.reviewCount})</span>
-              )}
-            </>
-          ) : null}
-        </div>
 
         {/* Price - Always at bottom */}
         <div className="flex items-center justify-center gap-2 mt-auto min-h-7">
