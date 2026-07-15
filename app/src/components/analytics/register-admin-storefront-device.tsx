@@ -1,51 +1,67 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api-client";
-import {
-  getClientId,
-  markLocalClientIdAsAdmin,
-} from "@/lib/analytics";
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/lib/api-client';
+import { getClientId, markLocalClientIdAsAdmin } from '@/lib/analytics';
 
 const STAFF_ROLES = new Set([
-  "admin",
-  "constant_token_admin",
-  "catalog_manager",
-  "vendor_admin",
-  "store_admin",
+  'admin',
+  'constant_token_admin',
+  'catalog_manager',
+  'vendor_admin',
+  'store_admin',
 ]);
 
+let lastRegisteredKey: string | null = null;
+let lastRegisteredAt = 0;
+let inFlight: Promise<void> | null = null;
+const REREGISTER_MS = 2_000;
+
 /**
- * Admin user logged in on the storefront → take the existing client id
- * and mark it as an admin device (no separate admin client id).
+ * Staff logged in on the storefront → re-register this browser's client id
+ * on load/refresh and on every route change. Same admin can have many devices.
  */
 export function RegisterAdminStorefrontDevice() {
   const { user } = useAuth();
-  const doneForUserRef = useRef<string | number | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!user?.role || !STAFF_ROLES.has(user.role)) return;
-    if (doneForUserRef.current === user.id) return;
 
     const clientId = getClientId();
     if (!clientId) return;
 
-    doneForUserRef.current = user.id;
+    const freshEnough =
+      lastRegisteredKey === clientId &&
+      Date.now() - lastRegisteredAt < REREGISTER_MS;
+    if (freshEnough && !inFlight) return;
 
-    void apiClient
-      .post("/analytics/admin-clients/register", {
+    if (inFlight) {
+      void inFlight;
+      return;
+    }
+
+    inFlight = apiClient
+      .post('/analytics/admin-clients/register', {
         browserKey: clientId,
-        source: "storefront",
+        source: 'storefront',
         userAgent: navigator.userAgent.slice(0, 512),
       })
       .then(() => {
         markLocalClientIdAsAdmin();
+        lastRegisteredKey = clientId;
+        lastRegisteredAt = Date.now();
       })
       .catch(() => {
-        doneForUserRef.current = null;
+        lastRegisteredKey = null;
+        lastRegisteredAt = 0;
+      })
+      .finally(() => {
+        inFlight = null;
       });
-  }, [user?.role, user?.id]);
+  }, [user?.role, user?.id, pathname]);
 
   return null;
 }

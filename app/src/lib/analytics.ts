@@ -106,10 +106,6 @@ function scheduleFlush() {
 
 async function flushAnalyticsQueue(useBeacon: boolean) {
   if (typeof window === 'undefined' || eventQueue.length === 0) return;
-  if (isAdminAnalyticsDevice()) {
-    eventQueue = [];
-    return;
-  }
 
   const batch = eventQueue.splice(0, MAX_QUEUE);
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
@@ -144,7 +140,7 @@ async function flushAnalyticsQueue(useBeacon: boolean) {
 }
 
 function queueFirstPartyEvent(eventName: string, params: AnalyticsEventParams = {}) {
-  if (typeof window === 'undefined' || isAdminAnalyticsDevice()) return;
+  if (typeof window === 'undefined') return;
 
   ensureLifecycle();
 
@@ -171,10 +167,6 @@ function queueFirstPartyEvent(eventName: string, params: AnalyticsEventParams = 
 
 export function trackEvent(eventName: string, params: AnalyticsEventParams = {}) {
   if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (isAdminAnalyticsDevice()) {
     return;
   }
 
