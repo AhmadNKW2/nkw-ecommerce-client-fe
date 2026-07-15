@@ -30,7 +30,7 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
 import { JORDAN_CITIES, SITE_CONFIG, CURRENCY_CONFIG } from "@/lib/constants";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, getClientId } from "@/lib/analytics";
 import { trackDataFastEvent } from "@/lib/datafast";
 import { calculateShipping, resolveFreeShippingThreshold } from "@/lib/shipping";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
@@ -585,6 +585,7 @@ export function CheckoutPageClient() {
               : "wallet",
         walletAppliedAmount: walletAppliedAmount > 0 ? walletAppliedAmount : undefined,
         notes: easyPurchaseEnabled ? undefined : getOptionalValue(formData.notes),
+        browserKey: getClientId() || undefined,
       };
 
       const order = await orderService.create(payload);

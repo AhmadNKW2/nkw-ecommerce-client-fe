@@ -26,6 +26,8 @@ export interface ButtonProps
   backgroundColor?: ButtonColorValue;
   /** Custom button text color (e.g. `#ffffff` or `var(--color-secondary)`). */
   textColor?: ButtonColorValue;
+  /** Optional analytics label; falls back to string children when omitted. */
+  "data-analytics-label"?: string;
 }
 
 const sizeClasses = {
@@ -54,6 +56,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       textColor,
       children,
       disabled,
+      "data-analytics-label": analyticsLabelProp,
       ...props
     },
     ref
@@ -71,11 +74,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ...(isButtonColorValue(textColor) ? { color: textColor } : null),
       ...(props.style ?? null),
     };
-    
+
     const analyticsLabelFromProps =
-      typeof props["data-analytics-label"] === "string"
-        ? props["data-analytics-label"]
-        : undefined;
+      typeof analyticsLabelProp === "string" ? analyticsLabelProp : undefined;
     const childrenLabel =
       typeof children === "string"
         ? children

@@ -182,6 +182,8 @@ export interface CreateOrderPayload {
   walletAppliedAmount?: number;
   couponCode?: string;
   notes?: string;
+  /** Analytics browser client id (`ordonsooq_browser_key`). */
+  browserKey?: string;
 }
 
 export interface OrderResponse {
