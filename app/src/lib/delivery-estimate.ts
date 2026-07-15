@@ -24,7 +24,7 @@ export type ShippingRulesConfig = {
 };
 
 export type ShippingRulesSettingsSource = {
-  shipping_rules_enabled?: boolean | null;
+  shipping_rules_enabled?: boolean | number | string | null;
   shipping_cutoff_hour?: number | null;
   shipping_rules?: ShippingDeliveryRule[] | null;
 };
@@ -100,10 +100,19 @@ function normalizeRules(rules: unknown): ShippingDeliveryRule[] {
 export function resolveShippingRulesConfig(
   settings?: ShippingRulesSettingsSource | null,
 ): ShippingRulesConfig {
+  const rules = normalizeRules(settings?.shipping_rules);
+  // Treat enabled flag loosely so "1"/truthy API values still activate rules.
+  const enabledFlag = settings?.shipping_rules_enabled;
+  const enabled =
+    enabledFlag === true ||
+    enabledFlag === 1 ||
+    enabledFlag === "true" ||
+    enabledFlag === "1";
+
   return {
-    enabled: settings?.shipping_rules_enabled === true,
+    enabled: Boolean(enabled),
     cutoffHour: normalizeCutoffHour(settings?.shipping_cutoff_hour),
-    rules: normalizeRules(settings?.shipping_rules),
+    rules,
   };
 }
 

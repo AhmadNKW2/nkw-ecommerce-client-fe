@@ -8,6 +8,9 @@ export function useSeoSettings() {
   return useQuery({
     queryKey: SEO_SETTINGS_QUERY_KEY,
     queryFn: settingsService.getSeoSettings,
-    staleTime: 5 * 60 * 1000,
+    // Shipping countdown depends on fresh rules; avoid sticky hydrated/stale SEO payloads.
+    staleTime: 30_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }

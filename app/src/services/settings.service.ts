@@ -21,8 +21,9 @@ export const settingsService = {
 
 const getSeoSettingsServerCached = unstable_cache(
   async () => settingsService.getSeoSettings(),
-  ['seo-settings'],
-  { revalidate: false },
+  // Bump key when SEO payload shape changes so old Data Cache entries are not reused.
+  ['seo-settings', 'v2-shipping-rules'],
+  { revalidate: 30 },
 );
 
 export async function getSeoSettingsCached(): Promise<SeoSettings | null> {
