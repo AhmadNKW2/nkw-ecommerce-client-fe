@@ -362,11 +362,6 @@ export function ProductCard({
                 href={productHref}
                 onClick={(e) => {
                   e.stopPropagation();
-                  trackEvent("choose_options_click", {
-                    product_id: product.id,
-                    product_name: product.name,
-                    source: "product_card_fab",
-                  });
                 }}
                 className={cn(
                   "h-9 w-9 rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform",
@@ -411,11 +406,6 @@ export function ProductCard({
                 href={productHref}
                 onClick={(e) => {
                   e.stopPropagation();
-                  trackEvent("choose_options_click", {
-                    product_id: product.id,
-                    product_name: product.name,
-                    source: "product_card_panel",
-                  });
                 }}
                 className="w-full h-11 rounded-full bg-white/80 text-primary hover:bg-white hover:scale-103 transition-all text-sm font-bold shadow-s1 flex items-center justify-center gap-2"
                 aria-label={t('product.chooseOptions')}

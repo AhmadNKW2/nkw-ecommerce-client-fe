@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui';
 import { productService } from '@/services/product.service';
+import { trackEvent } from '@/lib/analytics';
 
 export function SearchBox() {
   const autocompleteMinChars = 3;
@@ -63,10 +64,15 @@ export function SearchBox() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
+    const q = query.trim();
+    if (!q) return;
+    trackEvent(`Searched: ${q}`, {
+      search_term: q,
+      source: 'search_bar',
+    });
     close();
     setIsInputFocused(false);
-    router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/search?q=${encodeURIComponent(q)}`);
   }
 
   async function handleSuggestionClick(suggestion: { id: string; slug?: string | null }) {
@@ -74,6 +80,19 @@ export function SearchBox() {
     setIsInputFocused(false);
 
     const resolvedSlug = suggestion.slug?.trim();
+    const typedQuery = query.trim();
+    trackEvent(
+      typedQuery
+        ? `Search suggestion: ${typedQuery}`
+        : 'Search suggestion click',
+      {
+        suggestion_id: suggestion.id,
+        suggestion_slug: resolvedSlug || undefined,
+        search_term: typedQuery || undefined,
+        source: 'search_bar',
+      },
+    );
+
     if (resolvedSlug) {
       router.push(`/products/${resolvedSlug}`);
       return;
