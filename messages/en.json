@@ -456,9 +456,8 @@
     "kingdomDelivery": "Delivery all over the Kingdom",
     "kingdomDeliveryFeePrefix": "for only",
     "deliveryEstimate": {
-      "orderWithinForDate": "Order within {time} to get your shipment tomorrow ({date})",
-      "orderNowInTwoDays": "Order now to get your shipment in 2 days ({date})",
-      "orderNowForDate": "Order now to get your shipment on {date}"
+      "orderInForDate": "Order in {time} to get it by {date}",
+      "orderNowForDate": "Order now to get it by {date}"
     },
     "viewOffer": "View offer",
     "tags": "Tags",

@@ -423,9 +423,8 @@
     "kingdomDeliveryFeePrefix": "مقابل",
     "kingdomDeliveryFeeSuffix": "فقط",
     "deliveryEstimate": {
-      "orderWithinForDate": "اطلب خلال {time} ليصلك الشحن غداً ({date})",
-      "orderNowInTwoDays": "اطلب الآن ليصلك الشحن خلال يومين ({date})",
-      "orderNowForDate": "اطلب الآن ليصلك الشحن يوم {date}"
+      "orderInForDate": "اطلب خلال {time} ليصلك بحلول {date}",
+      "orderNowForDate": "اطلب الآن ليصلك بحلول {date}"
     },
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",

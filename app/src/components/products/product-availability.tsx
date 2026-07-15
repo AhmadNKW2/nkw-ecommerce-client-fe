@@ -71,14 +71,8 @@ function getEstimateMessage(
   locale: string,
 ) {
   if (estimate.beforeCutoff && estimate.remainingMs != null && estimate.remainingMs > 0) {
-    return t("deliveryEstimate.orderWithinForDate", {
+    return t("deliveryEstimate.orderInForDate", {
       time: formatRemainingDuration(estimate.remainingMs, locale),
-      date: estimate.arrivalDateLabel,
-    });
-  }
-
-  if (estimate.arrivalKind === "inTwoDays") {
-    return t("deliveryEstimate.orderNowInTwoDays", {
       date: estimate.arrivalDateLabel,
     });
   }
@@ -101,8 +95,8 @@ function ProductDeliveryPanel({
   const locale = useLocale() as Locale;
   const now = useLiveNow();
   const estimate = useMemo(
-    () => getDeliveryEstimate(now, locale, shippingRules.cutoffHour),
-    [locale, now, shippingRules.cutoffHour],
+    () => getDeliveryEstimate(now, locale, shippingRules),
+    [locale, now, shippingRules],
   );
 
   const formattedAmount = new Intl.NumberFormat("en-US", {
@@ -110,9 +104,7 @@ function ProductDeliveryPanel({
     maximumFractionDigits: 2,
   }).format(deliveryFee);
   const currencyUnit = locale === "ar" ? CURRENCY_CONFIG.symbolAr : "JD";
-  const estimateMessage = shippingRules.enabled
-    ? getEstimateMessage(t, estimate, locale)
-    : null;
+  const estimateMessage = estimate ? getEstimateMessage(t, estimate, locale) : null;
 
   return (
     <div

@@ -488,18 +488,14 @@ export type SeoSettings = {
   low_stock_threshold: number;
   shipping_rules_enabled: boolean;
   shipping_cutoff_hour: number;
-  shipping_rule_1_when_en: string;
-  shipping_rule_1_when_ar: string;
-  shipping_rule_1_arrives_en: string;
-  shipping_rule_1_arrives_ar: string;
-  shipping_rule_2_when_en: string;
-  shipping_rule_2_when_ar: string;
-  shipping_rule_2_arrives_en: string;
-  shipping_rule_2_arrives_ar: string;
-  shipping_rule_3_when_en: string;
-  shipping_rule_3_when_ar: string;
-  shipping_rule_3_arrives_en: string;
-  shipping_rule_3_arrives_ar: string;
+  shipping_rules: Array<{
+    id: string;
+    days: number[];
+    cutoffMode: "before" | "after" | "any";
+    arrivalMode: "offset_days" | "next_weekday";
+    arrivalOffsetDays?: number;
+    arrivalWeekday?: number;
+  }>;
   created_at?: string;
   updated_at?: string;
 };

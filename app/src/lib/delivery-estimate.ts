@@ -4,69 +4,36 @@ export const DELIVERY_TIMEZONE = "Asia/Amman";
 /** Default order-by hour (24h) for next-day delivery in Amman. */
 export const DEFAULT_SHIPPING_CUTOFF_HOUR = 14;
 
-export type DeliveryArrivalKind = "tomorrow" | "inTwoDays" | "sunday";
+export type ShippingCutoffMode = "before" | "after" | "any";
+export type ShippingArrivalMode = "offset_days" | "next_weekday";
 
-export type ShippingRuleTexts = {
-  when_en: string;
-  when_ar: string;
-  arrives_en: string;
-  arrives_ar: string;
+/** Weekday: 0 = Sunday … 6 = Saturday. */
+export type ShippingDeliveryRule = {
+  id: string;
+  days: number[];
+  cutoffMode: ShippingCutoffMode;
+  arrivalMode: ShippingArrivalMode;
+  arrivalOffsetDays?: number;
+  arrivalWeekday?: number;
 };
 
 export type ShippingRulesConfig = {
   enabled: boolean;
   cutoffHour: number;
-  rule1: ShippingRuleTexts;
-  rule2: ShippingRuleTexts;
-  rule3: ShippingRuleTexts;
+  rules: ShippingDeliveryRule[];
 };
 
 export type ShippingRulesSettingsSource = {
   shipping_rules_enabled?: boolean | null;
   shipping_cutoff_hour?: number | null;
-  shipping_rule_1_when_en?: string | null;
-  shipping_rule_1_when_ar?: string | null;
-  shipping_rule_1_arrives_en?: string | null;
-  shipping_rule_1_arrives_ar?: string | null;
-  shipping_rule_2_when_en?: string | null;
-  shipping_rule_2_when_ar?: string | null;
-  shipping_rule_2_arrives_en?: string | null;
-  shipping_rule_2_arrives_ar?: string | null;
-  shipping_rule_3_when_en?: string | null;
-  shipping_rule_3_when_ar?: string | null;
-  shipping_rule_3_arrives_en?: string | null;
-  shipping_rule_3_arrives_ar?: string | null;
+  shipping_rules?: ShippingDeliveryRule[] | null;
 };
 
 export const DEFAULT_SHIPPING_RULES: ShippingRulesConfig = {
-  enabled: true,
+  enabled: false,
   cutoffHour: DEFAULT_SHIPPING_CUTOFF_HOUR,
-  rule1: {
-    when_en: "Order by {time} (Sun–Thu)",
-    when_ar: "اطلب قبل {time} (الأحد–الخميس)",
-    arrives_en: "Arrives tomorrow",
-    arrives_ar: "يصل غداً",
-  },
-  rule2: {
-    when_en: "Order after {time} (Sun–Wed)",
-    when_ar: "اطلب بعد {time} (الأحد–الأربعاء)",
-    arrives_en: "Arrives in 2 days",
-    arrives_ar: "يصل خلال يومين",
-  },
-  rule3: {
-    when_en: "Order Thu after cutoff, Fri, or Sat",
-    when_ar: "اطلب بعد الموعد يوم الخميس أو الجمعة أو السبت",
-    arrives_en: "Arrives Sunday",
-    arrives_ar: "يصل يوم الأحد",
-  },
+  rules: [],
 };
-
-function pickText(value: string | null | undefined, fallback: string) {
-  if (typeof value === "string" && value.trim().length > 0) {
-    return value.trim();
-  }
-  return fallback;
-}
 
 export function normalizeCutoffHour(value: number | null | undefined): number {
   if (value == null || !Number.isFinite(Number(value))) {
@@ -79,62 +46,77 @@ export function normalizeCutoffHour(value: number | null | undefined): number {
   return hour;
 }
 
+function normalizeRules(rules: unknown): ShippingDeliveryRule[] {
+  if (!Array.isArray(rules)) {
+    return [];
+  }
+
+  return rules
+    .map((rule): ShippingDeliveryRule | null => {
+      if (!rule || typeof rule !== "object") {
+        return null;
+      }
+
+      const record = rule as Record<string, unknown>;
+      const days = Array.isArray(record.days)
+        ? [
+            ...new Set(
+              record.days
+                .map((day) => Number(day))
+                .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6),
+            ),
+          ].sort((a, b) => a - b)
+        : [];
+
+      if (days.length === 0) {
+        return null;
+      }
+
+      const cutoffMode: ShippingCutoffMode =
+        record.cutoffMode === "after" || record.cutoffMode === "any"
+          ? record.cutoffMode
+          : "before";
+      const arrivalMode: ShippingArrivalMode =
+        record.arrivalMode === "next_weekday" ? "next_weekday" : "offset_days";
+
+      return {
+        id: typeof record.id === "string" ? record.id : "rule",
+        days,
+        cutoffMode,
+        arrivalMode,
+        arrivalOffsetDays: Math.min(
+          14,
+          Math.max(1, Math.trunc(Number(record.arrivalOffsetDays) || 1)),
+        ),
+        arrivalWeekday: Math.min(
+          6,
+          Math.max(0, Math.trunc(Number(record.arrivalWeekday) || 0)),
+        ),
+      };
+    })
+    .filter((rule): rule is ShippingDeliveryRule => rule != null);
+}
+
 export function resolveShippingRulesConfig(
   settings?: ShippingRulesSettingsSource | null,
 ): ShippingRulesConfig {
   return {
-    enabled: settings?.shipping_rules_enabled !== false,
+    enabled: settings?.shipping_rules_enabled === true,
     cutoffHour: normalizeCutoffHour(settings?.shipping_cutoff_hour),
-    rule1: {
-      when_en: pickText(settings?.shipping_rule_1_when_en, DEFAULT_SHIPPING_RULES.rule1.when_en),
-      when_ar: pickText(settings?.shipping_rule_1_when_ar, DEFAULT_SHIPPING_RULES.rule1.when_ar),
-      arrives_en: pickText(
-        settings?.shipping_rule_1_arrives_en,
-        DEFAULT_SHIPPING_RULES.rule1.arrives_en,
-      ),
-      arrives_ar: pickText(
-        settings?.shipping_rule_1_arrives_ar,
-        DEFAULT_SHIPPING_RULES.rule1.arrives_ar,
-      ),
-    },
-    rule2: {
-      when_en: pickText(settings?.shipping_rule_2_when_en, DEFAULT_SHIPPING_RULES.rule2.when_en),
-      when_ar: pickText(settings?.shipping_rule_2_when_ar, DEFAULT_SHIPPING_RULES.rule2.when_ar),
-      arrives_en: pickText(
-        settings?.shipping_rule_2_arrives_en,
-        DEFAULT_SHIPPING_RULES.rule2.arrives_en,
-      ),
-      arrives_ar: pickText(
-        settings?.shipping_rule_2_arrives_ar,
-        DEFAULT_SHIPPING_RULES.rule2.arrives_ar,
-      ),
-    },
-    rule3: {
-      when_en: pickText(settings?.shipping_rule_3_when_en, DEFAULT_SHIPPING_RULES.rule3.when_en),
-      when_ar: pickText(settings?.shipping_rule_3_when_ar, DEFAULT_SHIPPING_RULES.rule3.when_ar),
-      arrives_en: pickText(
-        settings?.shipping_rule_3_arrives_en,
-        DEFAULT_SHIPPING_RULES.rule3.arrives_en,
-      ),
-      arrives_ar: pickText(
-        settings?.shipping_rule_3_arrives_ar,
-        DEFAULT_SHIPPING_RULES.rule3.arrives_ar,
-      ),
-    },
+    rules: normalizeRules(settings?.shipping_rules),
   };
 }
 
 export type DeliveryEstimate = {
   /** Remaining ms until the active cutoff; null when the live countdown is not useful. */
   remainingMs: number | null;
-  arrivalKind: DeliveryArrivalKind;
-  /** Formatted cutoff time, e.g. "2:00 PM" / "٢:٠٠ م" */
+  /** Formatted cutoff time, e.g. "2:00 PM" */
   cutoffLabel: string;
-  /** Whether we are still before today's next-day cutoff. */
+  /** Whether we are still before today's cutoff for the matched rule. */
   beforeCutoff: boolean;
   /** Weekday in Amman (0 = Sunday … 6 = Saturday). */
   weekday: number;
-  /** Arrival calendar date in Amman, e.g. "Thu, Jul 16" / "الخميس، ١٦ يوليو". */
+  /** Arrival calendar date, e.g. "Friday 17/07/2026". */
   arrivalDateLabel: string;
 };
 
@@ -194,7 +176,6 @@ function ammanWallTimeToUtc(parts: {
     parts.second ?? 0,
   );
 
-  // Resolve DST by measuring the Amman offset at the guessed instant.
   const ammanAtGuess = getAmmanParts(new Date(utcGuess));
   const asUtcMs = Date.UTC(
     ammanAtGuess.year,
@@ -237,6 +218,7 @@ export function formatCutoffLabel(
   }).format(sample);
 }
 
+/** Compact countdown, e.g. "18h and 5m" / "18س و5د". */
 export function formatRemainingDuration(ms: number, locale: string): string {
   const totalMinutes = Math.max(0, Math.ceil(ms / 60_000));
   const hours = Math.floor(totalMinutes / 60);
@@ -244,25 +226,21 @@ export function formatRemainingDuration(ms: number, locale: string): string {
 
   if (locale === "ar") {
     if (hours <= 0) {
-      return minutes === 1 ? "دقيقة واحدة" : `${minutes} دقيقة`;
+      return `${minutes}د`;
     }
     if (minutes === 0) {
-      return hours === 1 ? "ساعة واحدة" : `${hours} ساعات`;
+      return `${hours}س`;
     }
-    const hoursPart = hours === 1 ? "ساعة واحدة" : `${hours} ساعات`;
-    const minutesPart = minutes === 1 ? "دقيقة واحدة" : `${minutes} دقيقة`;
-    return `${hoursPart} و${minutesPart}`;
+    return `${hours}س و${minutes}د`;
   }
 
   if (hours <= 0) {
-    return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+    return `${minutes}m`;
   }
   if (minutes === 0) {
-    return hours === 1 ? "1 hour" : `${hours} hours`;
+    return `${hours}h`;
   }
-  const hoursPart = hours === 1 ? "1 hour" : `${hours} hours`;
-  const minutesPart = minutes === 1 ? "1 minute" : `${minutes} minutes`;
-  return `${hoursPart} ${minutesPart}`;
+  return `${hours}h and ${minutes}m`;
 }
 
 function addAmmanCalendarDays(
@@ -278,9 +256,9 @@ function addAmmanCalendarDays(
   };
 }
 
-function daysUntilSunday(weekday: number): number {
-  // 0 Sunday … 6 Saturday. Already Sunday → 0, otherwise days forward to Sunday.
-  return weekday === 0 ? 0 : 7 - weekday;
+function daysUntilWeekday(currentWeekday: number, targetWeekday: number): number {
+  const delta = (targetWeekday - currentWeekday + 7) % 7;
+  return delta === 0 ? 7 : delta;
 }
 
 export function formatArrivalDateLabel(
@@ -288,39 +266,59 @@ export function formatArrivalDateLabel(
   ammanDay: { year: number; month: number; day: number },
 ): string {
   const utcNoon = Date.UTC(ammanDay.year, ammanDay.month - 1, ammanDay.day, 12);
-  return new Intl.DateTimeFormat(locale === "ar" ? "ar-JO" : "en-US", {
+  const weekday = new Intl.DateTimeFormat(locale === "ar" ? "ar-JO" : "en-US", {
     timeZone: "UTC",
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+    weekday: "long",
   }).format(new Date(utcNoon));
+  const day = String(ammanDay.day).padStart(2, "0");
+  const month = String(ammanDay.month).padStart(2, "0");
+  return `${weekday} ${day}/${month}/${ammanDay.year}`;
 }
 
 function resolveArrivalDay(
   parts: ReturnType<typeof getAmmanParts>,
-  arrivalKind: DeliveryArrivalKind,
+  rule: ShippingDeliveryRule,
 ) {
-  if (arrivalKind === "tomorrow") {
-    return addAmmanCalendarDays(parts, 1);
+  if (rule.arrivalMode === "next_weekday") {
+    const target = rule.arrivalWeekday ?? 0;
+    return addAmmanCalendarDays(parts, daysUntilWeekday(parts.weekday, target));
   }
-  if (arrivalKind === "inTwoDays") {
-    return addAmmanCalendarDays(parts, 2);
+
+  return addAmmanCalendarDays(parts, rule.arrivalOffsetDays ?? 1);
+}
+
+function ruleMatches(
+  rule: ShippingDeliveryRule,
+  weekday: number,
+  beforeCutoff: boolean,
+): boolean {
+  if (!rule.days.includes(weekday)) {
+    return false;
   }
-  return addAmmanCalendarDays(parts, daysUntilSunday(parts.weekday) || 7);
+
+  if (rule.cutoffMode === "before") {
+    return beforeCutoff;
+  }
+  if (rule.cutoffMode === "after") {
+    return !beforeCutoff;
+  }
+  return true;
 }
 
 /**
- * Next-day shipping rules (Amman):
- * - Sun–Thu before cutoff → arrives tomorrow
- * - Sun–Wed after cutoff → arrives in 2 days
- * - Thu after cutoff, Fri, Sat → arrives Sunday
+ * Evaluate configured shipping rules (Amman timezone).
+ * Returns null when rules are disabled, empty, or none match today.
  */
 export function getDeliveryEstimate(
   now: Date = new Date(),
   locale = "en",
-  cutoffHour = DEFAULT_SHIPPING_CUTOFF_HOUR,
-): DeliveryEstimate {
-  const hour = normalizeCutoffHour(cutoffHour);
+  config: ShippingRulesConfig = DEFAULT_SHIPPING_RULES,
+): DeliveryEstimate | null {
+  if (!config.enabled || config.rules.length === 0) {
+    return null;
+  }
+
+  const hour = normalizeCutoffHour(config.cutoffHour);
   const parts = getAmmanParts(now);
   const cutoffLabel = formatCutoffLabel(locale, hour);
   const todayCutoff = ammanWallTimeToUtc({
@@ -333,36 +331,25 @@ export function getDeliveryEstimate(
   });
 
   const beforeCutoff = now.getTime() < todayCutoff.getTime();
-  const weekday = parts.weekday;
+  const matched = config.rules.find((rule) =>
+    ruleMatches(rule, parts.weekday, beforeCutoff),
+  );
 
-  let arrivalKind: DeliveryArrivalKind;
-  let remainingMs: number | null = null;
-  let estimateBeforeCutoff = false;
-
-  // Friday / Saturday → Sunday delivery (no live next-day countdown).
-  if (weekday === 5 || weekday === 6) {
-    arrivalKind = "sunday";
-  } else if (beforeCutoff) {
-    // Sunday–Thursday before cutoff → tomorrow.
-    arrivalKind = "tomorrow";
-    remainingMs = todayCutoff.getTime() - now.getTime();
-    estimateBeforeCutoff = true;
-  } else if (weekday === 4) {
-    // Thursday after cutoff → Sunday.
-    arrivalKind = "sunday";
-  } else {
-    // Sunday–Wednesday after cutoff → in two days.
-    arrivalKind = "inTwoDays";
+  if (!matched) {
+    return null;
   }
 
-  const arrivalDay = resolveArrivalDay(parts, arrivalKind);
+  const arrivalDay = resolveArrivalDay(parts, matched);
+  const showCountdown = matched.cutoffMode === "before" && beforeCutoff;
+  const remainingMs = showCountdown
+    ? todayCutoff.getTime() - now.getTime()
+    : null;
 
   return {
     remainingMs,
-    arrivalKind,
     cutoffLabel,
-    beforeCutoff: estimateBeforeCutoff,
-    weekday,
+    beforeCutoff: showCountdown,
+    weekday: parts.weekday,
     arrivalDateLabel: formatArrivalDateLabel(locale, arrivalDay),
   };
 }
