@@ -125,7 +125,7 @@ export type DeliveryEstimate = {
   beforeCutoff: boolean;
   /** Weekday in Amman (0 = Sunday … 6 = Saturday). */
   weekday: number;
-  /** Arrival calendar date, e.g. "Friday 17/07/2026". */
+  /** Arrival calendar date, e.g. "السبت 18/06/2026". */
   arrivalDateLabel: string;
 };
 
@@ -227,7 +227,7 @@ export function formatCutoffLabel(
   }).format(sample);
 }
 
-/** Compact countdown, e.g. "18h and 5m" / "18س و5د". */
+/** Countdown label, e.g. "17 hours 21 minutes" / "17 ساعة 21 دقيقة". */
 export function formatRemainingDuration(ms: number, locale: string): string {
   const totalMinutes = Math.max(0, Math.ceil(ms / 60_000));
   const hours = Math.floor(totalMinutes / 60);
@@ -235,21 +235,21 @@ export function formatRemainingDuration(ms: number, locale: string): string {
 
   if (locale === "ar") {
     if (hours <= 0) {
-      return `${minutes}د`;
+      return `${minutes} دقيقة`;
     }
     if (minutes === 0) {
-      return `${hours}س`;
+      return `${hours} ساعة`;
     }
-    return `${hours}س و${minutes}د`;
+    return `${hours} ساعة ${minutes} دقيقة`;
   }
 
   if (hours <= 0) {
-    return `${minutes}m`;
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
   }
   if (minutes === 0) {
-    return `${hours}h`;
+    return `${hours} ${hours === 1 ? "hour" : "hours"}`;
   }
-  return `${hours}h and ${minutes}m`;
+  return `${hours} ${hours === 1 ? "hour" : "hours"} ${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
 }
 
 function addAmmanCalendarDays(
@@ -279,6 +279,7 @@ export function formatArrivalDateLabel(
     timeZone: "UTC",
     weekday: "long",
   }).format(new Date(utcNoon));
+  // e.g. "السبت 18/06/2026" / "Saturday 18/06/2026"
   const day = String(ammanDay.day).padStart(2, "0");
   const month = String(ammanDay.month).padStart(2, "0");
   return `${weekday} ${day}/${month}/${ammanDay.year}`;

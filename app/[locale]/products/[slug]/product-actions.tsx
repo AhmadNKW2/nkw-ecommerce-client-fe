@@ -48,7 +48,7 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
   );
 
   return (
-    <div className="flex-1 flex flex-col gap-3">
+    <div id="product-purchase-actions" className="flex-1 flex flex-col gap-3">
       <AddToCartButton
         product={product}
         variant={selectedVariant}
@@ -65,7 +65,7 @@ export function ProductActions({ product, selectedVariant }: ProductActionsProps
         {t("product.buyNow")}
       </Button>
 
-      <div className="mt-1 bg-green-50/80 rounded-2xl p-3.5 border border-green-100 flex items-center justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-3 rounded-2xl border px-3.5 py-3 border-emerald-200/80 bg-green-50/80">
         <div className="flex flex-col">
           <span className="text-sm font-medium text-green-800 leading-tight">
             {t("product.inquiries")}

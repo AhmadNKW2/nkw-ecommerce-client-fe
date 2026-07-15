@@ -1,8 +1,11 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./app/src/i18n/request.ts');
 const isDevelopment = process.env.NODE_ENV === 'development';
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || process.env.R2_PUBLIC_URL;
 
@@ -20,6 +23,11 @@ if (r2PublicUrl) {
 }
 
 const nextConfig: NextConfig = {
+  // Parent folder has a stray pnpm-lock.yaml (critters only). Without this,
+  // Turbopack picks C:\Projects\ordonsooq as root and breaks module/JSON resolution.
+  turbopack: {
+    root: projectRoot,
+  },
   experimental: {
     optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'framer-motion'],
     ...(isDevelopment ? {} : { optimizeCss: true }),

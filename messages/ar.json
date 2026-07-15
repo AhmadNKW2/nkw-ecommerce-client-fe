@@ -419,12 +419,20 @@
     "new": "جديد",
     "sale": "تخفيض",
     "soldBy": "يباع بواسطة",
+    "deliveryTitle": "التوصيل",
+    "deliveryCoverage": "يشمل جميع أنحاء المملكة",
+    "deliveryFeeLabel": "رسوم التوصيل",
+    "deliveryFeeOnly": "فقط بـ <price>{amount} {currency}</price>",
     "kingdomDelivery": "توصيل لجميع أنحاء المملكة",
     "kingdomDeliveryFeePrefix": "مقابل",
     "kingdomDeliveryFeeSuffix": "فقط",
     "deliveryEstimate": {
-      "orderInForDate": "اطلب خلال {time} ليصلك بحلول {date}",
-      "orderNowForDate": "اطلب الآن ليصلك بحلول {date}"
+      "orderIn": "اطلب خلال {time}",
+      "orderNow": "اطلب الآن",
+      "arrivesBefore": "يصل قبل",
+      "arrivesByDate": "ليصلك بحلول يوم {date}",
+      "orderInForDate": "<cta>اطلب خلال {time}</cta> حتى يصل يوم <when>{date}</when>",
+      "orderNowForDate": "<cta>اطلب الآن</cta> حتى يصل يوم <when>{date}</when>"
     },
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",

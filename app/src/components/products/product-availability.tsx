@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Clock3, PackageX, Truck } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { PackageX, Truck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { CURRENCY_CONFIG } from "@/lib/constants";
 import {
   formatRemainingDuration,
   getDeliveryEstimate,
@@ -15,41 +14,58 @@ import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/transformers";
 import type { SeoSettings } from "@/types/api.types";
 
+const LOW_STOCK_THRESHOLD = 5;
+
 function ProductStockStatus({ stock }: { stock: number }) {
   const t = useTranslations("product");
   const inStock = stock > 0;
+  const isLow = inStock && stock <= LOW_STOCK_THRESHOLD;
 
   return (
     <div
-      className={cn(
-        "flex items-start gap-3 rounded-xl border px-4 py-3",
-        inStock
-          ? "border-success/25 bg-success/8 text-green-800"
-          : "border-danger/25 bg-danger/8 text-danger",
-      )}
       role="status"
       aria-live="polite"
+      className={cn(
+        "flex items-start gap-3 rounded-2xl border px-3.5 py-3",
+        inStock
+          ? "border-secondary/50 bg-secondary/7"
+          : "border-danger/20 bg-danger/5",
+      )}
     >
-      <div
+      <span
         className={cn(
-          "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full",
-          inStock ? "bg-success/15 text-green-800" : "bg-danger/15",
+          "mt-1.5 size-2.5 shrink-0 rounded-full",
+          !inStock && "bg-danger",
+          inStock && !isLow && "bg-secondary",
+          isLow && "bg-amber-500",
         )}
-      >
-        {inStock ? (
-          <CheckCircle2 className="size-4" aria-hidden />
-        ) : (
-          <PackageX className="size-4" aria-hidden />
-        )}
-      </div>
-      <div className="min-w-0">
-        <p className="text-sm font-semibold leading-snug">
-          {inStock ? t("inStock") : t("outOfStock")}
+        aria-hidden
+      />
+      <div className="min-w-0 space-y-0.5">
+        <p
+          className={cn(
+            "text-[15px] font-bold leading-snug tracking-tight",
+            inStock ? "text-primary" : "text-danger2",
+          )}
+        >
+          {inStock ? (isLow ? t("lowStock") : t("inStock")) : t("outOfStock")}
         </p>
-        <p className="mt-0.5 text-xs leading-relaxed opacity-80">
-          {inStock ? t("inStockReady") : t("outOfStockDesc")}
+        <p
+          className={cn(
+            "text-sm leading-snug",
+            inStock ? "text-third" : "text-danger/80",
+          )}
+        >
+          {inStock
+            ? isLow
+              ? t("lowStockCount", { count: stock })
+              : t("inStockReady")
+            : t("outOfStockDesc")}
         </p>
       </div>
+      {!inStock ? (
+        <PackageX className="ms-auto size-4 shrink-0 text-danger/70" aria-hidden />
+      ) : null}
     </div>
   );
 }
@@ -65,21 +81,30 @@ function useLiveNow() {
   return now;
 }
 
-function getEstimateMessage(
-  t: (key: string, values?: Record<string, string | number>) => string,
+function getEstimateLine(
+  t: ReturnType<typeof useTranslations<"product">>,
   estimate: DeliveryEstimate,
   locale: string,
 ) {
+  const richValues = {
+    date: estimate.arrivalDateLabel,
+    time:
+      estimate.remainingMs != null
+        ? formatRemainingDuration(estimate.remainingMs, locale)
+        : "",
+    cta: (chunks: ReactNode) => (
+      <span className="font-bold text-primary">{chunks}</span>
+    ),
+    when: (chunks: ReactNode) => (
+      <span className="font-bold text-secondary">{chunks}</span>
+    ),
+  };
+
   if (estimate.beforeCutoff && estimate.remainingMs != null && estimate.remainingMs > 0) {
-    return t("deliveryEstimate.orderInForDate", {
-      time: formatRemainingDuration(estimate.remainingMs, locale),
-      date: estimate.arrivalDateLabel,
-    });
+    return t.rich("deliveryEstimate.orderInForDate", richValues);
   }
 
-  return t("deliveryEstimate.orderNowForDate", {
-    date: estimate.arrivalDateLabel,
-  });
+  return t.rich("deliveryEstimate.orderNowForDate", richValues);
 }
 
 function ProductDeliveryPanel({
@@ -103,58 +128,51 @@ function ProductDeliveryPanel({
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(deliveryFee);
-  const currencyUnit = locale === "ar" ? CURRENCY_CONFIG.symbolAr : "JD";
-  const estimateMessage = estimate ? getEstimateMessage(t, estimate, locale) : null;
+  const currencyUnit = locale === "ar" ? "د.أ" : "JD";
+  const estimateLine = estimate ? getEstimateLine(t, estimate, locale) : null;
 
   return (
-    <div
+    <section
       className={cn(
-        "overflow-hidden rounded-xl border border-secondary/15 bg-linear-to-br from-secondary/5 via-white to-primary2/5",
+        "rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-[0_2px_10px_rgba(0,0,0,0.05)]",
         className,
       )}
+      aria-label={t("deliveryTitle")}
     >
-      <div className="flex items-start gap-3 px-4 py-3.5">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
-          <Truck className="size-4" aria-hidden />
-        </div>
-        <div className="min-w-0 space-y-1">
-          <p className="text-sm font-semibold leading-snug text-primary">
-            {t("kingdomDelivery")}
-          </p>
-          <p className="text-sm leading-snug text-third">
-            {locale === "ar" ? (
-              <>
-                {t("kingdomDeliveryFeePrefix")}{" "}
-                <span className="font-semibold text-primary">
-                  {formattedAmount} {currencyUnit}
-                </span>{" "}
-                {t("kingdomDeliveryFeeSuffix")}
-              </>
-            ) : (
-              <>
-                {t("kingdomDeliveryFeePrefix")}{" "}
-                <span className="font-semibold text-primary">
-                  {formattedAmount} {currencyUnit}
-                </span>
-              </>
-            )}
-          </p>
-        </div>
+      <div className="flex items-center gap-2">
+        <Truck className="size-5 shrink-0 text-[#111827]" aria-hidden />
+        <h3 className="text-base font-bold leading-[1.45] text-[#111827]">
+          {t("deliveryTitle")}
+        </h3>
       </div>
 
-      {estimateMessage ? (
-        <div className="border-t border-secondary/10 px-4 py-3.5">
-          <div className="flex items-start gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/8 text-primary">
-              <Clock3 className="size-4" aria-hidden />
-            </div>
-            <p className="min-w-0 text-sm font-medium leading-snug text-primary">
-              {estimateMessage}
-            </p>
-          </div>
-        </div>
+      <p className="mt-2 text-sm font-normal leading-[1.45] text-[#6B7280]">
+        {t("deliveryCoverage")}
+      </p>
+
+      <div className="mt-4">
+        <p className="text-[15px] font-normal leading-[1.45] text-[#6B7280]">
+          {t.rich("deliveryFeeOnly", {
+            amount: formattedAmount,
+            currency: currencyUnit,
+            price: (chunks) => (
+              <span className="text-[22px] font-bold leading-[1.3] text-secondary">
+                {chunks}
+              </span>
+            ),
+          })}
+        </p>
+      </div>
+
+      {estimateLine ? (
+        <>
+          <div className="my-5 h-px w-full bg-[#E5E7EB]" role="separator" />
+          <p className="text-[15px] font-normal leading-[1.5] text-[#6B7280]">
+            {estimateLine}
+          </p>
+        </>
       ) : null}
-    </div>
+    </section>
   );
 }
 

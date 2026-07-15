@@ -9,7 +9,7 @@ export function getScopedMessages(
   locale: Locale,
   namespaces: readonly MessageNamespace[],
 ): AbstractIntlMessages {
-  const localeMessages = messageCatalog[locale];
+  const localeMessages = messageCatalog[locale] ?? messageCatalog.ar;
   const scopedMessages: AbstractIntlMessages = {};
 
   uniqueNamespaces(namespaces).forEach((namespace) => {

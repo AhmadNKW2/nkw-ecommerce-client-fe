@@ -453,11 +453,19 @@
     "customerReviews": "Customer Reviews",
     "verifiedReviews": "{count} Verified Reviews",
     "soldBy": "Sold by",
+    "deliveryTitle": "Delivery",
+    "deliveryCoverage": "Covers all areas of the Kingdom",
+    "deliveryFeeLabel": "Delivery fee",
+    "deliveryFeeOnly": "Only <price>{amount} {currency}</price>",
     "kingdomDelivery": "Delivery all over the Kingdom",
     "kingdomDeliveryFeePrefix": "for only",
     "deliveryEstimate": {
-      "orderInForDate": "Order in {time} to get it by {date}",
-      "orderNowForDate": "Order now to get it by {date}"
+      "orderIn": "Order within {time}",
+      "orderNow": "Order now",
+      "arrivesBefore": "Arrives by",
+      "arrivesByDate": "Get it by {date}",
+      "orderInForDate": "<cta>Order within {time}</cta> to arrive on <when>{date}</when>",
+      "orderNowForDate": "<cta>Order now</cta> to arrive on <when>{date}</when>"
     },
     "viewOffer": "View offer",
     "tags": "Tags",
