@@ -20,6 +20,7 @@ import { getSeoSettingsCached } from "@/services/settings.service";
 import { resolveLocalizedSiteName } from "@/lib/site-branding";
 import { DataFastAnalytics } from "@/components/analytics/datafast-analytics";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { RegisterAdminStorefrontDevice } from "@/components/analytics/register-admin-storefront-device";
 import { DeferredVercelAnalytics } from "@/components/analytics/deferred-vercel-analytics";
 import { SEO_SETTINGS_QUERY_KEY } from "@/hooks/useSeoSettings";
 import "./../globals.css";
@@ -178,6 +179,7 @@ export default async function RootLayout({ children, params }: Props) {
       <body className={`${isRTL ? almarai.className : figtree.className} antialiased min-h-screen flex flex-col bg-gray-50/50`}>
         <RouteIntlProvider locale={resolvedLocale} namespaces={ROOT_MESSAGE_NAMESPACES}>
           <Providers>
+            <RegisterAdminStorefrontDevice />
             <HydrationBoundary state={dehydratedState}>
               <Header />
               <main className="flex-1">
