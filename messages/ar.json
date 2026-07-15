@@ -423,19 +423,9 @@
     "kingdomDeliveryFeePrefix": "مقابل",
     "kingdomDeliveryFeeSuffix": "فقط",
     "deliveryEstimate": {
-      "orderForTomorrow": "اطلب خلال {time} ليصلك غداً",
-      "arrivesInTwoDays": "اطلب الآن ليصلك خلال يومين",
-      "arrivesSunday": "اطلب الآن ليصلك يوم الأحد",
-      "note": "الأوقات حسب توقيت عمّان وبعد تأكيد الطلب."
-    },
-    "shippingRules": {
-      "title": "مواعيد الشحن",
-      "beforeCutoff": "اطلب قبل {time} (الأحد–الخميس)",
-      "afterCutoff": "اطلب بعد {time} (الأحد–الأربعاء)",
-      "weekend": "اطلب بعد الموعد يوم الخميس أو الجمعة أو السبت",
-      "arrivesTomorrow": "يصل غداً",
-      "arrivesInTwoDays": "يصل خلال يومين",
-      "arrivesSunday": "يصل يوم الأحد"
+      "orderWithinForDate": "اطلب خلال {time} ليصلك الشحن غداً ({date})",
+      "orderNowInTwoDays": "اطلب الآن ليصلك الشحن خلال يومين ({date})",
+      "orderNowForDate": "اطلب الآن ليصلك الشحن يوم {date}"
     },
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",

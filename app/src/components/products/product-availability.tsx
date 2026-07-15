@@ -1,63 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, Clock3, Package, PackageX, Truck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Clock3, PackageX, Truck } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { CURRENCY_CONFIG } from "@/lib/constants";
 import {
   formatRemainingDuration,
   getDeliveryEstimate,
-  type DeliveryArrivalKind,
+  resolveShippingRulesConfig,
+  type DeliveryEstimate,
+  type ShippingRulesConfig,
 } from "@/lib/delivery-estimate";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/transformers";
+import type { SeoSettings } from "@/types/api.types";
 
-type StockStatus = "in" | "low" | "out";
-
-function resolveStockStatus(stock: number, lowStockThreshold: number): StockStatus {
-  if (stock <= 0) return "out";
-  if (stock <= lowStockThreshold) return "low";
-  return "in";
-}
-
-function ProductStockStatus({
-  stock,
-  lowStockThreshold,
-}: {
-  stock: number;
-  lowStockThreshold: number;
-}) {
+function ProductStockStatus({ stock }: { stock: number }) {
   const t = useTranslations("product");
-  const status = resolveStockStatus(stock, lowStockThreshold);
-
-  const styles =
-    status === "in"
-      ? "border-success/25 bg-success/8 text-secondary"
-      : status === "low"
-        ? "border-amber-200 bg-amber-50 text-amber-900"
-        : "border-danger/25 bg-danger/8 text-danger";
-
-  const Icon = status === "out" ? PackageX : status === "low" ? Package : CheckCircle2;
-
-  const label =
-    status === "in"
-      ? t("inStock")
-      : status === "low"
-        ? t("lowStockCount", { count: stock })
-        : t("outOfStock");
-
-  const detail =
-    status === "in"
-      ? t("inStockReady")
-      : status === "low"
-        ? t("lowStockHurry")
-        : t("outOfStockDesc");
+  const inStock = stock > 0;
 
   return (
     <div
       className={cn(
         "flex items-start gap-3 rounded-xl border px-4 py-3",
-        styles,
+        inStock
+          ? "border-success/25 bg-success/8 text-success"
+          : "border-danger/25 bg-danger/8 text-danger",
       )}
       role="status"
       aria-live="polite"
@@ -65,22 +33,28 @@ function ProductStockStatus({
       <div
         className={cn(
           "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full",
-          status === "in" && "bg-success/15",
-          status === "low" && "bg-amber-100",
-          status === "out" && "bg-danger/15",
+          inStock ? "bg-success/15 text-success" : "bg-danger/15",
         )}
       >
-        <Icon className="size-4" aria-hidden />
+        {inStock ? (
+          <CheckCircle2 className="size-4" aria-hidden />
+        ) : (
+          <PackageX className="size-4" aria-hidden />
+        )}
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold leading-snug">{label}</p>
-        <p className="mt-0.5 text-xs leading-relaxed opacity-80">{detail}</p>
+        <p className="text-sm font-semibold leading-snug">
+          {inStock ? t("inStock") : t("outOfStock")}
+        </p>
+        <p className="mt-0.5 text-xs leading-relaxed opacity-80">
+          {inStock ? t("inStockReady") : t("outOfStockDesc")}
+        </p>
       </div>
     </div>
   );
 }
 
-function useLiveDeliveryEstimate(locale: string) {
+function useLiveNow() {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -88,68 +62,57 @@ function useLiveDeliveryEstimate(locale: string) {
     return () => window.clearInterval(id);
   }, []);
 
-  return getDeliveryEstimate(now, locale);
+  return now;
 }
 
 function getEstimateMessage(
   t: (key: string, values?: Record<string, string | number>) => string,
-  arrivalKind: DeliveryArrivalKind,
-  remainingMs: number | null,
+  estimate: DeliveryEstimate,
   locale: string,
 ) {
-  if (arrivalKind === "tomorrow" && remainingMs != null && remainingMs > 0) {
-    return t("deliveryEstimate.orderForTomorrow", {
-      time: formatRemainingDuration(remainingMs, locale),
+  if (estimate.beforeCutoff && estimate.remainingMs != null && estimate.remainingMs > 0) {
+    return t("deliveryEstimate.orderWithinForDate", {
+      time: formatRemainingDuration(estimate.remainingMs, locale),
+      date: estimate.arrivalDateLabel,
     });
   }
 
-  if (arrivalKind === "inTwoDays") {
-    return t("deliveryEstimate.arrivesInTwoDays");
+  if (estimate.arrivalKind === "inTwoDays") {
+    return t("deliveryEstimate.orderNowInTwoDays", {
+      date: estimate.arrivalDateLabel,
+    });
   }
 
-  return t("deliveryEstimate.arrivesSunday");
+  return t("deliveryEstimate.orderNowForDate", {
+    date: estimate.arrivalDateLabel,
+  });
 }
 
 function ProductDeliveryPanel({
   deliveryFee,
+  shippingRules,
   className,
 }: {
   deliveryFee: number;
+  shippingRules: ShippingRulesConfig;
   className?: string;
 }) {
   const t = useTranslations("product");
   const locale = useLocale() as Locale;
-  const estimate = useLiveDeliveryEstimate(locale);
+  const now = useLiveNow();
+  const estimate = useMemo(
+    () => getDeliveryEstimate(now, locale, shippingRules.cutoffHour),
+    [locale, now, shippingRules.cutoffHour],
+  );
 
   const formattedAmount = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(deliveryFee);
   const currencyUnit = locale === "ar" ? CURRENCY_CONFIG.symbolAr : "JD";
-  const estimateMessage = getEstimateMessage(
-    t,
-    estimate.arrivalKind,
-    estimate.remainingMs,
-    locale,
-  );
-
-  const rules = [
-    {
-      id: "before",
-      when: t("shippingRules.beforeCutoff", { time: estimate.cutoffLabel }),
-      arrives: t("shippingRules.arrivesTomorrow"),
-    },
-    {
-      id: "after",
-      when: t("shippingRules.afterCutoff", { time: estimate.cutoffLabel }),
-      arrives: t("shippingRules.arrivesInTwoDays"),
-    },
-    {
-      id: "weekend",
-      when: t("shippingRules.weekend"),
-      arrives: t("shippingRules.arrivesSunday"),
-    },
-  ];
+  const estimateMessage = shippingRules.enabled
+    ? getEstimateMessage(t, estimate, locale)
+    : null;
 
   return (
     <div
@@ -187,40 +150,18 @@ function ProductDeliveryPanel({
         </div>
       </div>
 
-      <div className="border-t border-secondary/10 px-4 py-3.5">
-        <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/8 text-primary">
-            <Clock3 className="size-4" aria-hidden />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold leading-snug text-primary">
+      {estimateMessage ? (
+        <div className="border-t border-secondary/10 px-4 py-3.5">
+          <div className="flex items-start gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/8 text-primary">
+              <Clock3 className="size-4" aria-hidden />
+            </div>
+            <p className="min-w-0 text-sm font-medium leading-snug text-primary">
               {estimateMessage}
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-third">
-              {t("deliveryEstimate.note")}
-            </p>
           </div>
         </div>
-
-        <div className="mt-3 rounded-lg border border-gray-100 bg-white/80 px-3 py-2.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-third">
-            {t("shippingRules.title")}
-          </p>
-          <ul className="mt-2 space-y-2">
-            {rules.map((rule) => (
-              <li
-                key={rule.id}
-                className="grid grid-cols-1 gap-0.5 text-xs leading-snug sm:grid-cols-[1.1fr_0.9fr] sm:gap-3"
-              >
-                <span className="text-third">{rule.when}</span>
-                <span className="font-medium text-primary sm:text-end">
-                  {rule.arrives}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -228,18 +169,20 @@ function ProductDeliveryPanel({
 export function ProductAvailabilityBlock({
   stock,
   deliveryFee,
-  lowStockThreshold = 10,
+  seoSettings,
   className,
 }: {
   stock: number;
   deliveryFee: number;
-  lowStockThreshold?: number;
+  seoSettings?: SeoSettings | null;
   className?: string;
 }) {
+  const shippingRules = resolveShippingRulesConfig(seoSettings);
+
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <ProductStockStatus stock={stock} lowStockThreshold={lowStockThreshold} />
-      <ProductDeliveryPanel deliveryFee={deliveryFee} />
+      <ProductStockStatus stock={stock} />
+      <ProductDeliveryPanel deliveryFee={deliveryFee} shippingRules={shippingRules} />
     </div>
   );
 }

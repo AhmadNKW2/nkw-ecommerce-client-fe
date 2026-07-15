@@ -515,7 +515,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
   const deliveryFee = resolveDeliveryFee(seoSettings);
-  const lowStockThreshold = seoSettings?.low_stock_threshold ?? 10;
 
   // Product field toggles — hide disabled fields on the storefront. Fail open
   // to all-enabled (every field visible) while loading or on error.
@@ -871,7 +870,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
           <ProductAvailabilityBlock
             stock={currentStock}
             deliveryFee={deliveryFee}
-            lowStockThreshold={lowStockThreshold}
+            seoSettings={seoSettings}
           />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
@@ -935,7 +934,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
           <ProductAvailabilityBlock
             stock={currentStock}
             deliveryFee={deliveryFee}
-            lowStockThreshold={lowStockThreshold}
+            seoSettings={seoSettings}
           />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (

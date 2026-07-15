@@ -456,19 +456,9 @@
     "kingdomDelivery": "Delivery all over the Kingdom",
     "kingdomDeliveryFeePrefix": "for only",
     "deliveryEstimate": {
-      "orderForTomorrow": "Order within {time} to receive it tomorrow",
-      "arrivesInTwoDays": "Order now for delivery in 2 days",
-      "arrivesSunday": "Order now for delivery on Sunday",
-      "note": "Timing follows Amman local time and confirmation."
-    },
-    "shippingRules": {
-      "title": "Shipping times",
-      "beforeCutoff": "Order by {time} (Sun–Thu)",
-      "afterCutoff": "Order after {time} (Sun–Wed)",
-      "weekend": "Order Thu after cutoff, Fri, or Sat",
-      "arrivesTomorrow": "Arrives tomorrow",
-      "arrivesInTwoDays": "Arrives in 2 days",
-      "arrivesSunday": "Arrives Sunday"
+      "orderWithinForDate": "Order within {time} to get your shipment tomorrow ({date})",
+      "orderNowInTwoDays": "Order now to get your shipment in 2 days ({date})",
+      "orderNowForDate": "Order now to get your shipment on {date}"
     },
     "viewOffer": "View offer",
     "tags": "Tags",
