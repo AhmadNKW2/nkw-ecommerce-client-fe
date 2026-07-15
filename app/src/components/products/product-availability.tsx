@@ -24,7 +24,7 @@ function ProductStockStatus({ stock }: { stock: number }) {
       className={cn(
         "flex items-start gap-3 rounded-xl border px-4 py-3",
         inStock
-          ? "border-success/25 bg-success/8 text-success"
+          ? "border-success/25 bg-success/8 text-green-800"
           : "border-danger/25 bg-danger/8 text-danger",
       )}
       role="status"
@@ -33,7 +33,7 @@ function ProductStockStatus({ stock }: { stock: number }) {
       <div
         className={cn(
           "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full",
-          inStock ? "bg-success/15 text-success" : "bg-danger/15",
+          inStock ? "bg-success/15 text-green-800" : "bg-danger/15",
         )}
       >
         {inStock ? (

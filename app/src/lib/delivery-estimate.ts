@@ -315,7 +315,42 @@ function ruleMatches(
 }
 
 /**
+ * Pick the best matching rule without using saved display order.
+ * Prefer exact before/after over "any", then more specific day sets.
+ */
+function pickMatchingRule(
+  rules: ShippingDeliveryRule[],
+  weekday: number,
+  beforeCutoff: boolean,
+): ShippingDeliveryRule | null {
+  const matches = rules.filter((rule) => ruleMatches(rule, weekday, beforeCutoff));
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const cutoffRank = (mode: ShippingCutoffMode) => {
+    if (mode === "before" || mode === "after") {
+      return 0;
+    }
+    return 1;
+  };
+
+  return [...matches].sort((a, b) => {
+    const byCutoff = cutoffRank(a.cutoffMode) - cutoffRank(b.cutoffMode);
+    if (byCutoff !== 0) {
+      return byCutoff;
+    }
+    const byDays = a.days.length - b.days.length;
+    if (byDays !== 0) {
+      return byDays;
+    }
+    return a.id.localeCompare(b.id);
+  })[0];
+}
+
+/**
  * Evaluate configured shipping rules (Amman timezone).
+ * Saved rule order is display-only and does not affect matching.
  * Returns null when rules are disabled, empty, or none match today.
  */
 export function getDeliveryEstimate(
@@ -340,9 +375,7 @@ export function getDeliveryEstimate(
   });
 
   const beforeCutoff = now.getTime() < todayCutoff.getTime();
-  const matched = config.rules.find((rule) =>
-    ruleMatches(rule, parts.weekday, beforeCutoff),
-  );
+  const matched = pickMatchingRule(config.rules, parts.weekday, beforeCutoff);
 
   if (!matched) {
     return null;
