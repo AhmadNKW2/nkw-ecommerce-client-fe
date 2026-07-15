@@ -7,8 +7,10 @@
 export type AnalyticsEventParams = Record<string, string | number | boolean | null | undefined>;
 
 const SESSION_STORAGE_KEY = "ordonsooq_session_id";
-const BROWSER_STORAGE_KEY = "ordonsooq_browser_key";
-const ADMIN_CLIENT_COOKIE = "os_admin_client";
+/** Single client id for this browser (visitors + admin marking). */
+export const CLIENT_ID_STORAGE_KEY = "ordonsooq_browser_key";
+/** Set when this client id was marked as an admin device (same browser only). */
+const ADMIN_MARKED_KEY = "ordonsooq_admin_marked";
 const FLUSH_MS = 2500;
 const MAX_QUEUE = 40;
 
@@ -47,33 +49,28 @@ function getSessionId(): string {
   return id;
 }
 
-function getAdminClientCookie(): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${ADMIN_CLIENT_COOKIE}=([^;]*)`),
-  );
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-/** Admin devices (cookie from admin login) must not pollute visitor analytics / GA. */
-export function isAdminAnalyticsDevice(): boolean {
-  return Boolean(getAdminClientCookie());
-}
-
-function getBrowserKey(): string {
+export function getClientId(): string {
   if (typeof window === 'undefined') return '';
 
-  const adminKey = getAdminClientCookie();
-  if (adminKey) return adminKey;
-
-  let id = window.localStorage.getItem(BROWSER_STORAGE_KEY);
+  let id = window.localStorage.getItem(CLIENT_ID_STORAGE_KEY);
   if (!id) {
     id = typeof crypto !== 'undefined' && crypto.randomUUID
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    window.localStorage.setItem(BROWSER_STORAGE_KEY, id);
+    window.localStorage.setItem(CLIENT_ID_STORAGE_KEY, id);
   }
   return id;
+}
+
+/** Call after this browser's client id is registered as admin. */
+export function markLocalClientIdAsAdmin() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ADMIN_MARKED_KEY, '1');
+}
+
+export function isAdminAnalyticsDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(ADMIN_MARKED_KEY) === '1';
 }
 
 function cleanProperties(params: AnalyticsEventParams): Record<string, string | number | boolean> {
@@ -109,13 +106,17 @@ function scheduleFlush() {
 
 async function flushAnalyticsQueue(useBeacon: boolean) {
   if (typeof window === 'undefined' || eventQueue.length === 0) return;
+  if (isAdminAnalyticsDevice()) {
+    eventQueue = [];
+    return;
+  }
 
   const batch = eventQueue.splice(0, MAX_QUEUE);
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
   if (!apiBase) return;
 
   const payload = JSON.stringify({
-    browserKey: getBrowserKey(),
+    browserKey: getClientId(),
     sessionKey: getSessionId(),
     userAgent: navigator.userAgent.slice(0, 512),
     events: batch,
@@ -138,13 +139,12 @@ async function flushAnalyticsQueue(useBeacon: boolean) {
       credentials: 'omit',
     });
   } catch {
-    // Re-queue a small amount on failure so we don't drop everything silently.
     eventQueue = [...batch.slice(0, 10), ...eventQueue].slice(0, MAX_QUEUE);
   }
 }
 
 function queueFirstPartyEvent(eventName: string, params: AnalyticsEventParams = {}) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || isAdminAnalyticsDevice()) return;
 
   ensureLifecycle();
 
@@ -169,15 +169,11 @@ function queueFirstPartyEvent(eventName: string, params: AnalyticsEventParams = 
   scheduleFlush();
 }
 
-// Sends one event to Google Analytics + our visitor journey store.
-// eventName -> shows up as the event name in GA (keep it simple, e.g. "Clicked Add to Cart")
-// params    -> the extra readable details (e.g. { Page: "/cart", Time: "3:45 PM" })
 export function trackEvent(eventName: string, params: AnalyticsEventParams = {}) {
   if (typeof window === 'undefined') {
     return;
   }
 
-  // Admin browsers registered via admin login — skip GA + first-party journeys.
   if (isAdminAnalyticsDevice()) {
     return;
   }

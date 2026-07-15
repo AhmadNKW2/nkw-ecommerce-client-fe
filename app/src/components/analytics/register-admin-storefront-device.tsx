@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api-client";
-
-const BROWSER_STORAGE_KEY = "ordonsooq_browser_key";
-const ADMIN_CLIENT_COOKIE = "os_admin_client";
+import {
+  getClientId,
+  markLocalClientIdAsAdmin,
+} from "@/lib/analytics";
 
 const STAFF_ROLES = new Set([
   "admin",
@@ -15,58 +16,34 @@ const STAFF_ROLES = new Set([
   "store_admin",
 ]);
 
-function getOrCreateBrowserKey(): string {
-  let id = window.localStorage.getItem(BROWSER_STORAGE_KEY);
-  if (!id) {
-    id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    window.localStorage.setItem(BROWSER_STORAGE_KEY, id);
-  }
-  return id;
-}
-
-function setAdminClientCookie(browserKey: string) {
-  const maxAge = 60 * 60 * 24 * 400;
-  const host = window.location.hostname;
-  const parts = [
-    `${ADMIN_CLIENT_COOKIE}=${encodeURIComponent(browserKey)}`,
-    "path=/",
-    `max-age=${maxAge}`,
-    "SameSite=Lax",
-  ];
-  if (host.endsWith("ordonsooq.com")) {
-    parts.push("domain=.ordonsooq.com");
-    if (window.location.protocol === "https:") parts.push("Secure");
-  }
-  document.cookie = parts.join("; ");
-}
-
 /**
- * When a staff account is logged in on the storefront, register this browser
- * as an admin device so Visitors analytics ignores it.
+ * Admin user logged in on the storefront → take the existing client id
+ * and mark it as an admin device (no separate admin client id).
  */
 export function RegisterAdminStorefrontDevice() {
   const { user } = useAuth();
-  const registeredRef = useRef<string | null>(null);
+  const doneForUserRef = useRef<string | number | null>(null);
 
   useEffect(() => {
     if (!user?.role || !STAFF_ROLES.has(user.role)) return;
+    if (doneForUserRef.current === user.id) return;
 
-    const browserKey = getOrCreateBrowserKey();
-    if (registeredRef.current === browserKey) return;
-    registeredRef.current = browserKey;
-    setAdminClientCookie(browserKey);
+    const clientId = getClientId();
+    if (!clientId) return;
+
+    doneForUserRef.current = user.id;
 
     void apiClient
       .post("/analytics/admin-clients/register", {
-        browserKey,
+        browserKey: clientId,
         source: "storefront",
         userAgent: navigator.userAgent.slice(0, 512),
       })
+      .then(() => {
+        markLocalClientIdAsAdmin();
+      })
       .catch(() => {
-        registeredRef.current = null;
+        doneForUserRef.current = null;
       });
   }, [user?.role, user?.id]);
 
