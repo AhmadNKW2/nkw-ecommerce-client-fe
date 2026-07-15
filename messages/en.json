@@ -379,8 +379,12 @@
     "addToWishlist": "Add to Wishlist",
     "removeFromWishlist": "Remove from Wishlist",
     "inStock": "In Stock",
+    "inStockReady": "Available and ready to ship",
     "outOfStock": "Out of Stock",
+    "outOfStockDesc": "This item is currently unavailable",
     "lowStock": "Low Stock",
+    "lowStockCount": "Only {count} left in stock",
+    "lowStockHurry": "Limited quantity — order soon",
     "quantity": "Quantity",
     "price": "Price",
     "originalPrice": "Original Price",
@@ -451,6 +455,21 @@
     "soldBy": "Sold by",
     "kingdomDelivery": "Delivery all over the Kingdom",
     "kingdomDeliveryFeePrefix": "for only",
+    "deliveryEstimate": {
+      "orderForTomorrow": "Order within {time} to receive it tomorrow",
+      "arrivesInTwoDays": "Order now for delivery in 2 days",
+      "arrivesSunday": "Order now for delivery on Sunday",
+      "note": "Timing follows Amman local time and confirmation."
+    },
+    "shippingRules": {
+      "title": "Shipping times",
+      "beforeCutoff": "Order by {time} (Sun–Thu)",
+      "afterCutoff": "Order after {time} (Sun–Wed)",
+      "weekend": "Order Thu after cutoff, Fri, or Sat",
+      "arrivesTomorrow": "Arrives tomorrow",
+      "arrivesInTwoDays": "Arrives in 2 days",
+      "arrivesSunday": "Arrives Sunday"
+    },
     "viewOffer": "View offer",
     "tags": "Tags",
     "freeShipping": "Free Shipping",
@@ -913,11 +932,11 @@
       "sections": {
         "deliveryWindows": {
           "title": "Delivery windows",
-          "body": "Shipping timing depends on confirmation, operational cutoffs, destination, and seasonal demand.",
+          "body": "Shipping times use Amman local time. Orders confirmed before the daily cutoff move faster.",
           "items": {
-            "processing": "Orders move through confirmation and processing before they enter delivery.",
-            "cityCoverage": "Timing can vary by city and address coverage.",
-            "busyPeriods": "Campaign periods and peak dates can extend the expected timeline."
+            "processing": "Order by 2:00 PM Sunday–Thursday to receive your shipment tomorrow.",
+            "cityCoverage": "Order after 2:00 PM Sunday–Wednesday and delivery is expected in 2 days.",
+            "busyPeriods": "Orders placed Thursday after cutoff, Friday, or Saturday arrive on Sunday."
           }
         },
         "fees": {

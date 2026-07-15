@@ -379,8 +379,12 @@
     "addToWishlist": "أضف إلى قائمة الأمنيات",
     "removeFromWishlist": "إزالة من قائمة الأمنيات",
     "inStock": "متوفر",
+    "inStockReady": "متاح وجاهز للشحن",
     "outOfStock": "غير متوفر",
+    "outOfStockDesc": "هذا المنتج غير متاح حالياً",
     "lowStock": "كمية محدودة",
+    "lowStockCount": "بقي {count} فقط في المخزون",
+    "lowStockHurry": "كمية محدودة — اطلب قريباً",
     "quantity": "الكمية",
     "price": "السعر",
     "originalPrice": "السعر الأصلي",
@@ -418,6 +422,21 @@
     "kingdomDelivery": "توصيل لجميع أنحاء المملكة",
     "kingdomDeliveryFeePrefix": "مقابل",
     "kingdomDeliveryFeeSuffix": "فقط",
+    "deliveryEstimate": {
+      "orderForTomorrow": "اطلب خلال {time} ليصلك غداً",
+      "arrivesInTwoDays": "اطلب الآن ليصلك خلال يومين",
+      "arrivesSunday": "اطلب الآن ليصلك يوم الأحد",
+      "note": "الأوقات حسب توقيت عمّان وبعد تأكيد الطلب."
+    },
+    "shippingRules": {
+      "title": "مواعيد الشحن",
+      "beforeCutoff": "اطلب قبل {time} (الأحد–الخميس)",
+      "afterCutoff": "اطلب بعد {time} (الأحد–الأربعاء)",
+      "weekend": "اطلب بعد الموعد يوم الخميس أو الجمعة أو السبت",
+      "arrivesTomorrow": "يصل غداً",
+      "arrivesInTwoDays": "يصل خلال يومين",
+      "arrivesSunday": "يصل يوم الأحد"
+    },
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",
     "save": "وفّر {amount}",
@@ -914,11 +933,11 @@
       "sections": {
         "deliveryWindows": {
           "title": "نوافذ التوصيل",
-          "body": "يعتمد وقت الشحن على تأكيد الطلب، وأوقات التشغيل، والوجهة، وفترات الضغط الموسمية.",
+          "body": "مواعيد الشحن حسب توقيت عمّان. الطلبات المؤكدة قبل الموعد اليومي تصل أسرع.",
           "items": {
-            "processing": "يمر الطلب أولاً بمرحلة التأكيد والمعالجة قبل الدخول في التوصيل.",
-            "cityCoverage": "قد يختلف الوقت بحسب المدينة وتغطية العنوان.",
-            "busyPeriods": "قد تمتد المدة خلال الحملات والفترات المزدحمة."
+            "processing": "اطلب قبل الساعة 2:00 م الأحد–الخميس ليصلك الشحن غداً.",
+            "cityCoverage": "اطلب بعد الساعة 2:00 م الأحد–الأربعاء فيصل خلال يومين.",
+            "busyPeriods": "الطلبات بعد الموعد يوم الخميس أو الجمعة أو السبت تصل يوم الأحد."
           }
         },
         "fees": {

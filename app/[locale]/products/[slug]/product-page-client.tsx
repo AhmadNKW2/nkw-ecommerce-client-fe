@@ -10,11 +10,8 @@ import {
   Check,
   ChevronRight,
   MessageSquareText,
-  RotateCcw,
   Send,
-  Shield,
   Star,
-  Truck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/use-wishlist";
@@ -30,6 +27,7 @@ import { CURRENCY_CONFIG } from "@/lib/constants";
 import { resolveDeliveryFee } from "@/lib/shipping";
 import { transformProduct, type Locale } from "@/lib/transformers";
 import { calculateDiscount, cn, formatPrice } from "@/lib/utils";
+import { ProductAvailabilityBlock } from "@/components/products/product-availability";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { ProductDownloads } from "@/components/products/product-downloads";
 import { ProductOptionChip } from "@/components/products/product-option-chip";
@@ -509,57 +507,6 @@ function LinkedProductChoices({ title, groupName, choices }: { title: string; gr
   );
 }
 
-function ProductKingdomDelivery({
-  t,
-  deliveryFee,
-  locale,
-  className,
-}: {
-  t: any;
-  deliveryFee: number;
-  locale: Locale;
-  className?: string;
-}) {
-  const formattedAmount = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(deliveryFee);
-  const currencyUnit = locale === "ar" ? CURRENCY_CONFIG.symbolAr : "JD";
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-3 rounded-xl border border-secondary/15 bg-linear-to-r from-secondary/5 to-primary2/5 px-4 py-3",
-        className,
-      )}
-    >
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary/15 text-secondary">
-        <Truck className="size-4" />
-      </div>
-      <p className="min-w-0 text-sm font-medium leading-snug">
-        <span className="text-primary">{t("product.kingdomDelivery")}</span>
-        <span className="mx-1.5 text-third">—</span>
-        {locale === "ar" ? (
-          <>
-            <span className="text-third">{t("product.kingdomDeliveryFeePrefix")}</span>{" "}
-            <span className="font-semibold text-primary">
-              {formattedAmount} {currencyUnit}
-            </span>
-            <span className="text-third"> {t("product.kingdomDeliveryFeeSuffix")}</span>
-          </>
-        ) : (
-          <>
-            <span className="text-third">{t("product.kingdomDeliveryFeePrefix")}</span>{" "}
-            <span className="font-semibold text-primary">
-              {formattedAmount} {currencyUnit}
-            </span>
-          </>
-        )}
-      </p>
-    </div>
-  );
-}
-
 export function ProductPageClient({ slug, initialProductData, initialRelatedData, initialLinkedProductData }: ProductPageClientProps) {
   const locale = useLocale() as Locale;
   const t = useTranslations();
@@ -568,6 +515,7 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
   const { data: seoSettings } = useSeoSettings();
   const showSalePricing = seoSettings?.show_sale_pricing !== false;
   const deliveryFee = resolveDeliveryFee(seoSettings);
+  const lowStockThreshold = seoSettings?.low_stock_threshold ?? 10;
 
   // Product field toggles — hide disabled fields on the storefront. Fail open
   // to all-enabled (every field visible) while loading or on error.
@@ -881,8 +829,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
           <div className="flex items-center gap-2">
             {product.isNew ? <Badge variant="new">{t("product.new")}</Badge> : null}
             {discount > 0 ? <Badge variant="sale">{t("product.off", { percent: discount })}</Badge> : null}
-            {currentStock <= 5 && currentStock > 0 ? <Badge variant="warning">{t("product.onlyLeft", { count: currentStock })}</Badge> : null}
-            {currentStock === 0 ? <Badge variant="destructive">{t("product.outOfStock")}</Badge> : null}
           </div>
           <ProductHeader product={product} selectedOptionsSummary={selectedOptionsSummary} t={t} />
         </div>
@@ -922,7 +868,11 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
             />
           ) : null}
 
-          <ProductKingdomDelivery t={t} deliveryFee={deliveryFee} locale={locale} />
+          <ProductAvailabilityBlock
+            stock={currentStock}
+            deliveryFee={deliveryFee}
+            lowStockThreshold={lowStockThreshold}
+          />
           <ProductActions product={product} selectedVariant={selectedVariant} />
         </div>
       </div>
@@ -947,8 +897,6 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
           <div className="flex items-center gap-2">
             {product.isNew ? <Badge variant="new">{t("product.new")}</Badge> : null}
             {discount > 0 ? <Badge variant="sale">{t("product.off", { percent: discount })}</Badge> : null}
-            {currentStock <= 5 && currentStock > 0 ? <Badge variant="warning">{t("product.onlyLeft", { count: currentStock })}</Badge> : null}
-            {currentStock === 0 ? <Badge variant="destructive">{t("product.outOfStock")}</Badge> : null}
           </div>
 
           <div className="[&_h1]:text-3xl">
@@ -984,7 +932,11 @@ export function ProductPageClient({ slug, initialProductData, initialRelatedData
         </div>
 
         <div className="lg:col-span-3 flex flex-col gap-5">
-          <ProductKingdomDelivery t={t} deliveryFee={deliveryFee} locale={locale} />
+          <ProductAvailabilityBlock
+            stock={currentStock}
+            deliveryFee={deliveryFee}
+            lowStockThreshold={lowStockThreshold}
+          />
 
           {product.otherSellers && product.otherSellers.length > 0 ? (
             <Card className="p-4">
