@@ -72,6 +72,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ...(props.style ?? null),
     };
     
+    const analyticsLabelFromProps =
+      typeof props["data-analytics-label"] === "string"
+        ? props["data-analytics-label"]
+        : undefined;
+    const childrenLabel =
+      typeof children === "string"
+        ? children
+        : Array.isArray(children)
+          ? children
+              .filter((child): child is string => typeof child === "string")
+              .join(" ")
+              .trim() || undefined
+          : undefined;
+    const resolvedAnalyticsLabel = analyticsLabelFromProps || childrenLabel;
+
     return (
       <button
         className={cn(
@@ -84,6 +99,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || isLoading}
         style={colorStyle}
         {...props}
+        data-analytics-label={resolvedAnalyticsLabel}
+        aria-busy={isLoading || undefined}
       >
         {isLoading ? (
           <>

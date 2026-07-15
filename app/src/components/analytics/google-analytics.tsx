@@ -10,6 +10,9 @@ const GA_MEASUREMENT_ID = "G-L5CKSLWKWV";
 const GA_IDLE_FALLBACK_MS = 12_000;
 
 function getReadableClickName(el: HTMLElement): string {
+  const analyticsLabel = el.getAttribute("data-analytics-label");
+  if (analyticsLabel) return analyticsLabel;
+
   const ariaLabel = el.getAttribute("aria-label");
   if (ariaLabel) return ariaLabel;
 
@@ -46,7 +49,9 @@ function GoogleAnalyticsTracker({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!enabled) return;
 
-    const trackClick = (event: MouseEvent) => {
+    // Capture label during the capture phase (before React sets isLoading),
+    // otherwise buttons briefly show "Loading..." and we track that instead.
+    const scheduleClickTracking = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
 
@@ -54,29 +59,30 @@ function GoogleAnalyticsTracker({ enabled }: { enabled: boolean }) {
         'a, button, input, select, textarea, [role="button"]',
       );
       if (!(clickable instanceof HTMLElement)) return;
+      if (clickable.hasAttribute("data-analytics-ignore")) return;
 
       const name = getReadableClickName(clickable);
       const tag = clickable.tagName.toLowerCase();
-      const eventName = `Clicked: ${name}`;
+      const elementType =
+        tag === "a"
+          ? "Link"
+          : tag === "button"
+            ? "Button"
+            : tag === "input"
+              ? "Input"
+              : tag;
+      const linkGoesTo =
+        clickable instanceof HTMLAnchorElement
+          ? (clickable.getAttribute("href") ?? undefined)
+          : undefined;
 
-      trackEvent(eventName, {
-        "Element Type":
-          tag === "a"
-            ? "Link"
-            : tag === "button"
-              ? "Button"
-              : tag === "input"
-                ? "Input"
-                : tag,
-        "Link Goes To":
-          clickable instanceof HTMLAnchorElement
-            ? (clickable.getAttribute("href") ?? undefined)
-            : undefined,
-      });
-    };
+      const run = () => {
+        trackEvent(`Clicked: ${name}`, {
+          "Element Type": elementType,
+          "Link Goes To": linkGoesTo,
+        });
+      };
 
-    const scheduleClickTracking = (event: MouseEvent) => {
-      const run = () => trackClick(event);
       if (typeof window.requestIdleCallback === "function") {
         window.requestIdleCallback(run, { timeout: 500 });
         return;

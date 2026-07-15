@@ -30,6 +30,7 @@ import {
 import { ApiError } from "@/lib/api-client";
 import { formatPrice } from "@/lib/utils";
 import { JORDAN_CITIES, SITE_CONFIG, CURRENCY_CONFIG } from "@/lib/constants";
+import { trackEvent } from "@/lib/analytics";
 import { trackDataFastEvent } from "@/lib/datafast";
 import { calculateShipping, resolveFreeShippingThreshold } from "@/lib/shipping";
 import { PageSkeleton } from "@/components/ui/page-skeleton";
@@ -389,11 +390,17 @@ export function CheckoutPageClient() {
 
   const handleAdvanceStep = () => {
     if (currentStep === "shipping") {
-      const isValid = easyPurchaseEnabled
+      const result = easyPurchaseEnabled
         ? validateEasyPurchase()
         : validateShipping();
-      if (isValid) {
+      if (result.ok) {
         transitionToStep("payment");
+      } else {
+        trackEvent("Checkout validation failed", {
+          step: "shipping",
+          checkout_mode: easyPurchaseEnabled ? "easy_purchase" : "standard",
+          fields: result.fields.join(", "),
+        });
       }
       return;
     }
@@ -438,12 +445,12 @@ export function CheckoutPageClient() {
 
     const errorKeys = Object.keys(nextErrors);
     if (errorKeys.length === 0) {
-      return true;
+      return { ok: true as const, fields: [] as string[] };
     }
 
     const firstErrorField = errorKeys[0];
     setErrorScrollTarget({ field: firstErrorField, nonce: Date.now() });
-    return false;
+    return { ok: false as const, fields: errorKeys };
   };
 
   const validateShipping = () => {
@@ -470,7 +477,7 @@ export function CheckoutPageClient() {
 
     const errorKeys = Object.keys(nextErrors);
     if (errorKeys.length === 0) {
-      return true;
+      return { ok: true as const, fields: [] as string[] };
     }
 
     const fieldOrder: Array<keyof CheckoutFormData> = [
@@ -486,7 +493,7 @@ export function CheckoutPageClient() {
     ];
     const firstErrorField = fieldOrder.find((field) => errorKeys.includes(field)) ?? errorKeys[0];
     setErrorScrollTarget({ field: firstErrorField, nonce: Date.now() });
-    return false;
+    return { ok: false as const, fields: errorKeys };
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -499,12 +506,24 @@ export function CheckoutPageClient() {
   const handlePlaceOrder = async () => {
     try {
       if (easyPurchaseEnabled) {
-        if (!validateEasyPurchase()) {
+        const result = validateEasyPurchase();
+        if (!result.ok) {
+          trackEvent("Order validation failed", {
+            checkout_mode: "easy_purchase",
+            fields: result.fields.join(", "),
+          });
           return;
         }
-      } else if (!validateShipping()) {
-        transitionToStep("shipping");
-        return;
+      } else {
+        const result = validateShipping();
+        if (!result.ok) {
+          trackEvent("Order validation failed", {
+            checkout_mode: "standard",
+            fields: result.fields.join(", "),
+          });
+          transitionToStep("shipping");
+          return;
+        }
       }
 
       setIsProcessing(true);
@@ -578,18 +597,29 @@ export function CheckoutPageClient() {
         payment_method: order.paymentMethod,
       });
 
+      trackEvent(`Order succeeded ord#${order.id}`, {
+        order_id: String(order.id),
+        amount: order.totalAmount,
+        items: order.items.length,
+        payment_method: order.paymentMethod,
+      });
+
       setCreatedOrderId(order.id);
       setOrderComplete(true);
       clearCart();
     } catch (error) {
       console.error("Failed to place order:", error);
-      if (error instanceof ApiError) {
-        setBookingError(error.message);
-      } else if (error instanceof Error && error.message) {
-        setBookingError(error.message);
-      } else {
-        setBookingError(t("orderPlacementFailed"));
-      }
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error && error.message
+            ? error.message
+            : t("orderPlacementFailed");
+      setBookingError(message);
+      trackEvent("Order failed", {
+        error: message,
+        checkout_mode: easyPurchaseEnabled ? "easy_purchase" : "standard",
+      });
     } finally {
       setIsProcessing(false);
     }

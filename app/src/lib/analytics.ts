@@ -4,6 +4,8 @@
 // (first-party visitor journeys with sequential IDs).
 // =============================================
 
+import { resolveDeviceModelHint } from "@/lib/device-model";
+
 export type AnalyticsEventParams = Record<string, string | number | boolean | null | undefined>;
 
 const SESSION_STORAGE_KEY = "ordonsooq_session_id";
@@ -163,10 +165,13 @@ async function flushAnalyticsQueue(useBeacon: boolean) {
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
   if (!apiBase) return;
 
+  const deviceModel = await resolveDeviceModelHint();
+
   const payload = JSON.stringify({
     browserKey: getClientId(),
     sessionKey: getSessionId(),
     userAgent: navigator.userAgent.slice(0, 512),
+    ...(deviceModel ? { deviceModel } : {}),
     events: batch,
   });
 
