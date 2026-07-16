@@ -14,21 +14,14 @@ const API_BASE = getApiBaseUrl();
 const EXTERNAL_SEARCH_API_URL =
   process.env.NEXT_PUBLIC_EXTERNAL_SEARCH_API_URL || '';
 const SEARCH_PROVIDER = (
-  process.env.NEXT_PUBLIC_SEARCH_PROVIDER || 'auto'
+  process.env.NEXT_PUBLIC_SEARCH_PROVIDER || 'backend'
 ).toLowerCase();
 const LOCAL_SEARCH_API_PATH = '/api/search';
 const LOCAL_AUTOCOMPLETE_API_PATH = '/api/search/autocomplete';
 const DEFAULT_PER_PAGE = 20;
 
-function shouldTryExternalProvider(): boolean {
-  if (SEARCH_PROVIDER === 'backend') {
-    return false;
-  }
-  return Boolean(EXTERNAL_SEARCH_API_URL);
-}
-
-function shouldForceBackendProvider(): boolean {
-  return SEARCH_PROVIDER === 'backend';
+function usesExternalSearchProvider(): boolean {
+  return SEARCH_PROVIDER === 'external';
 }
 
 async function shouldShowSalePricing(): Promise<boolean> {
@@ -1804,23 +1797,6 @@ async function requestExternalSearch(
   return result;
 }
 
-function shouldUseExternalSearch(filters: SearchFilters): boolean {
-  return shouldTryExternalProvider() && (
-    typeof filters.q === 'string'
-    || Boolean(
-      filters.category_ids
-      || filters.brand_ids
-      || filters.vendor_ids
-      || filters.attributes_values_ids
-      || filters.specifications_values_ids
-      || filters.min_price != null
-      || filters.max_price != null
-      || filters.is_out_of_stock != null
-      || filters.average_rating_min != null
-    )
-  );
-}
-
 function resolveLegacyFacetFallbackLookup(
   fieldName: string,
   catalogs: FacetCatalogs,
@@ -2043,35 +2019,31 @@ export async function serverAutocompleteWithSource(
     };
   }
 
-  if (shouldForceBackendProvider()) {
+  if (!usesExternalSearchProvider()) {
     return legacyServerAutocomplete(normalizedQ, perPage, signal);
   }
 
-  try {
-    const upstream = await fetchExternalSearchPayloadWithSignal({
-      query: normalizeQuery(normalizedQ),
-      pagination: {
-        page: 1,
-        per_page: perPage,
-      },
-    }, signal);
-    const result: SearchRequestDebugResult<AutocompleteResponse> = {
-      data: normalizeExternalSearchAutocompleteResponse(upstream.rawData, perPage, normalizedLocale),
-      rawData: upstream.rawData,
-      source: 'external',
-      status: upstream.status,
-      durationMs: upstream.durationMs,
-    };
+  const upstream = await fetchExternalSearchPayloadWithSignal({
+    query: normalizeQuery(normalizedQ),
+    pagination: {
+      page: 1,
+      per_page: perPage,
+    },
+  }, signal);
+  const result: SearchRequestDebugResult<AutocompleteResponse> = {
+    data: normalizeExternalSearchAutocompleteResponse(upstream.rawData, perPage, normalizedLocale),
+    rawData: upstream.rawData,
+    source: 'external',
+    status: upstream.status,
+    durationMs: upstream.durationMs,
+  };
 
-    logProcessedResult('EXTERNAL AUTOCOMPLETE FINAL', result, {
-      query: normalizedQ,
-      perPage,
-    });
+  logProcessedResult('EXTERNAL AUTOCOMPLETE FINAL', result, {
+    query: normalizedQ,
+    perPage,
+  });
 
-    return result;
-  } catch {
-    return legacyServerAutocomplete(normalizedQ, perPage, signal);
-  }
+  return result;
 }
 
 // ─── Server-side fetch (for Server Components — no auth needed) ─────────────
@@ -2085,19 +2057,11 @@ export async function serverSearchWithSource(
   signal?: AbortSignal,
   locale?: string
 ): Promise<SearchRequestDebugResult<SearchResponse>> {
-  if (shouldForceBackendProvider()) {
+  if (!usesExternalSearchProvider()) {
     return legacyServerSearch(filters, signal, locale);
   }
 
-  if (!shouldUseExternalSearch(filters)) {
-    return legacyServerSearch(filters, signal, locale);
-  }
-
-  try {
-    return requestExternalSearch(filters, signal, locale);
-  } catch {
-    return legacyServerSearch(filters, signal, locale);
-  }
+  return requestExternalSearch(filters, signal, locale);
 }
 
 // ─── Client-side fetch (uses apiClient for consistency) ─────────────────────
