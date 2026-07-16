@@ -22,7 +22,7 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
 
   // Grid Configuration based on type
   const gridConfig = {
-    brand: "grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10",
+    brand: "grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8",
     category: "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6",
     vendor: "grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10",
   };
@@ -113,6 +113,31 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
           );
 
           // Render Card
+          if (type === 'brand') {
+            return (
+              <Link key={id} href={href} className="group block">
+                <div className="aspect-square bg-white border border-gray-100 rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-lg relative">
+                  {image ? (
+                    <Image
+                      src={image}
+                      alt={name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 20vw, 12vw"
+                    />
+                  ) : (
+                    <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-gray-300">
+                      {name?.[0]}
+                    </span>
+                  )}
+                </div>
+                <h3 className="mt-2 text-center text-base md:text-lg font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
+                  {name}
+                </h3>
+              </Link>
+            );
+          }
+
           return (
              <Link
                 key={id}
@@ -124,13 +149,13 @@ export function EntityGridPage({ type, data, isLoading, title, subtitle, error }
                             {image ? (
                             <div className={cn(
                               "relative rounded-lg",
-                              (type === 'brand' || type === 'vendor') ? "w-1/2 h-1/2 m-auto aspect-square" : "w-full h-full"
+                              type === 'vendor' ? "w-1/2 h-1/2 m-auto aspect-square" : "w-full h-full"
                             )}>
                                 <Image
                                     src={image}
                                     alt={name}
                                     fill
-                                    className={(type === 'brand' || type === 'vendor') ? "object-contain" : "object-cover"}
+                                    className={type === 'vendor' ? "object-contain" : "object-cover"}
                                 />
                             </div>
                             ) : (

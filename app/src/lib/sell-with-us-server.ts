@@ -3,8 +3,6 @@ import type { SellWithUsFormData } from "@/lib/sell-with-us";
 const DEFAULT_ERROR_MESSAGE = "Unable to submit sell with us request.";
 
 type SubmitSellWithUsOptions = {
-  authorization?: string | null;
-  cookie?: string | null;
   signal?: AbortSignal;
 };
 
@@ -12,7 +10,7 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
-function getPartnersEndpoint(): string {
+function getPartnersLeadEndpoint(): string {
   const explicitUrl = process.env.SELL_WITH_US_PARTNERS_API_URL?.trim();
 
   if (explicitUrl) {
@@ -28,12 +26,7 @@ function getPartnersEndpoint(): string {
     );
   }
 
-  return `${trimTrailingSlash(apiBaseUrl)}/partners`;
-}
-
-function getServerAuthorizationHeader(): string | null {
-  const token = process.env.SELL_WITH_US_PARTNERS_API_TOKEN?.trim();
-  return token ? `Bearer ${token}` : null;
+  return `${trimTrailingSlash(apiBaseUrl)}/partners/leads`;
 }
 
 function extractErrorMessage(payload: unknown): string | null {
@@ -94,25 +87,12 @@ export async function submitSellWithUsSubmission(
   values: SellWithUsFormData,
   options: SubmitSellWithUsOptions = {},
 ): Promise<void> {
-  const headers = new Headers({
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  });
-
-  const authorizationHeader = getServerAuthorizationHeader() || options.authorization?.trim() || null;
-  const cookieHeader = options.cookie?.trim() || null;
-
-  if (authorizationHeader) {
-    headers.set("Authorization", authorizationHeader);
-  }
-
-  if (cookieHeader) {
-    headers.set("Cookie", cookieHeader);
-  }
-
-  const response = await fetch(getPartnersEndpoint(), {
+  const response = await fetch(getPartnersLeadEndpoint(), {
     method: "POST",
-    headers,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify({
       full_name: values.fullName,
       company_name: values.companyName || undefined,

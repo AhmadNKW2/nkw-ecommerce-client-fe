@@ -197,9 +197,7 @@ export function ProductCard({
   };
 
   const handleCartAnimationEnd = () => {
-    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
-      openCart();
-    }
+    openCart();
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {

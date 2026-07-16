@@ -18,8 +18,6 @@ export async function POST(request: NextRequest) {
     }
 
     await submitSellWithUsSubmission(parsedPayload.data, {
-      authorization: request.headers.get("authorization"),
-      cookie: request.headers.get("cookie"),
       signal: request.signal,
     });
 

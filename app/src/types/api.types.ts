@@ -460,6 +460,7 @@ export type SeoSettings = {
   id: number;
   site_name_en: string;
   site_name_ar: string;
+  site_logo: string | null;
   brand_primary: string | null;
   brand_primary_2: string | null;
   brand_primary_3: string | null;

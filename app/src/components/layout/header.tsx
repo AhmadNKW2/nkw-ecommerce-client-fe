@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import { CartSidebar } from "@/components/cart";
 import { IconButton } from "@/components/ui";
 import { SearchBox } from "@/components/search/SearchBox";
 import {
@@ -12,11 +13,6 @@ import {
   NavigationBar,
 } from "./header-components";
 import { BottomNav } from "./bottom-nav";
-
-const CartSidebar = dynamic(
-  () => import("@/components/cart").then((mod) => mod.CartSidebar),
-  { ssr: false },
-);
 
 const SitePopup = dynamic(
   () => import("@/components/site-popup").then((mod) => mod.SitePopup),
@@ -54,7 +50,7 @@ export function Header() {
     };
   }, []);
 
-  // Defer cart drawer + promo popup until idle / interaction so homepage JS stays lighter.
+  // Defer promo popup until idle / interaction so homepage JS stays lighter.
   useEffect(() => {
     const enable = () => setDeferHeavyUi(true);
     const opts: AddEventListenerOptions = { once: true, passive: true };

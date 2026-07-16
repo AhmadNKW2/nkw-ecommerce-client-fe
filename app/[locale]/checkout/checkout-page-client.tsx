@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -143,7 +143,7 @@ export function CheckoutPageClient() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [errorScrollTarget, setErrorScrollTarget] = useState<{ field: string; nonce: number } | null>(null);
   const [formData, setFormData] = useState<CheckoutFormData>(createInitialFormData);
-  const mobileActionsSentinelRef = useRef<HTMLDivElement | null>(null);
+  const [mobileActionsSentinel, setMobileActionsSentinel] = useState<HTMLDivElement | null>(null);
 
   const freeShippingThreshold = resolveFreeShippingThreshold(seoSettings);
   const shipping = calculateShipping(totalPrice, seoSettings);
@@ -212,12 +212,7 @@ export function CheckoutPageClient() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const sentinel = mobileActionsSentinelRef.current;
-    if (!sentinel) {
+    if (typeof window === "undefined" || !mobileActionsSentinel) {
       return;
     }
 
@@ -231,12 +226,12 @@ export function CheckoutPageClient() {
       },
     );
 
-    observer.observe(sentinel);
+    observer.observe(mobileActionsSentinel);
 
     return () => {
       observer.disconnect();
     };
-  }, [mobileStickyBottomOffset]);
+  }, [mobileActionsSentinel, mobileStickyBottomOffset]);
 
   useEffect(() => {
     if (!user) {
@@ -775,15 +770,17 @@ export function CheckoutPageClient() {
             ) : null}
 
             <div className="flex flex-col gap-3">
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={() => void handlePlaceOrder()}
-                isLoading={isProcessing}
-              >
-                {t("placeOrder")}
-                <Lock className="h-5 w-5" />
-              </Button>
+              <div ref={setMobileActionsSentinel}>
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={() => void handlePlaceOrder()}
+                  isLoading={isProcessing}
+                >
+                  {t("placeOrder")}
+                  <Lock className="h-5 w-5" />
+                </Button>
+              </div>
               <p className="flex items-center justify-center gap-2 text-sm text-third">
                 <Banknote className="h-4 w-4 shrink-0 text-secondary" />
                 <span>{t("cod")}</span>
@@ -1220,7 +1217,7 @@ export function CheckoutPageClient() {
               </Button>
             </div>
 
-            <div className="flex items-center gap-3 lg:hidden">
+            <div ref={setMobileActionsSentinel} className="flex items-center gap-3 lg:hidden">
               {currentStep !== "shipping" ? (
                 <Button
                   aria-label={tCommon("back")}
@@ -1242,8 +1239,6 @@ export function CheckoutPageClient() {
                 {currentActionLabel}
               </Button>
             </div>
-
-            <div ref={mobileActionsSentinelRef} className="h-5 lg:hidden" aria-hidden="true" />
 
             {/* <div className="flex items-center justify-center gap-2 text-sm text-third pt-5 border-t border-gray-100">
               <Lock className="w-4 h-4" />

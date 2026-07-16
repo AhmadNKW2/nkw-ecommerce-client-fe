@@ -220,10 +220,10 @@ export function FloatingCartButton({ product, cartItem, variantId, color = "blue
           {!showQty && status === 'loading' && (
             <motion.div
               key="loading"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1,   opacity: 1 }}
-              exit={{   scale: 0.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="absolute inset-0 flex items-center justify-center"
             >
               <Loader2 size={16} className="animate-spin" />
@@ -240,10 +240,10 @@ export function FloatingCartButton({ product, cartItem, variantId, color = "blue
           {!showQty && status === 'success' && (
             <motion.div
               key="success"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1,   opacity: 1 }}
-              exit={{   scale: 0.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="absolute inset-0 flex items-center justify-center"
             >
               <div className="rounded-full bg-white/20 p-0.5">

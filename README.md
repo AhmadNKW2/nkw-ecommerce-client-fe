@@ -32,9 +32,9 @@ API request logging is disabled by default in development.
 
 ## Sell With Us Backend
 
-- The `app/api/sell-with-us` route now submits merchant leads to `${NEXT_PUBLIC_API_URL}/partners` by default.
-- Set `SELL_WITH_US_PARTNERS_API_URL` to override the full Partner create endpoint when needed.
-- Because the Partner create endpoint is admin-guarded, set `SELL_WITH_US_PARTNERS_API_TOKEN` on the Next.js server for public submissions, or rely on a forwarded authenticated admin session.
+- The `app/api/sell-with-us` route submits merchant leads to the public `${NEXT_PUBLIC_API_URL}/partners/leads` endpoint by default.
+- Set `SELL_WITH_US_PARTNERS_API_URL` to override the full lead endpoint URL when needed.
+- Admin partner CRUD remains on `/partners` and stays auth-guarded.
 
 ## Learn More
 

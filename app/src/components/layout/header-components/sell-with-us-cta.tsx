@@ -366,19 +366,25 @@ export function SellWithUsCta({ variant = "desktop", className, onOpen }: SellWi
                 </p>
 
                 <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2">
-                  <div className="rounded-[22px] border border-secondary/15 bg-secondary/8 px-4 py-4">
+                  <div className="min-w-0 rounded-[22px] border border-secondary/15 bg-secondary/8 px-4 py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-third">
                       {copy.contactPhoneLabel}
                     </p>
-                    <p className="mt-2 text-base font-bold text-primary">
+                    <p
+                      className="mt-2 text-left text-sm font-bold whitespace-nowrap text-primary sm:text-base"
+                      dir="ltr"
+                    >
                       {SITE_CONFIG.contact.phone}
                     </p>
                   </div>
-                  <div className="rounded-[22px] border border-secondary/15 bg-secondary/8 px-4 py-4">
+                  <div className="min-w-0 rounded-[22px] border border-secondary/15 bg-secondary/8 px-4 py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-third">
                       {copy.contactEmailLabel}
                     </p>
-                    <p className="mt-2 text-base font-bold text-primary wrap-break-word">
+                    <p
+                      className="mt-2 text-left text-sm font-bold whitespace-nowrap text-primary sm:text-base"
+                      dir="ltr"
+                    >
                       {supportEmail}
                     </p>
                   </div>

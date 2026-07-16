@@ -22,6 +22,7 @@ import { DataFastAnalytics } from "@/components/analytics/datafast-analytics";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { RegisterAdminStorefrontDevice } from "@/components/analytics/register-admin-storefront-device";
 import { DeferredVercelAnalytics } from "@/components/analytics/deferred-vercel-analytics";
+import { FaviconManager } from "@/components/layout/favicon-manager";
 import { SEO_SETTINGS_QUERY_KEY } from "@/hooks/useSeoSettings";
 import "./../globals.css";
 
@@ -94,6 +95,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   );
   const openGraphImage = seoSettings?.default_og_image || SITE_CONFIG.ogImage;
   const twitterHandle = normalizeTwitterHandle(seoSettings?.twitter_handle);
+  const siteLogo = seoSettings?.site_logo?.trim();
   const headersList = await headers();
   const canonicalPath = headersList.get("x-canonical-path");
   const canonicalUrl = canonicalPath ? buildCanonicalUrl(canonicalPath) : SITE_CONFIG.url;
@@ -111,6 +113,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     keywords: ["e-commerce", "online shopping", "storefront", "shop", "buy"],
     authors: [{ name: `${siteName} Team` }],
     creator: siteName,
+    ...(siteLogo
+      ? {
+          icons: {
+            icon: siteLogo,
+            shortcut: siteLogo,
+            apple: siteLogo,
+          },
+        }
+      : {}),
     openGraph: {
       type: "website",
       locale: locale === "ar" ? "ar_JO" : "en_US",
@@ -181,6 +192,7 @@ export default async function RootLayout({ children, params }: Props) {
           <Providers>
             <RegisterAdminStorefrontDevice />
             <HydrationBoundary state={dehydratedState}>
+              <FaviconManager />
               <Header />
               <main className="flex-1">
                 <PageWrapper>
