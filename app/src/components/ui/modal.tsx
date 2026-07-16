@@ -134,13 +134,15 @@ export function Modal({
           >
             {showCloseButton && (
               <button
+                type="button"
                 onClick={onClose}
+                aria-label="Close modal"
                 className={cn(
                   "absolute top-4 ltr:right-4 rtl:left-4 p-2 text-third hover:text-primary hover:bg-gray-100 rounded-full transition-colors z-50",
                   closeButtonClassName
                 )}
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             )}
             {children}

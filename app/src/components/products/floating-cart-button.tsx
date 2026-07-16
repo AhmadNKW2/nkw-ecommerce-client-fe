@@ -152,6 +152,7 @@ export function FloatingCartButton({ product, cartItem, variantId, color = "blue
                 type="button"
                 disabled={isItemLoading || isUpdating}
                 onClick={() => handleChange(quantity - 1)}
+                aria-label={quantity === 1 ? "Remove from cart" : "Decrease quantity"}
                 className="h-9 w-9 flex items-center justify-center active:bg-white/20 transition-colors disabled:opacity-50"
               >
                 <AnimatePresence mode="popLayout" initial={false}>
@@ -186,9 +187,10 @@ export function FloatingCartButton({ product, cartItem, variantId, color = "blue
                 type="button"
                 disabled={isAtMax || isItemLoading || isUpdating}
                 onClick={() => handleChange(quantity + 1)}
+                aria-label="Increase quantity"
                 className="h-9 w-9 flex items-center justify-center active:bg-white/20 transition-colors disabled:opacity-50"
               >
-                <Plus size={13} />
+                <Plus size={13} aria-hidden="true" />
               </button>
             </motion.div>
           )}

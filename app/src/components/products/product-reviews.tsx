@@ -158,8 +158,12 @@ export function ProductReviews({ rating, reviewCount, reviews: initialReviews }:
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className="text-third hover:text-primary transition-colors">
-                                            <MoreVertical className="w-5 h-5" />
+                                        <button
+                                            type="button"
+                                            aria-label="Review options"
+                                            className="text-third hover:text-primary transition-colors"
+                                        >
+                                            <MoreVertical className="w-5 h-5" aria-hidden="true" />
                                         </button>
                                     </div>
 

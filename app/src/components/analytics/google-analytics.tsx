@@ -23,6 +23,19 @@ function getReadableClickName(el: HTMLElement): string {
   if (text && text.length <= 60) return text;
   if (text) return text.slice(0, 60) + "...";
 
+  const nestedImg = el.querySelector("img");
+  if (nestedImg instanceof HTMLImageElement && nestedImg.alt?.trim()) {
+    return nestedImg.alt.trim();
+  }
+
+  const nestedLabeled = el.querySelector("[aria-label], [title]");
+  if (nestedLabeled instanceof HTMLElement) {
+    const nestedAria = nestedLabeled.getAttribute("aria-label");
+    if (nestedAria) return nestedAria;
+    const nestedTitle = nestedLabeled.getAttribute("title");
+    if (nestedTitle) return nestedTitle;
+  }
+
   const tag = el.tagName.toLowerCase();
   if (tag === "input") {
     const inputEl = el as HTMLInputElement;
@@ -32,7 +45,7 @@ function getReadableClickName(el: HTMLElement): string {
     return (el as HTMLImageElement).alt || "Image";
   }
 
-  return tag;
+  return tag === "button" ? "Unlabeled button" : tag;
 }
 
 function GoogleAnalyticsTracker({ enabled }: { enabled: boolean }) {

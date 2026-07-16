@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   useQueryState,
   parseAsString,
@@ -21,6 +22,36 @@ export function useSearchFilters() {
   const [averageRatingMin, setAverageRatingMin] = useQueryState('average_rating_min', parseAsFloat);
   const [sortBy,      setSortBy]      = useQueryState('sort_by', parseAsString);
   const [page,        setPage]        = useQueryState('page', parseAsInteger.withDefault(1));
+
+  const filters = useMemo(
+    () =>
+      ({
+        q,
+        category_ids: categoryIds ?? undefined,
+        brand_ids: brandIds ?? undefined,
+        vendor_ids: vendorIds ?? undefined,
+        attributes_values_ids: attributeValueIds ?? undefined,
+        specifications_values_ids: specificationValueIds ?? undefined,
+        min_price: minPrice ?? undefined,
+        max_price: maxPrice ?? undefined,
+        average_rating_min: averageRatingMin ?? undefined,
+        sort_by: sortBy as SortOption | undefined,
+        page,
+      }) satisfies SearchFilterState,
+    [
+      q,
+      categoryIds,
+      brandIds,
+      vendorIds,
+      attributeValueIds,
+      specificationValueIds,
+      minPrice,
+      maxPrice,
+      averageRatingMin,
+      sortBy,
+      page,
+    ],
+  );
 
   function resetFilters() {
     void setCategoryIds(null);
@@ -50,19 +81,7 @@ export function useSearchFilters() {
   }
 
   return {
-    filters: {
-      q,
-      category_ids: categoryIds ?? undefined,
-      brand_ids: brandIds ?? undefined,
-      vendor_ids: vendorIds ?? undefined,
-      attributes_values_ids: attributeValueIds ?? undefined,
-      specifications_values_ids: specificationValueIds ?? undefined,
-      min_price:   minPrice ?? undefined,
-      max_price:   maxPrice ?? undefined,
-      average_rating_min: averageRatingMin ?? undefined,
-      sort_by:     sortBy as SortOption | undefined,
-      page,
-    } satisfies SearchFilterState,
+    filters,
     setQ,
     setCategoryIds,
     setBrandIds,

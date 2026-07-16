@@ -235,10 +235,12 @@ export function CartSidebar() {
                               {getProductName(item)}
                             </Link>
                             <button
+                              type="button"
                               onClick={() => removeItem(item.id)}
+                              aria-label="Remove from cart"
                               className="text-gray-400 hover:text-danger transition-colors p-1"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" aria-hidden="true" />
                             </button>
                           </div>
                           {item.variant && (

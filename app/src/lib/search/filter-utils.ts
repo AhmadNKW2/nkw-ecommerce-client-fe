@@ -93,6 +93,25 @@ export function areSearchFiltersEquivalent(
   return keys.every((key) => (left[key] ?? undefined) === (right[key] ?? undefined));
 }
 
+/** Stable string key for search filter snapshots (query keys / effect deps). */
+export function serializeSearchFilterSnapshot(
+  filters: Partial<Omit<SearchFilters, "page">> & { per_page?: number },
+): string {
+  return JSON.stringify({
+    q: filters.q ?? null,
+    category_ids: filters.category_ids ?? null,
+    brand_ids: filters.brand_ids ?? null,
+    vendor_ids: filters.vendor_ids ?? null,
+    attributes_values_ids: filters.attributes_values_ids ?? null,
+    specifications_values_ids: filters.specifications_values_ids ?? null,
+    min_price: filters.min_price ?? null,
+    max_price: filters.max_price ?? null,
+    average_rating_min: filters.average_rating_min ?? null,
+    sort_by: filters.sort_by ?? null,
+    per_page: filters.per_page ?? null,
+  });
+}
+
 export function searchFiltersToApiFilters(filters: SearchFilterState, limit = 24): ProductFilters {
   const sortParts = filters.sort_by ? filters.sort_by.split(":") : ["average_rating", "desc"];
   let sortBy = sortParts[0];

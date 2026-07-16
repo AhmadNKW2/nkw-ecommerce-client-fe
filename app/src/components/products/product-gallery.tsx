@@ -269,7 +269,9 @@ export function ProductGallery({
                 {images.map((image, index) => (
                   <button
                     key={index}
+                    type="button"
                     onClick={() => handleThumbnailClick(index)}
+                    aria-label={`Gallery thumbnail ${index + 1} of ${images.length}`}
                     style={thumbnailSize && showMainImage ? { width: thumbnailSize, height: thumbnailSize } : undefined}
                     className={cn(
                       "relative rounded-lg overflow-hidden shrink-0 ring-2 transition-all duration-300",
@@ -472,7 +474,9 @@ export function ProductGallery({
                 {images.map((image, index) => (
                   <button
                     key={index}
+                    type="button"
                     onClick={() => handleThumbnailClick(index)}
+                    aria-label={`Gallery thumbnail ${index + 1} of ${images.length}`}
                     className={cn(
                       "relative w-16 h-16 rounded-md overflow-hidden transition-all duration-300 shrink-0",
                       selectedIndex === index
@@ -482,7 +486,7 @@ export function ProductGallery({
                   >
                     <Image
                       src={image}
-                      alt="Thumbnail"
+                      alt={`${productName} - Thumbnail ${index + 1}`}
                       fill
                       className="object-contain"
                     />

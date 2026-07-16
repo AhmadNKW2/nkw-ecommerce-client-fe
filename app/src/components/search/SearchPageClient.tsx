@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { areSearchFiltersEquivalent, joinFilterValues, splitFilterValues } from '@/lib/search/filter-utils';
+import { areSearchFiltersEquivalent, joinFilterValues, serializeSearchFilterSnapshot, splitFilterValues } from '@/lib/search/filter-utils';
 import { useSearchFilters } from '@/lib/search/use-search-params';
 import { useInfiniteSearchProducts } from '@/lib/search/use-search';
 import { clientSearch } from '@/lib/search/api';
@@ -145,7 +145,8 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     void setPage(1);
   };
 
-  // Merge URL filters with current sort key
+  // Merge URL filters with current sort key — depend on primitives so the
+  // object identity stays stable across renders (avoids facet refetch loops).
   const searchFilters = useMemo<Omit<SearchFilters, 'page'>>(() => ({
     q: filters.q?.trim() ? filters.q : initialFilters.q,
     category_ids: filters.category_ids,
@@ -158,7 +159,20 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     average_rating_min: filters.average_rating_min,
     sort_by: sortKey === 'popular' ? undefined : SORT_MAP[sortKey],
     per_page: initialFilters.per_page ?? 20,
-  }), [filters, initialFilters, sortKey]);
+  }), [
+    filters.q,
+    filters.category_ids,
+    filters.brand_ids,
+    filters.vendor_ids,
+    filters.attributes_values_ids,
+    filters.specifications_values_ids,
+    filters.min_price,
+    filters.max_price,
+    filters.average_rating_min,
+    initialFilters.q,
+    initialFilters.per_page,
+    sortKey,
+  ]);
 
   const initialSearchFilters = useMemo<Omit<SearchFilters, 'page'>>(() => ({
     q: initialFilters.q,
@@ -172,7 +186,24 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     average_rating_min: initialFilters.average_rating_min,
     sort_by: initialFilters.sort_by,
     per_page: initialFilters.per_page ?? 20,
-  }), [initialFilters]);
+  }), [
+    initialFilters.q,
+    initialFilters.category_ids,
+    initialFilters.brand_ids,
+    initialFilters.vendor_ids,
+    initialFilters.attributes_values_ids,
+    initialFilters.specifications_values_ids,
+    initialFilters.min_price,
+    initialFilters.max_price,
+    initialFilters.average_rating_min,
+    initialFilters.sort_by,
+    initialFilters.per_page,
+  ]);
+
+  const searchFilterKey = useMemo(
+    () => serializeSearchFilterSnapshot(searchFilters),
+    [searchFilters],
+  );
 
   const shouldUseInitialData = useMemo(() => {
     if (!initialData) return false;
@@ -218,7 +249,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
 
   useEffect(() => {
     setDeferredFacets(null);
-  }, [searchFilters]);
+  }, [searchFilterKey]);
 
   useEffect(() => {
     const pageFacets = results?.facets;
@@ -227,6 +258,8 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
       return;
     }
 
+    // SSR intentionally skips facets for faster first paint. Fetch them once
+    // for the current filter snapshot — do not depend on object identity.
     if (!searchFilters.q?.trim() || !shouldUseInitialData) {
       return;
     }
@@ -246,7 +279,7 @@ export function SearchPageClient({ initialData, initialFilters }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [locale, results?.facets, searchFilters, shouldUseInitialData]);
+  }, [locale, results?.facets, searchFilterKey, searchFilters, shouldUseInitialData]);
 
   const displayFacets = deferredFacets ?? results?.facets ?? [];
 
