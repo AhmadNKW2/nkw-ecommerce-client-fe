@@ -46,6 +46,7 @@ export const FOOTER_LINKS = {
     { label: "footer.links.contactUs", href: "/contact" },
     { label: "footer.links.faqs", href: "/faqs" },
     { label: "footer.links.shippingInfo", href: "/shipping" },
+    { label: "footer.links.returnsExchanges", href: "/returns" },
   ],
   company: [
     { label: "footer.links.aboutUs", href: "/about" },

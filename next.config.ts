@@ -47,6 +47,22 @@ const nextConfig: NextConfig = {
         destination: 'https://www.ordonsooq.com/:path*',
         statusCode: 301,
       },
+      // Legacy WordPress URLs still seen in Search Console crawls.
+      {
+        source: '/wp-login.php',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/wp-admin/:path*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/wp-content/:path*',
+        destination: '/',
+        permanent: true,
+      },
     ];
   },
   async headers() {

@@ -210,7 +210,7 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
                   <p className="text-xs text-third">{translations("product.guestDetails") || "Please provide your details so we can assist you."}</p>
                   <input
                     type="text"
-                    placeholder={`${translations("product.fullName") || "Full Name"} *`}
+                    placeholder={translations("product.fullName") || "Full Name"}
                     value={guestName}
                     onChange={(event) => setGuestName(event.target.value)}
                     disabled={isSubmitting}
@@ -221,7 +221,7 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
                     inputMode="tel"
                     dir={isArabic ? "ltr" : undefined}
                     lang={isArabic ? "en" : undefined}
-                    placeholder={`${translations("product.phoneNumber") || "Phone Number"} *`}
+                    placeholder={translations("product.phoneNumber") || "Phone Number"}
                     value={guestPhone}
                     onChange={(event) => setGuestPhone(event.target.value)}
                     disabled={isSubmitting}

@@ -282,8 +282,8 @@
   "features": {
     "freeShipping": "Free Shipping",
     "freeShippingDesc": "Free delivery on orders over 50 JD",
-    "easyReturns": "Easy Returns",
-    "easyReturnsDesc": "30-day return policy",
+    "easyReturns": "Final Sale",
+    "easyReturnsDesc": "All sales are final — no returns",
     "secureCheckout": "Secure Checkout",
     "secureCheckoutDesc": "100% secure payment",
     "securePayment": "Secure Payment",
@@ -428,8 +428,8 @@
     "features": {
       "freeShipping": "Free Shipping",
       "freeShippingDesc": "Orders over 50 JD",
-      "returns": "Easy Returns",
-      "returnsDesc": "30-day policy",
+      "returns": "Final Sale",
+      "returnsDesc": "No returns accepted",
       "secure": "Secure",
       "secureDesc": "Safe checkout"
     },
@@ -473,7 +473,7 @@
     "tags": "Tags",
     "freeShipping": "Free Shipping",
     "freeShippingDesc": "Orders over 50 JD",
-    "easyReturns": "Easy Returns",
+    "easyReturns": "Final Sale",
     "secure": "Secure",
     "safeCheckout": "Safe checkout",
     "weight": "Weight",
@@ -629,7 +629,7 @@
       "contactUs": "Contact Us",
       "faqs": "FAQs",
       "shippingInfo": "Shipping Info",
-      "returnsExchanges": "Returns & Exchanges",
+      "returnsExchanges": "Return Policy",
       "trackOrder": "Track Order",
       "aboutUs": "About Us",
       "careers": "Careers",
@@ -647,8 +647,8 @@
     "securePaymentDesc": "100% protected",
     "support247": "24/7 Support",
     "support247Desc": "Dedicated support",
-    "easyReturns": "Easy Returns",
-    "easyReturnsDesc": "30-day returns",
+    "easyReturns": "Final Sale",
+    "easyReturnsDesc": "No returns accepted",
     "shop": "Shop",
     "supportLinks": "Support",
     "company": "Company",
@@ -862,8 +862,8 @@
           "description": "Shipping and order-progress questions are grouped so customers can self-serve first."
         },
         "returns": {
-          "title": "Policy clarity",
-          "description": "Important service and delivery expectations are explained in practical language rather than dense policy text."
+          "title": "Final sale policy",
+          "description": "All sales are final. Returns, exchanges, and refunds are not accepted once an order is confirmed."
         }
       },
       "cta": {
@@ -899,6 +899,15 @@
           "a2": "Orders above the current free-shipping threshold can qualify automatically during checkout.",
           "q3": "How do I check my order status?",
           "a3": "Sign in to review your order history in the account area, or contact support if you need delivery help."
+        },
+        "returns": {
+          "title": "Returns",
+          "q1": "Do you accept returns or exchanges?",
+          "a1": "No. All sales are final. We do not accept returns, exchanges, or refunds once an order is confirmed.",
+          "q2": "What if I ordered the wrong size or changed my mind?",
+          "a2": "Change of mind, sizing preference, and similar reasons are not eligible for return or refund. Please review product details carefully before checkout.",
+          "q3": "What if my order arrives damaged or incorrect?",
+          "a3": "Contact us promptly with your order number and clear photos. Delivery issues may be reviewed at our discretion and do not create a general right to return."
         },
         "account": {
           "title": "Account and orders",
@@ -958,49 +967,67 @@
       }
     },
     "returns": {
-      "badge": "Returns guidance",
-      "title": "Returns & Exchanges",
-      "subtitle": "A readable returns page that explains eligibility, review, exchange steps, and refund expectations without legal overload.",
-      "intro": "This page is designed to set expectations clearly before a shopper reaches out about an exchange or refund.",
+      "badge": "Return policy",
+      "title": "Return Policy",
+      "subtitle": "All purchases are final. We do not accept returns, exchanges, or refunds once an order is confirmed.",
+      "intro": "Please review product details carefully before placing your order. By completing a purchase, you acknowledge and agree that all sales are final and that returns are not accepted.",
       "highlights": {
         "clearPolicy": {
-          "title": "Clear eligibility",
-          "description": "Shoppers can quickly understand when a return or exchange request is likely to move forward."
+          "title": "All sales final",
+          "description": "Confirmed orders cannot be returned, exchanged, or refunded for change of mind, sizing, preference, or similar reasons."
         },
         "fairReview": {
-          "title": "Fair review process",
-          "description": "Requests are framed around condition, proof, and practicality rather than ambiguous wording."
+          "title": "No return window",
+          "description": "There is no return period. Once your order is confirmed, the sale is complete and non-reversible."
         },
         "supportedSteps": {
-          "title": "Guided next steps",
-          "description": "The page makes the support path obvious when a shopper is ready to open a conversation."
+          "title": "Shop with clarity",
+          "description": "Check descriptions, images, sizes, and seller details before checkout so you can order with confidence."
         }
       },
       "sections": {
-        "eligibility": {
-          "title": "Eligibility and condition",
-          "body": "Returns and exchanges work best when the item condition and request timing are both clear from the start.",
+        "policy": {
+          "title": "Our policy",
+          "body": "{siteName} operates a strict final-sale policy. We do not accept returns under any standard shopping circumstance.",
           "items": {
-            "condition": "Items should remain in acceptable condition for review.",
-            "packaging": "Original packaging and included pieces help the request move faster.",
-            "proof": "Order information and a short explanation of the issue are helpful."
+            "finalSale": "All sales are final upon order confirmation.",
+            "noReturns": "Returns, exchanges, and refunds are not accepted.",
+            "agreement": "Placing an order constitutes acceptance of this return policy."
           }
         },
-        "refunds": {
-          "title": "Refunds and exchanges",
-          "body": "After a request is reviewed, the next step depends on availability, item condition, and the chosen resolution.",
+        "notAccepted": {
+          "title": "What is not accepted",
+          "body": "The following requests are not eligible for return, exchange, or refund.",
           "items": {
-            "review": "A quick review helps confirm eligibility and the appropriate outcome.",
-            "exchange": "If a replacement is suitable and available, exchange guidance can follow.",
-            "timeline": "Refund timing can vary depending on the payment path and final approval."
+            "changeOfMind": "Change of mind after purchase.",
+            "sizePreference": "Incorrect size, color, style, or preference selection.",
+            "openedUsed": "Opened, used, tried-on, or altered products."
+          }
+        },
+        "beforeYouBuy": {
+          "title": "Before you buy",
+          "body": "Because returns are not accepted, please confirm the order details carefully before checkout.",
+          "items": {
+            "details": "Review product descriptions, images, variants, and sizing information.",
+            "availability": "Confirm quantity, seller details, and delivery expectations.",
+            "questions": "Contact support before ordering if anything about the product is unclear."
+          }
+        },
+        "orderSupport": {
+          "title": "Delivery issues",
+          "body": "This policy does not create a right to return. If a delivery issue appears to involve an incorrect or damaged shipment, contact support promptly for review.",
+          "items": {
+            "wrongItem": "Report a clearly incorrect item with your order number and photos.",
+            "damage": "Report visible transit damage as soon as possible after delivery.",
+            "discretion": "Any resolution is reviewed case by case at our sole discretion and is not a return entitlement."
           }
         }
       },
       "cta": {
-        "title": "Need help with a return request?",
-        "description": "Contact the support team with your order details so the conversation starts with the right context.",
+        "title": "Questions about an order?",
+        "description": "Contact support with your order details, or review the Terms of Service for the full purchase conditions.",
         "primary": "Contact us",
-        "secondary": "Read FAQs"
+        "secondary": "Terms of Service"
       }
     },
     "trackOrder": {
@@ -1373,11 +1400,11 @@
           }
         },
         "returns": {
-          "title": "Order changes, cancellations, and liability",
-          "body": "Order changes and cancellations depend on processing stage, operational feasibility, and the agreed payment path.",
+          "title": "Returns, cancellations, and liability",
+          "body": "All sales are final. Returns, exchanges, and refunds are not accepted once an order is confirmed. Order changes or cancellations depend on processing stage and operational feasibility.",
           "items": {
-            "review": "Confirmed orders may move into fulfillment quickly after approval.",
-            "refunds": "Some changes or cancellations may not be possible once processing has started.",
+            "review": "Confirmed orders may move into fulfillment quickly and cannot be returned.",
+            "refunds": "Returns, exchanges, and refunds are not offered for change of mind or preference.",
             "liability": "Operational limits and reasonable service boundaries still apply to storefront use."
           }
         }

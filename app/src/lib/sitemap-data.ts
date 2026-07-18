@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
-import { SITE_CONFIG } from "@/lib/constants";
 import { routing } from "@/i18n/routing";
 import type { PaginatedResponse } from "@/types/api.types";
-
 import { getApiBaseUrl } from "@/lib/api-base-url";
+import {
+  buildLanguageAlternates,
+  getAbsoluteLocalizedUrl,
+} from "@/lib/seo/localized-path";
 
 const API_BASE = getApiBaseUrl();
 const PAGE_SIZE = 100;
@@ -35,33 +37,14 @@ type SitemapEntryOptions = {
   priority?: number;
 };
 
-function getLocalizedPath(locale: string, pathname: string): string {
-  const normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
-
-  if (locale === routing.defaultLocale) {
-    return normalizedPath;
-  }
-
-  return normalizedPath === "/" ? `/${locale}` : `/${locale}${normalizedPath}`;
-}
-
-function getAbsoluteUrl(locale: string, pathname: string): string {
-  const path = getLocalizedPath(locale, pathname);
-  return path === "/" ? `${SITE_CONFIG.url}/` : `${SITE_CONFIG.url}${path}`;
-}
-
 export function createLocalizedSitemapEntries(
   pathname: string,
   options: SitemapEntryOptions = {},
 ): MetadataRoute.Sitemap {
-  const languages = Object.fromEntries(
-    routing.locales.map((locale) => [locale, getAbsoluteUrl(locale, pathname)]),
-  ) as Record<string, string>;
-
-  languages["x-default"] = getAbsoluteUrl(routing.defaultLocale, pathname);
+  const languages = buildLanguageAlternates(pathname);
 
   return routing.locales.map((locale) => ({
-    url: getAbsoluteUrl(locale, pathname),
+    url: getAbsoluteLocalizedUrl(locale, pathname),
     lastModified: options.lastModified,
     changeFrequency: options.changeFrequency,
     priority: options.priority,

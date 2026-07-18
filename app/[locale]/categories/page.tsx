@@ -1,7 +1,21 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { EntityGridPage } from "@/components/layout/entity-grid-page";
 import { categoryService } from "@/services/category.service";
 import { transformCategory, type Locale } from "@/lib/transformers";
+import { buildCatalogPageMetadata } from "@/lib/seo/page-metadata";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("categories");
+
+  return buildCatalogPageMetadata({
+    locale,
+    pathnameWithoutLocale: "/categories",
+    title: t("shopByCategory"),
+    description: t("shopByCategoryDesc"),
+  });
+}
 
 export default async function CategoriesPage() {
   const locale = (await getLocale()) as Locale;

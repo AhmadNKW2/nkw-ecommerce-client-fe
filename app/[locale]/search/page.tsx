@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { isSearchDebugEnabled } from '@/lib/debug-fetch';
 import { getLocale } from 'next-intl/server';
 import { serverSearch } from '@/lib/search/api';
@@ -7,6 +8,9 @@ import { RouteIntlProvider } from '@/i18n/route-intl-provider';
 import { SEARCH_MESSAGE_NAMESPACES } from '@/i18n/scoped-messages';
 import type { SearchFilters } from '@/lib/search/types';
 import { parsePriceFromQuery } from '@/lib/search/parse-price-from-query';
+import { buildNoIndexMetadata } from "@/lib/seo/page-metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Search");
 
 const UI_PRICE_MIN_DEFAULT = 0;
 const UI_PRICE_MAX_DEFAULT = 10_000;

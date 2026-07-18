@@ -1,6 +1,6 @@
 "use client";
 
-import { Truck, RotateCcw, Shield, Headphones, Clock, CreditCard } from "lucide-react";
+import { Truck, Ban, Shield, Headphones, Clock, CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ResponsiveGrid } from "@/components/ui";
 import { useSeoSettings } from "@/hooks/useSeoSettings";
@@ -18,7 +18,7 @@ export function FeaturesSection() {
           description: t('freeShippingDesc'),
         }]),
     {
-      icon: RotateCcw,
+      icon: Ban,
       title: t('easyReturns'),
       description: t('easyReturnsDesc'),
     },

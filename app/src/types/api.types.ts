@@ -195,6 +195,10 @@ export type Product = {
   short_description_ar: string | null;
   long_description_en: string | null;
   long_description_ar: string | null;
+  meta_title_en?: string | null;
+  meta_title_ar?: string | null;
+  meta_description_en?: string | null;
+  meta_description_ar?: string | null;
   status: Status;
   visible: boolean;
   average_rating: string;
@@ -281,6 +285,10 @@ export type Category = {
   slug: string;
   description_en: string | null;
   description_ar: string | null;
+  meta_title_en?: string | null;
+  meta_title_ar?: string | null;
+  meta_description_en?: string | null;
+  meta_description_ar?: string | null;
   image: string | null;
   level: number;
   sortOrder: number;
@@ -321,6 +329,10 @@ export type Vendor = {
   slug: string;
   description_en: string | null;
   description_ar: string | null;
+  meta_title_en?: string | null;
+  meta_title_ar?: string | null;
+  meta_description_en?: string | null;
+  meta_description_ar?: string | null;
   email: string | null;
   phone: string | null;
   address: string | null;
@@ -360,6 +372,10 @@ export type Brand = {
   slug: string;
   description_en: string | null;
   description_ar: string | null;
+  meta_title_en?: string | null;
+  meta_title_ar?: string | null;
+  meta_description_en?: string | null;
+  meta_description_ar?: string | null;
   logo: string | null;
   status: Status;
   visible: boolean;

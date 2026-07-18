@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import { ProfileSidebar } from "@/components/profile/profile-sidebar";
 import type { Locale } from "@/i18n/message-catalog";
 import { RouteIntlProvider } from "@/i18n/route-intl-provider";
 import { PROFILE_LAYOUT_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
+import { buildNoIndexMetadata } from "@/lib/seo/page-metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata("Profile");
 
 export default async function ProfileLayout({
   children,

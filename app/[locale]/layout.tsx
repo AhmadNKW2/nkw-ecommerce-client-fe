@@ -11,6 +11,10 @@ import { RouteIntlProvider } from "@/i18n/route-intl-provider";
 import { PageWrapper } from "@/components/ui/page-wrapper";
 import { SITE_CONFIG } from "@/lib/constants";
 import { buildCanonicalUrl } from "@/lib/canonical-url";
+import {
+  buildLanguageAlternates,
+  stripLocalePrefix,
+} from "@/lib/seo/localized-path";
 import { getQueryClient } from "@/lib/query-client";
 import { routing } from "@/i18n/routing";
 import { ROOT_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
@@ -99,11 +103,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const headersList = await headers();
   const canonicalPath = headersList.get("x-canonical-path");
   const canonicalUrl = canonicalPath ? buildCanonicalUrl(canonicalPath) : SITE_CONFIG.url;
+  const pathnameWithoutLocale = stripLocalePrefix(canonicalPath || "/");
+  const languageAlternates = buildLanguageAlternates(pathnameWithoutLocale);
 
   return {
     metadataBase: new URL(SITE_CONFIG.url),
     alternates: {
       canonical: canonicalUrl,
+      languages: languageAlternates,
     },
     title: {
       default: defaultTitle,
@@ -125,7 +132,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: locale === "ar" ? "ar_JO" : "en_US",
-      url: SITE_CONFIG.url,
+      url: canonicalUrl,
       title: defaultTitle,
       description: defaultDescription,
       siteName,

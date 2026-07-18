@@ -1,4 +1,8 @@
-import React from 'react';
+import type { Metadata } from "next";
+import React from "react";
+import { buildNoIndexMetadata } from "@/lib/seo/page-metadata";
+
+export const metadata: Metadata = buildNoIndexMetadata();
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (

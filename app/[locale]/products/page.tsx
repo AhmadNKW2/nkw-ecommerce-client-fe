@@ -1,15 +1,40 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ProductsPageClient } from "@/components/layout/products-page-client";
 import type { Locale } from "@/i18n/message-catalog";
 import { RouteIntlProvider } from "@/i18n/route-intl-provider";
 import { LISTING_MESSAGE_NAMESPACES } from "@/i18n/scoped-messages";
 import type { SearchFilters } from "@/lib/search/types";
+import { buildCatalogPageMetadata } from "@/lib/seo/page-metadata";
 
 type ProductsPageProps = {
   searchParams?: Promise<{
     filter?: string;
   }>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: ProductsPageProps): Promise<Metadata> {
+  const locale = (await getLocale()) as Locale;
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const productT = await getTranslations("product");
+  const navigationT = await getTranslations("navigation");
+  const homeT = await getTranslations("home");
+  const routeVariant = resolveProductsRouteVariant(
+    resolvedSearchParams.filter,
+    productT,
+    navigationT,
+    homeT,
+  );
+
+  return buildCatalogPageMetadata({
+    locale,
+    pathnameWithoutLocale: "/products",
+    title: routeVariant.pageTitle,
+    description: routeVariant.pageSubtitle,
+  });
+}
 
 function resolveProductsRouteVariant(
   filter: string | undefined,

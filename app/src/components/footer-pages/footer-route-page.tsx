@@ -13,7 +13,8 @@ import {
   Mail,
   Newspaper,
   PackageSearch,
-  RotateCcw,
+  Ban,
+  ClipboardCheck,
   ShieldCheck,
   Sparkles,
   Truck,
@@ -289,6 +290,14 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
             ],
           },
           {
+            title: t("faqs.groups.returns.title"),
+            items: [
+              { question: t("faqs.groups.returns.q1"), answer: t("faqs.groups.returns.a1") },
+              { question: t("faqs.groups.returns.q2"), answer: t("faqs.groups.returns.a2") },
+              { question: t("faqs.groups.returns.q3"), answer: t("faqs.groups.returns.a3") },
+            ],
+          },
+          {
             title: t("faqs.groups.account.title"),
             items: [
               { question: t("faqs.groups.account.q1"), answer: t("faqs.groups.account.a1") },
@@ -380,7 +389,7 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
         t("returns.intro"),
         [
           {
-            icon: <RotateCcw className="size-5" />,
+            icon: <Ban className="size-5" />,
             title: t("returns.highlights.clearPolicy.title"),
             description: t("returns.highlights.clearPolicy.description"),
           },
@@ -390,30 +399,50 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
             description: t("returns.highlights.fairReview.description"),
           },
           {
-            icon: <Truck className="size-5" />,
+            icon: <ClipboardCheck className="size-5" />,
             title: t("returns.highlights.supportedSteps.title"),
             description: t("returns.highlights.supportedSteps.description"),
           },
         ],
         [
           {
-            id: "eligibility",
-            title: t("returns.sections.eligibility.title"),
-            body: [t("returns.sections.eligibility.body")],
+            id: "policy",
+            title: t("returns.sections.policy.title"),
+            body: [t("returns.sections.policy.body", { siteName })],
             items: [
-              t("returns.sections.eligibility.items.condition"),
-              t("returns.sections.eligibility.items.packaging"),
-              t("returns.sections.eligibility.items.proof"),
+              t("returns.sections.policy.items.finalSale"),
+              t("returns.sections.policy.items.noReturns"),
+              t("returns.sections.policy.items.agreement"),
             ],
           },
           {
-            id: "refunds-exchanges",
-            title: t("returns.sections.refunds.title"),
-            body: [t("returns.sections.refunds.body")],
+            id: "not-accepted",
+            title: t("returns.sections.notAccepted.title"),
+            body: [t("returns.sections.notAccepted.body")],
             items: [
-              t("returns.sections.refunds.items.review"),
-              t("returns.sections.refunds.items.exchange"),
-              t("returns.sections.refunds.items.timeline"),
+              t("returns.sections.notAccepted.items.changeOfMind"),
+              t("returns.sections.notAccepted.items.sizePreference"),
+              t("returns.sections.notAccepted.items.openedUsed"),
+            ],
+          },
+          {
+            id: "before-you-buy",
+            title: t("returns.sections.beforeYouBuy.title"),
+            body: [t("returns.sections.beforeYouBuy.body")],
+            items: [
+              t("returns.sections.beforeYouBuy.items.details"),
+              t("returns.sections.beforeYouBuy.items.availability"),
+              t("returns.sections.beforeYouBuy.items.questions"),
+            ],
+          },
+          {
+            id: "order-support",
+            title: t("returns.sections.orderSupport.title"),
+            body: [t("returns.sections.orderSupport.body")],
+            items: [
+              t("returns.sections.orderSupport.items.wrongItem"),
+              t("returns.sections.orderSupport.items.damage"),
+              t("returns.sections.orderSupport.items.discretion"),
             ],
           },
         ],
@@ -421,8 +450,10 @@ export async function FooterRoutePage({ pageKey, children }: FooterRoutePageProp
           title: t("returns.cta.title"),
           description: t("returns.cta.description"),
           primary: { label: t("returns.cta.primary"), href: "/contact" },
-          secondary: { label: t("returns.cta.secondary"), href: "/faqs" },
+          secondary: { label: t("returns.cta.secondary"), href: "/terms" },
         },
+        undefined,
+        "legal",
       );
     }
 
