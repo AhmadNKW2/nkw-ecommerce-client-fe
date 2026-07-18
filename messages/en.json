@@ -464,8 +464,10 @@
       "orderNow": "Order now",
       "arrivesBefore": "Arrives by",
       "arrivesByDate": "Get it by {date}",
-      "orderInForDate": "<cta>Order within {time}</cta> to arrive on <when>{date}</when>",
-      "orderNowForDate": "<cta>Order now</cta> to arrive on <when>{date}</when>"
+      "orderInForDate": "<cta>Order within {time}</cta> to arrive <when>{date}</when>",
+      "orderNowForDate": "<cta>Order now</cta> to arrive <when>{date}</when>",
+      "orderInForArrival": "<cta>Order within {time}</cta> to arrive <when>{date}</when>",
+      "orderNowForArrival": "<cta>Order now</cta> to arrive <when>{date}</when>"
     },
     "viewOffer": "View offer",
     "tags": "Tags",

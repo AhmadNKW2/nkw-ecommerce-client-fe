@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Link } from "@/i18n/navigation";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface ProductOptionChipProps {
@@ -25,6 +26,16 @@ const chipClassName = (selected?: boolean, disabled?: boolean, className?: strin
     disabled && "cursor-not-allowed opacity-50 hover:border-gray-200 hover:text-primary",
     className,
   );
+
+function trackProductOptionChipClick(href: string, title?: string) {
+  const slugMatch = href.match(/\/products\/([^/?#]+)/);
+  trackEvent("product_option_chip_click", {
+    product_slug: slugMatch?.[1],
+    product_name: title,
+    link_goes_to: href,
+    source: "product_option_chip",
+  });
+}
 
 export function ProductOptionChip({
   label,
@@ -62,7 +73,16 @@ export function ProductOptionChip({
       return <span title={title} aria-label={title} className={swatchClassName} style={{ backgroundColor: color }} />;
     }
 
-    return <Link href={href} title={title} aria-label={title} className={swatchClassName} style={{ backgroundColor: color }} />;
+    return (
+      <Link
+        href={href}
+        title={title}
+        aria-label={title}
+        className={swatchClassName}
+        style={{ backgroundColor: color }}
+        onClick={() => trackProductOptionChipClick(href, title)}
+      />
+    );
   }
 
   if (selected || disabled || !href) {
@@ -84,7 +104,12 @@ export function ProductOptionChip({
   }
 
   return (
-    <Link href={href} title={title} className={chipClassName(false, false, className)}>
+    <Link
+      href={href}
+      title={title}
+      className={chipClassName(false, false, className)}
+      onClick={() => trackProductOptionChipClick(href, title)}
+    >
       {label}
     </Link>
   );

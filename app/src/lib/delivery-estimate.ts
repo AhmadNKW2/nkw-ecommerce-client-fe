@@ -125,7 +125,10 @@ export type DeliveryEstimate = {
   beforeCutoff: boolean;
   /** Weekday in Amman (0 = Sunday … 6 = Saturday). */
   weekday: number;
-  /** Arrival calendar date, e.g. "السبت 18/06/2026". */
+  /**
+   * Arrival label for storefront copy.
+   * e.g. "غداً يوم الأحد 19/07/2026" / "tomorrow, Sunday 19/07/2026" / "يوم الأحد 22/07/2026"
+   */
   arrivalDateLabel: string;
 };
 
@@ -270,19 +273,64 @@ function daysUntilWeekday(currentWeekday: number, targetWeekday: number): number
   return delta === 0 ? 7 : delta;
 }
 
+/** Calendar-day difference in Amman (arrival − today). */
+function ammanCalendarDayDiff(
+  from: { year: number; month: number; day: number },
+  to: { year: number; month: number; day: number },
+): number {
+  const fromUtc = Date.UTC(from.year, from.month - 1, from.day);
+  const toUtc = Date.UTC(to.year, to.month - 1, to.day);
+  return Math.round((toUtc - fromUtc) / 86_400_000);
+}
+
+function isArabicLocale(locale: string): boolean {
+  return locale === "ar" || locale.startsWith("ar-");
+}
+
 export function formatArrivalDateLabel(
   locale: string,
   ammanDay: { year: number; month: number; day: number },
+  fromAmmanDay?: { year: number; month: number; day: number },
 ): string {
   const utcNoon = Date.UTC(ammanDay.year, ammanDay.month - 1, ammanDay.day, 12);
-  const weekday = new Intl.DateTimeFormat(locale === "ar" ? "ar-JO" : "en-US", {
-    timeZone: "UTC",
-    weekday: "long",
-  }).format(new Date(utcNoon));
+  const weekdayRaw = new Intl.DateTimeFormat(
+    isArabicLocale(locale) ? "ar-JO" : "en-US",
+    {
+      timeZone: "UTC",
+      weekday: "long",
+    },
+  ).format(new Date(utcNoon));
+  // Some Arabic locales prefix weekday with "يوم "; keep a bare weekday name.
+  const weekday = weekdayRaw.replace(/^يوم\s+/u, "");
   // e.g. "السبت 18/06/2026" / "Saturday 18/06/2026"
   const day = String(ammanDay.day).padStart(2, "0");
   const month = String(ammanDay.month).padStart(2, "0");
-  return `${weekday} ${day}/${month}/${ammanDay.year}`;
+  const dated = `${weekday} ${day}/${month}/${ammanDay.year}`;
+
+  const diffDays = fromAmmanDay
+    ? ammanCalendarDayDiff(fromAmmanDay, ammanDay)
+    : null;
+
+  if (isArabicLocale(locale)) {
+    // Full phrase after "حتى يصل" — do not add another "يوم" in messages.
+    // e.g. "غداً يوم الأحد 19/07/2026" / "بعد غد يوم الاثنين ..." / "يوم الأحد ..."
+    if (diffDays === 1) {
+      return `غداً يوم ${dated}`;
+    }
+    if (diffDays === 2) {
+      return `بعد غد يوم ${dated}`;
+    }
+    return `يوم ${dated}`;
+  }
+
+  // e.g. "tomorrow, Sunday 19/07/2026" / "after tomorrow, Monday ..." / "on Sunday ..."
+  if (diffDays === 1) {
+    return `tomorrow, ${dated}`;
+  }
+  if (diffDays === 2) {
+    return `after tomorrow, ${dated}`;
+  }
+  return `on ${dated}`;
 }
 
 function resolveArrivalDay(
@@ -393,6 +441,10 @@ export function getDeliveryEstimate(
     cutoffLabel,
     beforeCutoff: showCountdown,
     weekday: parts.weekday,
-    arrivalDateLabel: formatArrivalDateLabel(locale, arrivalDay),
+    arrivalDateLabel: formatArrivalDateLabel(locale, arrivalDay, {
+      year: parts.year,
+      month: parts.month,
+      day: parts.day,
+    }),
   };
 }

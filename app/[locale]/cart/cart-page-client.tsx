@@ -25,6 +25,7 @@ import { formatPrice, calculateDiscount, cn } from "@/lib/utils";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "@/services/settings.service";
+import { trackEvent } from "@/lib/analytics";
 
 export function CartPageClient() {
   const t = useTranslations("cart");
@@ -183,12 +184,22 @@ export function CartPageClient() {
             const productHref = item.variant_id
               ? `/products/${productSlug}?variant=${item.variant_id}`
               : `/products/${productSlug}`;
+            const handleProductClick = () => {
+              trackEvent("cart_product_click", {
+                product_id: item.product.id,
+                product_name: getProductName(item),
+                product_slug: productSlug,
+                variant_id: item.variant_id ?? undefined,
+                source: "cart_page",
+              });
+            };
 
             return (
               <Card key={item.id} className="group overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="flex gap-4 md:gap-3 lg:gap-3">
                   <Link
                     href={productHref}
+                    onClick={handleProductClick}
                     className="relative w-24 h-24 md:w-20 md:h-20 lg:w-24 lg:h-24 shrink-0 bg-gray-50 rounded-xl overflow-hidden border border-gray-100"
                   >
                     <Image
@@ -202,7 +213,7 @@ export function CartPageClient() {
                   <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0 pr-2">
-                        <Link href={productHref}>
+                        <Link href={productHref} onClick={handleProductClick}>
                           <h3 className="font-semibold text-primary line-clamp-2 hover:text-secondary transition-colors text-base md:text-sm lg:text-base leading-tight">
                             {getProductName(item)}
                           </h3>

@@ -75,23 +75,27 @@ export function SearchBox() {
     router.push(`/search?q=${encodeURIComponent(q)}`);
   }
 
-  async function handleSuggestionClick(suggestion: { id: string; slug?: string | null }) {
+  const getName = (s: { name_en: string; name_ar: string }) =>
+    locale === 'ar' ? s.name_ar : s.name_en;
+
+  async function handleSuggestionClick(suggestion: {
+    id: string;
+    slug?: string | null;
+    name_en: string;
+    name_ar: string;
+  }) {
     close();
     setIsInputFocused(false);
 
     const resolvedSlug = suggestion.slug?.trim();
     const typedQuery = query.trim();
-    trackEvent(
-      typedQuery
-        ? `Search suggestion: ${typedQuery}`
-        : 'Search suggestion click',
-      {
-        suggestion_id: suggestion.id,
-        suggestion_slug: resolvedSlug || undefined,
-        search_term: typedQuery || undefined,
-        source: 'search_bar',
-      },
-    );
+    trackEvent('search_suggestion_click', {
+      product_id: suggestion.id,
+      product_name: getName(suggestion),
+      product_slug: resolvedSlug || undefined,
+      search_term: typedQuery || undefined,
+      source: 'search_bar',
+    });
 
     if (resolvedSlug) {
       router.push(`/products/${resolvedSlug}`);
@@ -110,9 +114,6 @@ export function SearchBox() {
       router.push(`/products/${slug}`);
     }
   }
-
-  const getName = (s: { name_en: string; name_ar: string }) =>
-    locale === 'ar' ? s.name_ar : s.name_en;
 
   return (
     <div

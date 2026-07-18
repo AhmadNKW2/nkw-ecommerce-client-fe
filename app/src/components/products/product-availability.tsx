@@ -101,10 +101,10 @@ function getEstimateLine(
   };
 
   if (estimate.beforeCutoff && estimate.remainingMs != null && estimate.remainingMs > 0) {
-    return t.rich("deliveryEstimate.orderInForDate", richValues);
+    return t.rich("deliveryEstimate.orderInForArrival", richValues);
   }
 
-  return t.rich("deliveryEstimate.orderNowForDate", richValues);
+  return t.rich("deliveryEstimate.orderNowForArrival", richValues);
 }
 
 function ProductDeliveryPanel({

@@ -17,6 +17,7 @@ import {
   resolveFeatureToggles,
   useFeatureToggles,
 } from "@/hooks/useFeatureToggles";
+import { trackEvent } from "@/lib/analytics";
 
 export function CartSidebar() {
   const tCart = useTranslations("cart");
@@ -206,10 +207,20 @@ export function CartSidebar() {
                   const productHref = item.variant_id
                     ? `/products/${productSlug}?variant=${item.variant_id}`
                     : `/products/${productSlug}`;
+                  const handleProductClick = () => {
+                    trackEvent("cart_product_click", {
+                      product_id: item.product.id,
+                      product_name: getProductName(item),
+                      product_slug: productSlug,
+                      variant_id: item.variant_id ?? undefined,
+                      source: "cart_sidebar",
+                    });
+                    closeCart();
+                  };
                   return (
                     <>
                       {/* Image */}
-                      <Link href={productHref} onClick={closeCart} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                      <Link href={productHref} onClick={handleProductClick} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                         {item.product.image ? (
                           <img
                             src={item.product.image}
@@ -231,7 +242,7 @@ export function CartSidebar() {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex justify-between items-start">
-                            <Link href={productHref} onClick={closeCart} className="font-medium text-gray-900 line-clamp-2 text-sm">
+                            <Link href={productHref} onClick={handleProductClick} className="font-medium text-gray-900 line-clamp-2 text-sm">
                               {getProductName(item)}
                             </Link>
                             <button

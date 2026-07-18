@@ -1,7 +1,6 @@
 export { SearchBox } from './SearchBox';
 export { SearchPageClient } from './SearchPageClient';
 export { SearchResults } from './SearchResults';
-export { SearchProductCard } from './SearchProductCard';
 export { SearchFilters } from './SearchFilters';
 export { SortSelect } from './SortSelect';
 export { Pagination } from './Pagination';

@@ -431,8 +431,10 @@
       "orderNow": "اطلب الآن",
       "arrivesBefore": "يصل قبل",
       "arrivesByDate": "ليصلك بحلول يوم {date}",
-      "orderInForDate": "<cta>اطلب خلال {time}</cta> حتى يصل يوم <when>{date}</when>",
-      "orderNowForDate": "<cta>اطلب الآن</cta> حتى يصل يوم <when>{date}</when>"
+      "orderInForDate": "<cta>اطلب خلال {time}</cta> حتى يصل <when>{date}</when>",
+      "orderNowForDate": "<cta>اطلب الآن</cta> حتى يصل <when>{date}</when>",
+      "orderInForArrival": "<cta>اطلب خلال {time}</cta> حتى يصل <when>{date}</when>",
+      "orderNowForArrival": "<cta>اطلب الآن</cta> حتى يصل <when>{date}</when>"
     },
     "positiveFeedback": "({percent}% إيجابي)",
     "otherSellers": "تحقق من العروض من {count} بائعين آخرين",
