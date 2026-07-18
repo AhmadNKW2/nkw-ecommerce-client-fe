@@ -91,12 +91,13 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
   const [notes, setNotes] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
 
   const { user } = useAuth();
+  const locale = useLocale();
+  const isArabic = locale === "ar";
   const translations = t || ((key: string) => key);
 
   useEffect(() => {
@@ -118,14 +119,6 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
         toast.error("Please fill in your name and phone number to submit a note.");
         return;
       }
-
-      if (guestEmail.trim()) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(guestEmail.trim())) {
-          toast.error(translations("product.invalidEmail") || "Please enter a valid email address.");
-          return;
-        }
-      }
     }
 
     setIsSubmitting(true);
@@ -140,9 +133,6 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
       if (!user) {
         payload.guest_name = guestName.trim();
         payload.guest_phone = guestPhone.trim();
-        if (guestEmail.trim()) {
-          payload.guest_email = guestEmail.trim();
-        }
 
         requestOptions = {
           headers: {
@@ -169,7 +159,6 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
           setNotes("");
           setGuestName("");
           setGuestPhone("");
-          setGuestEmail("");
         }}
         className="w-full group relative overflow-hidden bg-secondary/7 hover:bg-secondary/10 border border-secondary/50 hover:border-secondary/30 hover:shadow-sm rounded-2xl p-4 transition-all duration-300 flex items-center justify-between outline-none"
       >
@@ -229,19 +218,17 @@ function ProductNotes({ t, productId }: { t: any; productId: string | number }) 
                   />
                   <input
                     type="tel"
+                    inputMode="tel"
+                    dir={isArabic ? "ltr" : undefined}
+                    lang={isArabic ? "en" : undefined}
                     placeholder={`${translations("product.phoneNumber") || "Phone Number"} *`}
                     value={guestPhone}
                     onChange={(event) => setGuestPhone(event.target.value)}
                     disabled={isSubmitting}
-                    className="w-full text-sm p-3 border border-gray-200 bg-gray-50/50 rounded-xl focus:bg-white focus:ring-2 focus:ring-secondary/20 outline-none text-primary"
-                  />
-                  <input
-                    type="email"
-                    placeholder={translations("product.emailOptional") || "Email (Optional)"}
-                    value={guestEmail}
-                    onChange={(event) => setGuestEmail(event.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full text-sm p-3 border border-gray-200 bg-gray-50/50 rounded-xl focus:bg-white focus:ring-2 focus:ring-secondary/20 outline-none text-primary"
+                    className={cn(
+                      "w-full text-sm p-3 border border-gray-200 bg-gray-50/50 rounded-xl focus:bg-white focus:ring-2 focus:ring-secondary/20 outline-none text-primary",
+                      isArabic && "text-right placeholder:text-right [direction:ltr] [unicode-bidi:plaintext]"
+                    )}
                   />
                 </div>
               ) : null}
