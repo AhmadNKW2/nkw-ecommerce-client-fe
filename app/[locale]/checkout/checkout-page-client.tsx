@@ -15,10 +15,20 @@ import {
   CreditCard,
   Lock,
   MapPin,
+  Trash2,
   Truck,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Button, Input, Card, Radio, Textarea, Select, Checkbox } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Card,
+  Radio,
+  Textarea,
+  Select,
+  Checkbox,
+  QuantitySelector,
+} from "@/components/ui";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/useAuth";
 import { useCashbackPreview, useWallet } from "@/hooks/useWallet";
@@ -120,7 +130,16 @@ export function CheckoutPageClient() {
   const { data: featureToggles, isLoading: isFeatureTogglesLoading } = useFeatureToggles();
   const { cashbackEnabled, easyPurchaseEnabled } = resolveFeatureToggles(featureToggles);
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { items, totalItems, totalPrice, clearCart, isLoading: isCartLoading } = useCart();
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    clearCart,
+    updateQuantity,
+    removeItem,
+    loadingItems,
+    isLoading: isCartLoading,
+  } = useCart();
   const { data: wallet } = useWallet({
     enabled: !!user?.id && cashbackEnabled,
   });
@@ -432,7 +451,6 @@ export function CheckoutPageClient() {
     const nextErrors: Record<string, string> = {};
     const phone = normalizePhoneNumber(formData.phone);
 
-    if (!formData.fullName.trim()) nextErrors.fullName = t("required");
     if (!formData.phone.trim()) nextErrors.phone = t("required");
     else if (!/^07\d{8}$/.test(phone)) nextErrors.phone = t("invalidPhone");
 
@@ -525,7 +543,7 @@ export function CheckoutPageClient() {
       setBookingError(null);
 
       const fullName = easyPurchaseEnabled
-        ? formData.fullName.trim()
+        ? formData.fullName.trim() || "Not provided"
         : `${formData.firstName} ${formData.lastName}`.trim();
       const email = easyPurchaseEnabled
         ? user?.email?.trim() || undefined
@@ -686,7 +704,6 @@ export function CheckoutPageClient() {
                 value={formData.fullName}
                 onChange={handleInputChange}
                 error={errors.fullName}
-                required
               />
               <Input
                 label={t("phone")}
@@ -710,39 +727,74 @@ export function CheckoutPageClient() {
           </Card>
 
           <Card className="flex w-full flex-col gap-5">
-            <h2 className="text-center text-xl font-bold text-primary">{t("orderSummary")}</h2>
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-primary">{t("orderSummary")}</h2>
+              <p className="mt-1 text-xs text-third">{t("easyPurchaseEditHint")}</p>
+            </div>
 
             <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 text-start">
-              {summaryItems.map((item, index) => (
-                <div key={`${item.product_id}-${item.variant_id ?? "base"}-${index}`} className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 shrink-0">
-                    <Image
-                      src={item.product.image || "/placeholder.svg"}
-                      alt={getProductName(item)}
-                      fill
-                      className="rounded object-cover"
-                    />
-                    <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-xs text-white">
-                      {item.quantity}
-                    </span>
+              {items.map((item) => {
+                const maxStock = item.variant?.stock ?? item.product.stock ?? 99;
+                const isItemLoading = loadingItems.has(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-xl border border-gray-100 bg-gray-50/70 p-3 transition-colors hover:border-primary/15"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white border border-gray-100">
+                        <Image
+                          src={item.product.image || "/placeholder.svg"}
+                          alt={getProductName(item)}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium text-primary leading-snug line-clamp-2">
+                            {getProductName(item)}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            disabled={isProcessing || isItemLoading}
+                            aria-label={t("removeItem")}
+                            className="shrink-0 rounded-full p-1.5 text-third transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                        {item.variant?.attributes?.length ? (
+                          <p className="mt-0.5 text-[11px] text-third line-clamp-1">
+                            {item.variant.attributes
+                              .map((attr) =>
+                                isArabic
+                                  ? attr.value_ar || attr.value_en
+                                  : attr.value_en || attr.value_ar,
+                              )
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        ) : null}
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                          <QuantitySelector
+                            size="sm"
+                            value={item.quantity}
+                            max={Math.max(1, maxStock)}
+                            isLoading={isItemLoading}
+                            onChange={(value) => updateQuantity(item.id, value)}
+                            className={isProcessing ? "pointer-events-none opacity-60" : undefined}
+                          />
+                          <p className="text-sm font-semibold text-primary tabular-nums">
+                            {formatPrice(item.product.price * item.quantity, undefined, locale)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-primary">{getProductName(item)}</p>
-                  </div>
-                  <p className="text-sm font-semibold text-primary">
-                    {formatPrice(item.product.price * item.quantity, undefined, locale)}
-                  </p>
-                </div>
-              ))}
-              {!isSummaryExpanded && remainingSummaryItems > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setIsSummaryExpanded(true)}
-                  className="w-full text-center text-sm text-third transition-colors hover:text-primary"
-                >
-                  {t("moreItems", { count: remainingSummaryItems })}
-                </button>
-              ) : null}
+                );
+              })}
             </div>
 
             <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 text-sm text-third">

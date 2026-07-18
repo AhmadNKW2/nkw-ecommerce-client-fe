@@ -611,6 +611,8 @@
     "numbersOnly": "استخدم أرقاماً عربية أو إنجليزية فقط",
     "orderPlacementFailed": "تعذر إتمام الطلب. حاول مرة أخرى.",
     "easyPurchaseTitle": "شراء سريع في ثوانٍ!",
+    "easyPurchaseEditHint": "يمكنك تعديل الكمية أو حذف المنتجات قبل تأكيد الطلب.",
+    "removeItem": "حذف المنتج",
     "purchaseNow": "اشترِ الآن",
     "fullName": "الاسم الكامل"
   },

@@ -610,6 +610,8 @@
     "numbersOnly": "Use Arabic or English digits only",
     "orderPlacementFailed": "Failed to place order. Please try again.",
     "easyPurchaseTitle": "Fast purchase in seconds!",
+    "easyPurchaseEditHint": "Change quantity or remove items before placing your order.",
+    "removeItem": "Remove item",
     "purchaseNow": "Purchase Now",
     "fullName": "Full Name"
   },
