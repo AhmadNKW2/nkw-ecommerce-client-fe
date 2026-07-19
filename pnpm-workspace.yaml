@@ -1,7 +1,10 @@
-ignoredBuiltDependencies:
-  - '@parcel/watcher'
+packages:
+  - .
 
-onlyBuiltDependencies:
-  - '@swc/core'
-  - sharp
-  - unrs-resolver
+confirmModulesPurge: false
+
+allowBuilds:
+  '@swc/core': true
+  sharp: true
+  unrs-resolver: true
+  '@parcel/watcher': false
