@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ProductGalleryProps {
@@ -128,6 +129,27 @@ export function ProductGallery({
   const handleImageClick = useCallback(() => {
     setShowZoomModal(true);
   }, []);
+
+  const closeZoomModal = useCallback(() => {
+    setShowZoomModal(false);
+  }, []);
+
+  useEffect(() => {
+    if (!showZoomModal) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeZoomModal();
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showZoomModal, closeZoomModal]);
 
   // Touch handling for swipe
   const touchStartX = useRef<number | null>(null);
@@ -397,106 +419,142 @@ export function ProductGallery({
       </div>
 
       {/* Zoom Modal */}
-      {showZoomModal && (
-        <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setShowZoomModal(false)}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setShowZoomModal(false)}
-            className="absolute top-4 right-4 z-50 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 flex items-center justify-center text-white hover:scale-110"
-            aria-label="Close modal"
+      <AnimatePresence>
+        {showZoomModal && (
+          <motion.div
+            key="product-gallery-zoom"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            initial="closed"
+            animate="open"
+            exit="closed"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            {/*
+              Fixed blur radius + opacity fade only. Animating blur(0→N) is what
+              caused the noisy/instant snap in Chromium.
+            */}
+            <motion.div
+              aria-hidden="true"
+              className="absolute inset-0 bg-black/40 backdrop-blur-md"
+              variants={{
+                closed: { opacity: 0 },
+                open: { opacity: 1 },
+              }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              onClick={closeZoomModal}
+            />
 
-          <div className="relative w-full h-full max-w-6xl flex flex-col items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {/* Main Image Container */}
-            <div className="relative w-full flex-1 overflow-hidden rounded-lg border border-secondary/50">
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "absolute inset-0 w-full h-full transition-all duration-500 ease-in-out",
-                    selectedIndex === index && !direction && "opacity-100 translate-x-0 scale-100",
-                    selectedIndex === index && direction === 'left' && "opacity-100 translate-x-0 scale-100 animate-slide-in-left",
-                    selectedIndex === index && direction === 'right' && "opacity-100 translate-x-0 scale-100 animate-slide-in-right",
-                    selectedIndex !== index && index < selectedIndex && "opacity-0 -translate-x-full scale-95",
-                    selectedIndex !== index && index > selectedIndex && "opacity-0 translate-x-full scale-95"
-                  )}
-                  style={{
-                    zIndex: selectedIndex === index ? 1 : 0,
-                  }}
-                >
-                  <Image
-                    src={image}
-                    alt={`${productName} - Large View`}
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Modal Navigation */}
-            {images.length > 1 && (
-              <>
+            {/* pointer-events-none so empty area clicks hit the backdrop and close */}
+            <motion.div
+              className="relative z-10 flex max-h-full w-full max-w-6xl pointer-events-none flex-col items-center justify-center"
+              variants={{
+                closed: { opacity: 0, scale: 0.96 },
+                open: { opacity: 1, scale: 1 },
+              }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Square frame so the border hugs the image */}
+              <div
+                className="relative aspect-square w-full max-w-[min(100%,75vh)] pointer-events-auto overflow-hidden rounded-lg border border-secondary/50 bg-black/10"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
-                  onClick={handlePrevious}
-                  disabled={isAnimating}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 flex items-center justify-center text-white hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
-                  aria-label="Previous image"
+                  type="button"
+                  onClick={closeZoomModal}
+                  className="absolute top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-950/75 text-white shadow-lg ring-1 ring-white/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-neutral-950/90 hover:ring-white/60"
+                  aria-label="Close modal"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-                <button
-                  onClick={handleNext}
-                  disabled={isAnimating}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 flex items-center justify-center text-white hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
-                  aria-label="Next image"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
 
-            {/* Thumbnails in Modal */}
-            {images.length > 1 && (
-              <div className="mt-4 flex gap-2 overflow-x-auto max-w-full px-4 py-2 z-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {images.map((image, index) => (
-                  <button
+                  <div
                     key={index}
-                    type="button"
-                    onClick={() => handleThumbnailClick(index)}
-                    aria-label={`Gallery thumbnail ${index + 1} of ${images.length}`}
                     className={cn(
-                      "relative w-16 h-16 rounded-md overflow-hidden transition-all duration-300 shrink-0",
-                      selectedIndex === index
-                        ? "ring-2 ring-white opacity-100 scale-110"
-                        : "opacity-50 hover:opacity-100 hover:scale-105"
+                      "absolute inset-0 h-full w-full transition-all duration-500 ease-in-out",
+                      selectedIndex === index && !direction && "translate-x-0 scale-100 opacity-100",
+                      selectedIndex === index && direction === "left" && "animate-slide-in-left translate-x-0 scale-100 opacity-100",
+                      selectedIndex === index && direction === "right" && "animate-slide-in-right translate-x-0 scale-100 opacity-100",
+                      selectedIndex !== index && index < selectedIndex && "-translate-x-full scale-95 opacity-0",
+                      selectedIndex !== index && index > selectedIndex && "translate-x-full scale-95 opacity-0"
                     )}
+                    style={{
+                      zIndex: selectedIndex === index ? 1 : 0,
+                    }}
                   >
                     <Image
                       src={image}
-                      alt={`${productName} - Thumbnail ${index + 1}`}
+                      alt={`${productName} - Large View`}
                       fill
                       className="object-contain"
+                      priority
                     />
-                  </button>
+                  </div>
                 ))}
+
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handlePrevious}
+                      disabled={isAnimating}
+                      className="absolute left-4 top-1/2 z-50 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/75 text-white shadow-lg ring-1 ring-white/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-neutral-950/90 hover:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Previous image"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={isAnimating}
+                      className="absolute right-4 top-1/2 z-50 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/75 text-white shadow-lg ring-1 ring-white/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:bg-neutral-950/90 hover:ring-white/60 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Next image"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
+
+              {/* Thumbnails in Modal */}
+              {images.length > 1 && (
+                <div
+                  className="z-50 mt-4 flex max-w-full gap-2 overflow-x-auto px-4 py-2 pointer-events-auto scrollbar-hide"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {images.map((image, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleThumbnailClick(index)}
+                      aria-label={`Gallery thumbnail ${index + 1} of ${images.length}`}
+                      className={cn(
+                        "relative h-16 w-16 shrink-0 overflow-hidden rounded-md transition-all duration-300",
+                        selectedIndex === index
+                          ? "scale-110 opacity-100 ring-2 ring-white"
+                          : "opacity-50 hover:scale-105 hover:opacity-100"
+                      )}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${productName} - Thumbnail ${index + 1}`}
+                        fill
+                        className="object-contain"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style jsx global>{`
         @keyframes slide-in-left {
@@ -521,25 +579,12 @@ export function ProductGallery({
           }
         }
 
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
         .animate-slide-in-left {
           animation: slide-in-left 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
         .animate-slide-in-right {
           animation: slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
         }
 
         .scrollbar-hide::-webkit-scrollbar {
