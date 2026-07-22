@@ -149,11 +149,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       index: seoSettings?.robots_index ?? true,
       follow: seoSettings?.robots_follow ?? true,
     },
-    verification: {
-      google:
-        seoSettings?.google_verification?.trim() ||
-        "VRP8dQHgN5TtLK__ogKu2905Gg6Jz01H0xANRkuzkVw",
-    },
+    ...(seoSettings?.google_verification?.trim()
+      ? {
+          verification: {
+            google: seoSettings.google_verification.trim(),
+          },
+        }
+      : {}),
   };
 }
 
