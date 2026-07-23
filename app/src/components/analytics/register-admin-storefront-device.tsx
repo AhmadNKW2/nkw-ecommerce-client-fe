@@ -9,7 +9,6 @@ import { getClientId, markLocalClientIdAsAdmin } from '@/lib/analytics';
 const STAFF_ROLES = new Set([
   'admin',
   'constant_token_admin',
-  'catalog_manager',
   'vendor_admin',
   'store_admin',
 ]);
